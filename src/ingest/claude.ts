@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { sessionIdFor, turnIdFor } from "../schema/ids.js";
@@ -42,7 +42,13 @@ export function promptTextOf(content: unknown): string | null {
 
 /** Claude Code stores transcripts under ~/.claude/projects/<cwd slug>/<session id>.jsonl. */
 export function claudeLogPath(sessionId: string, cwd: string): string {
-  const slug = cwd.replace(/[^A-Za-z0-9-]/g, "-");
+  let real = cwd;
+  try {
+    real = realpathSync(cwd);
+  } catch {
+    real = cwd;
+  }
+  const slug = real.replace(/[^A-Za-z0-9-]/g, "-");
   return join(homedir(), ".claude", "projects", slug, `${sessionId}.jsonl`);
 }
 
