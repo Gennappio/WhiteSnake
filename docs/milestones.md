@@ -28,16 +28,24 @@ Aperto per M2: Codex come agente di lavoro, stati delle procedure derivati dagli
 
 ## M2 — Ciclo di vita delle procedure, osservabilità, entrambi gli harness
 
-**In corso (2026-10-16).**
+**Prove dal vivo superate su entrambi gli harness (2026-10-16); resta il test con giudizio umano sul corpus reale.**
 
 Test deterministici: 34 verdi al momento della prima prova dal vivo (aggiunti: ciclo di vita con promozione a `trusted` dopo tre risultati mostrati, `correct` con sospensione della procedura, sostituzione della decisione e propagazione di `needs_review`, hook Stop che registra come mostrate le decisioni citate nel messaggio finale, pagina di revisione, guardia sulle scritture via shell in `knowledge/`, parser dei rollout Codex).
 
-Prova dal vivo a tre sessioni con Claude Code (`npm run e2e:m2`): **superata**.
+Prova dal vivo a tre sessioni (`npm run e2e:m2`): **superata con Claude Code e con Codex**. Claude Code:
 
 | Fase | Durata | Esito |
 |---|---|---|
 | A. Annotazione di P02 e P03 | 135 s | store valido, 6 catene complete; `proc_tablecount01` promossa a `trusted` senza intervento umano, con 5 usi mostrati registrati dallo Stop hook |
 | B. Il ricercatore cambia il criterio della popolazione analizzata | 45 s | l'agente ha usato `autosoft correct dec_crit0analyz1`; le tre annotazioni `n_analyzed_total` (P01, P02, P03) sono passate a `needs_review`; le sei annotazioni di randomizzati e outcome sono rimaste `active` con gli stessi valori; creato un nuovo criterio che sostituisce il vecchio |
 | C. Arriva P04 | 97 s | 3 catene complete e 3 valori corretti; episodi che riusano la procedura trusted; numero di procedure invariato; quota di episodi risolti senza agente 0,50 contro 0,375 della fase A |
+
+Codex (`--harness codex --model gpt-5.6-sol`):
+
+| Fase | Durata | Esito |
+|---|---|---|
+| A | 141 s | store valido, 6 catene complete, procedura promossa a `trusted` con 5 usi mostrati; quota senza agente 0,50 |
+| B | 77 s | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
+| C | 96 s | 3 catene complete e 3 valori corretti; procedura riusata; procedure 1 → 1; quota senza agente 0,50 |
 
 Codex come agente di lavoro: la CLI installata (0.150.1) rifiuta il modello configurato `gpt-6-astra`; con `--model gpt-5.6-sol` gli hook di progetto scattano (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop) e il compito di M1 (`npm run e2e:m1 -- --harness codex --model gpt-5.6-sol --runs 3`) è passato **3 run su 3**: store valido, 6 catene complete e 6 valori corretti per run, `affected` esatto, primo accesso allo store via CLI, zero letture dirette, zero scritture negate. Durate 143, 243 e 131 secondi. Codex esegue ogni passo come programma JavaScript con più comandi shell dentro; gli hook ricevono comunque un evento per singolo comando.
