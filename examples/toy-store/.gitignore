@@ -1,3 +1,4 @@
 .autosoft/
 output/*.sqlite
+review.html
 .DS_Store

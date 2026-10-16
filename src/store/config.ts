@@ -26,6 +26,12 @@ export const ConfigSchema = z.strictObject({
       fields: z.array(FieldSchema).default([]),
     })
     .default({ unit: "unit", fields: [] }),
+  promotion: z
+    .strictObject({
+      /** Shown uses without a correction after which a provisional procedure becomes trusted. */
+      shown_uses_to_trust: z.number().int().min(1).default(3),
+    })
+    .default({ shown_uses_to_trust: 3 }),
 });
 export type StoreConfig = z.infer<typeof ConfigSchema>;
 

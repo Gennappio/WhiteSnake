@@ -4,12 +4,13 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 import { buildIndex } from "../index/db.js";
 import { frontier, renderFrontier } from "../index/queries.js";
 import { ensureIndex } from "../index/db.js";
-import { ingestLogFile } from "../ingest/index.js";
+import { ingestLogFile, lastAssistantText } from "../ingest/index.js";
+import { decisionIdsIn, markShown } from "../lifecycle/shown.js";
 import { sessionIdFor, turnIdFor } from "../schema/ids.js";
 import type { Turn } from "../schema/nodes.js";
 import { findStoreRoot, loadConfig } from "../store/config.js";
 import { loadStore, writeNodeFile } from "../store/files.js";
-import { CURRENT_TURN_FILE } from "../store/ops.js";
+import { CURRENT_TURN_FILE, currentTurn } from "../store/ops.js";
 import { validateStore } from "../store/validate.js";
 import { appendText, collapseWs, nowIso, sha256, truncate, writeText } from "../util.js";
 
@@ -36,6 +37,28 @@ export interface HookOutput {
 
 const READ_TOOLS = new Set(["Read", "Grep", "Glob", "LS", "read_file", "grep", "glob"]);
 const WRITE_TOOLS = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit", "write_file", "edit_file", "apply_patch"]);
+const SHELL_TOOLS = new Set(["Bash", "shell", "exec_command", "local_shell", "container.exec", "bash"]);
+
+/** Commands that create, modify or delete files under knowledge/ without going through the CLI. */
+const SHELL_WRITE_RE = /(^|[^<])>{1,2}\s*\S*knowledge\/|\b(tee|cp|mv|rm|rmdir|touch|truncate|install|mkdir)\b[^;&|]*[\s'"=\/]knowledge(\/|\b)|\b(sed|perl)\s+-[a-zA-Z]*i[^;&|]*[\s'"=\/]knowledge(\/|\b)/;
+/** Any mention of the knowledge directory as a path token, with or without a trailing slash. */
+const KNOWLEDGE_MENTION_RE = /(^|[\s'"=\/])knowledge(\/|\b)/;
+const CLI_RE = /(^|[\s;&|(])autosoft(\s|$)|cli\.js/;
+
+function shellCommandOf(input: Record<string, unknown> | undefined): string | null {
+  if (!input) return null;
+  const c = input["command"] ?? input["cmd"];
+  if (typeof c === "string") return c;
+  if (Array.isArray(c)) return c.map(String).join(" ");
+  return null;
+}
+
+/** Paths named by an apply_patch style input (*** Add File: path). */
+function patchPathsOf(input: Record<string, unknown> | undefined): string[] {
+  const patch = input?.["patch"] ?? input?.["input"];
+  if (typeof patch !== "string") return [];
+  return [...patch.matchAll(/^\*\*\* (?:Add|Update|Delete|Move to) File: (.+)$/gm)].map((m) => (m[1] ?? "").trim());
+}
 
 function log(root: string, entry: Record<string, unknown>): void {
   appendText(join(root, ".autosoft", "hooks.log"), `${JSON.stringify({ ts: nowIso(), ...entry })}\n`);
@@ -148,8 +171,36 @@ export function runHook(event: string, input: HookInput): HookOutput {
       }
       case "PreToolUse": {
         const tool = input.tool_name ?? "";
-        const paths = pathsOf(input.tool_input);
+        const paths = [...pathsOf(input.tool_input), ...patchPathsOf(input.tool_input)];
         const inKnowledge = touchesKnowledge(root, cwd, paths);
+        const command = SHELL_TOOLS.has(tool) ? shellCommandOf(input.tool_input) : null;
+        if (command && !CLI_RE.test(command) && SHELL_WRITE_RE.test(command)) {
+          log(root, { event, tool, decision: "deny", command: truncate(command, 200) });
+          return {
+            exitCode: 0,
+            stdout: JSON.stringify({
+              hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                permissionDecision: "deny",
+                permissionDecisionReason:
+                  "Shell commands must not create or modify files under knowledge/: use `autosoft add`, `autosoft set` or `autosoft link` so the record is validated.",
+              },
+            }),
+          };
+        }
+        if (command && KNOWLEDGE_MENTION_RE.test(command) && !CLI_RE.test(command)) {
+          log(root, { event, tool, decision: "allow+nudge", command: truncate(command, 200) });
+          return {
+            exitCode: 0,
+            stdout: JSON.stringify({
+              hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                permissionDecision: "allow",
+                additionalContext: "Reading knowledge/ files from the shell is allowed, but `autosoft get <id>`, `autosoft why <id>` and `autosoft precedent <text>` give the same information with resolved links.",
+              },
+            }),
+          };
+        }
         if (inKnowledge && WRITE_TOOLS.has(tool)) {
           log(root, { event, tool, decision: "deny", paths });
           return {
@@ -191,11 +242,18 @@ export function runHook(event: string, input: HookInput): HookOutput {
       case "SessionEnd":
       case "PreCompact": {
         let ingested: unknown = null;
-        if (input.transcript_path) ingested = ingestLogFile(root, input.transcript_path);
+        let shown: unknown = null;
+        if (input.transcript_path) {
+          ingested = ingestLogFile(root, input.transcript_path);
+          // Decisions the agent listed in its final message count as shown to the researcher.
+          const finalText = lastAssistantText(input.transcript_path);
+          const ids = finalText ? decisionIdsIn(finalText) : [];
+          if (ids.length) shown = markShown(loadStore(root), ids, currentTurn(root));
+        }
         buildIndex(root);
-        const issues = validateStore(loadStore(root));
+        const issues = validateStore(loadStore(root)).filter((i) => i.severity !== "warning");
         const commit = gitCommit(root, `store: ${event.toLowerCase()} ${(input.session_id ?? "").slice(0, 8)}`.trim());
-        log(root, { event, session: input.session_id, ingested, validation_errors: issues.length, commit });
+        log(root, { event, session: input.session_id, ingested, shown, validation_errors: issues.length, commit });
         if (issues.length) {
           return { exitCode: 0, stdout: JSON.stringify({ systemMessage: `AutoSoft: ${issues.length} validation issue(s) in the store; run \`autosoft validate\`.` }) };
         }

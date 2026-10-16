@@ -6,6 +6,8 @@ harness: claude
 model: null
 corpus:
   - corpus
+promotion:
+  shown_uses_to_trust: 3
 output:
   unit: paper
   fields:

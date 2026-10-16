@@ -16,7 +16,13 @@ import { CONFIG_FILE, ConfigSchema, findStoreRoot, requireStoreRoot, writeConfig
 import { loadStore, serializeNode } from "./store/files.js";
 import { createNode, currentTurn, lastWarnings, linkNodes, readNode, updateNode } from "./store/ops.js";
 import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
-import { CliError, ensureDir, readText, writeText } from "./util.js";
+import { correctDecision } from "./lifecycle/correct.js";
+import { kpi, renderKpi } from "./lifecycle/kpi.js";
+import { reinstate, retire } from "./lifecycle/procedures.js";
+import { resolve as resolveLadder } from "./lifecycle/resolve.js";
+import { markShown } from "./lifecycle/shown.js";
+import { renderReview } from "./render/html.js";
+import { CliError, ensureDir, nowIso, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const TOOL_ROOT = resolve(here, "..", "..");
@@ -83,7 +89,7 @@ program
       writeText(join(target, "knowledge", d, ".gitkeep"), "");
     }
     for (const d of ["corpus", "procedures", "artifacts", "output", ".autosoft"]) ensureDir(join(target, d));
-    writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\n.DS_Store\n");
+    writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
     installSkillAndHooks(target, opts.hooks);
     if (opts.git && !existsSync(join(target, ".git"))) {
       execFileSync("git", ["-C", target, "init", "-q", "-b", "main"]);
@@ -356,6 +362,131 @@ function csvCell(v: unknown): string {
   const s = String(v);
   return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
 }
+
+program
+  .command("episode")
+  .description("open and close episodes (units of work)")
+  .addCommand(
+    new Command("open")
+      .argument("<title>")
+      .option("--parent <id>", "parent episode")
+      .option("--resolution <r>", "cached | code | frozen_prompt | agent", "agent")
+      .option("--question <id>", "question this episode addresses")
+      .option("--uses <ids...>", "procedures and criteria this episode applies")
+      .description("create an open episode; prints its id")
+      .action((title: string, opts: { parent?: string; resolution: string; question?: string; uses?: string[] }) => {
+        const node = createNode(root(), "episode", { title, parent: opts.parent ?? null, resolution: opts.resolution, question: opts.question ?? null, uses: opts.uses ?? [] }, "");
+        printWarnings();
+        print(node.id, node);
+      }),
+  )
+  .addCommand(
+    new Command("close")
+      .argument("<id>")
+      .option("--outcome <o>", "success | failure | abstained | corrected", "success")
+      .option("--produces <ids...>", "records produced (merged)")
+      .option("--uses <ids...>", "procedures and criteria applied (merged)")
+      .option("--body <text>", "what was tried, including dead ends")
+      .description("close an episode with its outcome")
+      .action((id: string, opts: { outcome: string; produces?: string[]; uses?: string[]; body?: string }) => {
+        const r = root();
+        const existing = readNode(r, id);
+        if (!existing || existing.node.type !== "episode") throw new CliError(`${id} is not an episode`, 1);
+        const patch: Record<string, unknown> = { outcome: opts.outcome, ended: nowIso() };
+        if (opts.produces) patch["produces"] = [...new Set([...existing.node.produces, ...opts.produces])];
+        if (opts.uses) patch["uses"] = [...new Set([...existing.node.uses, ...opts.uses])];
+        const node = updateNode(r, id, patch, opts.body);
+        printWarnings();
+        print(`${node.id} closed (${opts.outcome})`, node);
+      }),
+  );
+
+program
+  .command("shown <ids...>")
+  .description("record that these decisions were presented to the researcher in the current turn")
+  .option("--turn <id>", "override the current turn")
+  .action((ids: string[], opts: { turn?: string }) => {
+    const r = root();
+    const result = markShown(loadStore(r), ids, opts.turn ?? currentTurn(r));
+    print(
+      [`shown: ${result.shown.join(", ") || "none"}`, result.already.length ? `already shown this turn: ${result.already.join(", ")}` : "", result.unknown.length ? `unknown: ${result.unknown.join(", ")}` : "", result.promoted.length ? `promoted to trusted: ${result.promoted.join(", ")}` : ""].filter(Boolean).join("\n"),
+      result,
+    );
+  });
+
+program
+  .command("correct <id>")
+  .description("the researcher says this decision is wrong: mark it, suspend the procedures behind it, flag dependents")
+  .requiredOption("--reason <text>", "what the researcher said")
+  .option("--value <json>", "the corrected value; creates a superseding decision")
+  .option("--turn <id>", "override the current turn")
+  .action((id: string, opts: { reason: string; value?: string; turn?: string }) => {
+    const r = root();
+    let value: unknown;
+    if (opts.value !== undefined) {
+      try {
+        value = JSON.parse(opts.value);
+      } catch {
+        value = opts.value;
+      }
+    }
+    const result = correctDecision(loadStore(r), id, opts.reason, opts.turn ?? currentTurn(r), { value });
+    print(
+      [`${id} ${result.replacement ? `superseded by ${result.replacement}` : "marked needs_review"}`, `needs_review: ${result.needs_review.join(", ") || "none"}`, `suspended procedures: ${result.suspended.join(", ") || "none"}`].join("\n"),
+      result,
+    );
+  });
+
+program
+  .command("procedure")
+  .description("manual procedure transitions")
+  .addCommand(
+    new Command("reinstate").argument("<id>").requiredOption("--reason <text>").description("suspended -> provisional after a fix").action((id: string, opts: { reason: string }) => {
+      const r = root();
+      const p = reinstate(loadStore(r), id, opts.reason, currentTurn(r));
+      print(`${p.id} is now ${p.state}`, p);
+    }),
+  )
+  .addCommand(
+    new Command("retire").argument("<id>").requiredOption("--reason <text>").description("stop using a procedure; its outputs stand").action((id: string, opts: { reason: string }) => {
+      const r = root();
+      const p = retire(loadStore(r), id, opts.reason, currentTurn(r));
+      print(`${p.id} is now ${p.state}`, p);
+    }),
+  );
+
+program
+  .command("resolve [text...]")
+  .description("resolution ladder for a cell: cached decision, trusted procedure, or agent work")
+  .option("--unit <u>")
+  .option("--field <f>")
+  .action((text: string[], opts: { unit?: string; field?: string }) => {
+    const db = ensureIndex(root());
+    const res = resolveLadder(db, opts.unit, opts.field, text.join(" "));
+    db.close();
+    print([`mode: ${res.mode}`, res.advice, res.precedents.length ? `precedents: ${res.precedents.map((p) => `${p.id} (${p.title})`).join("; ")}` : ""].filter(Boolean).join("\n"), res);
+  });
+
+program
+  .command("kpi")
+  .description("how the store is doing: resolutions without agent, decisions by status, procedure transitions per session")
+  .action(() => {
+    const db = ensureIndex(root());
+    const k = kpi(db);
+    db.close();
+    print(renderKpi(k), k);
+  });
+
+program
+  .command("render")
+  .description("write review.html: KPIs, items to review, timeline by prompt, procedures, warnings")
+  .option("--out <path>", "output file (default <store>/review.html)")
+  .action((opts: { out?: string }) => {
+    const r = root();
+    const out = opts.out ? resolve(opts.out) : join(r, "review.html");
+    writeText(out, renderReview(r));
+    print(`wrote ${out}`, { path: out });
+  });
 
 program
   .command("doctor")

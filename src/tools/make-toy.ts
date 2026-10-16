@@ -36,7 +36,7 @@ for (const d of Object.values(TYPE_DIR)) {
 }
 for (const d of ["corpus", "procedures/table_counts/cases", "artifacts", "output", ".autosoft"]) ensureDir(join(target, d));
 cpSync(CORPUS_SRC, join(target, "corpus"), { recursive: true });
-writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\n.DS_Store\n");
+writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
 
 writeConfig(target, {
   id: "toy",
@@ -47,6 +47,7 @@ writeConfig(target, {
   harness: "claude",
   model: null,
   corpus: ["corpus"],
+  promotion: { shown_uses_to_trust: 3 },
   output: {
     unit: "paper",
     fields: [

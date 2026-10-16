@@ -8,7 +8,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|apply_patch|read_file|write_file|edit_file",
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|Bash|shell|exec_command|local_shell|apply_patch|read_file|write_file|edit_file",
         "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PreToolUse --harness codex", "timeout": 15 }]
       }
     ],

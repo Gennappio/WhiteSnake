@@ -58,3 +58,26 @@ test("SessionStart prints the mandate and the frontier; outside a store hooks ar
     cleanup();
   }
 });
+
+test("PreToolUse denies shell commands that write under knowledge/ but allows the CLI and plain reads", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const decision = (cmd: string) => {
+      const r = hook(dir, "PreToolUse", { tool_name: "Bash", tool_input: { command: cmd } });
+      if (!r.stdout.trim()) return "silent";
+      return (JSON.parse(r.stdout) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision;
+    };
+    assert.equal(decision("echo x > knowledge/decisions/dec_aaaaaaaaaaaa.md"), "deny");
+    assert.equal(decision("cat body.md | tee knowledge/evidence/ev_aaaaaaaaaaaa.md"), "deny");
+    assert.equal(decision("sed -i '' 's/a/b/' knowledge/decisions/dec_p01nanal0000.md"), "deny");
+    assert.equal(decision("rm -rf knowledge/episodes"), "deny");
+    assert.equal(decision("autosoft add decision --json-in '{\"title\":\"x\"}' --body 'see knowledge/'"), "silent");
+    assert.equal(decision("cat knowledge/decisions/dec_p01nanal0000.md"), "allow");
+    assert.equal(decision("ls -R corpus knowledge | head"), "allow");
+    assert.equal(decision("python3 procedures/table_counts/run.py corpus/P02.md Randomised"), "silent");
+    const patch = hook(dir, "PreToolUse", { tool_name: "apply_patch", tool_input: { patch: "*** Begin Patch\n*** Add File: knowledge/decisions/dec_bbbbbbbbbbbb.md\n+---\n*** End Patch" } });
+    assert.equal((JSON.parse(patch.stdout) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision, "deny");
+  } finally {
+    cleanup();
+  }
+});

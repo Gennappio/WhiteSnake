@@ -26,3 +26,35 @@ export function ingestLogFile(root: string, logPath: string): (IngestResult & { 
   if (!parsed) return null;
   return { ...ingestParsed(root, parsed), format };
 }
+
+/** The agent's last message in a native log: where it lists the decisions it presented to the researcher. */
+export function lastAssistantText(logPath: string): string | null {
+  if (!existsSync(logPath)) return null;
+  const text = readText(logPath);
+  const format = detectLogFormat(text);
+  let last: string | null = null;
+  for (const line of text.split("\n")) {
+    if (!line.trim()) continue;
+    let o: Record<string, unknown>;
+    try {
+      o = JSON.parse(line) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+    if (format === "claude") {
+      const msg = o["message"] as { content?: unknown } | undefined;
+      if (o["type"] === "assistant" && !o["isSidechain"] && Array.isArray(msg?.content)) {
+        const t = (msg!.content as { type?: string; text?: string }[]).filter((b) => b.type === "text" && typeof b.text === "string").map((b) => b.text as string).join("\n").trim();
+        if (t) last = t;
+      }
+    } else if (format === "codex") {
+      const p = (o["payload"] ?? {}) as Record<string, unknown>;
+      if (o["type"] === "event_msg" && p["type"] === "task_complete" && typeof p["last_agent_message"] === "string") last = p["last_agent_message"] as string;
+      else if (o["type"] === "response_item" && p["type"] === "message" && p["role"] === "assistant" && Array.isArray(p["content"])) {
+        const t = (p["content"] as { type?: string; text?: string }[]).filter((b) => typeof b.text === "string").map((b) => b.text as string).join("\n").trim();
+        if (t) last = t;
+      }
+    }
+  }
+  return last;
+}
