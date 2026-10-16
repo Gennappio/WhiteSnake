@@ -52,21 +52,21 @@ Codex come agente di lavoro: la CLI installata (0.150.1) rifiuta il modello conf
 
 ## M3 — Delega simulata, branching, passaggio di consegne
 
-**Parti deterministiche chiuse il 2026-10-16; prova di passaggio dal vivo superata sui punti sostanziali, delega rieseguita dopo una correzione (vedi sotto).**
+**Chiusa il 2026-10-16 sullo store giocattolo: parti deterministiche e prova di passaggio dal vivo superate per intero alla ripetizione (prima esecuzione fallita solo sulla delega per lo schema di output, vedi sotto). La prova sul corpus reale attende i dati.**
 
 Test deterministici: 44 verdi, di cui per M3: `export` con manifest e `check` (integrità rilevata a un byte di differenza, export con e senza storia, rifiuto di uno store con modifiche non committate), rami per padre (worktree, rebase all'apertura, merge additivo, conflitto su una decisione rifiutato con uscita 4 e main intatto, rebase in conflitto rifiutato con uscita 3), `delegate` con runner stub (lavoro del figlio sul ramo del padre, evidenza di esecuzione e episodio con figlio remoto nel padre), `ask` con stub, `gate` con snapshot del contratto (44 comandi).
 
-Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in directory pulita, modello `gpt-5.6-sol`):
+Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in directory pulita, modello `gpt-5.6-sol`). Esecuzione finale, **superata su tutti i punti**:
 
 | Passo | Esito |
 |---|---|
-| Claude Code annota P02 e P03 nello store di origine | store valido, 144 s |
-| `autosoft export` → copia pulita con manifest; `autosoft check` | ok: 53 record, 0 discrepanze, storia inclusa |
-| Codex spiega tre annotazioni tramite `autosoft ask` | **3/3**: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
-| Codex registra il cambio di criterio | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
-| Codex annota P04 nella copia ereditata | 3 catene complete e 3 valori corretti; procedura trusted riusata; applica la nuova regola notando che P04 non riporta la popolazione per protocollo |
-| Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile). Rieseguita dal vivo con Codex: stato `completed`, risposta che cita la decisione del figlio, due evidenze e il criterio; nel padre episodio con figlio remoto, evidenza di esecuzione e artefatto; store valido |
-| Domande rivolte al ricercatore | 0 rilevate dall'euristica; le risposte complete sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano |
+| Claude Code annota P02 e P03 nello store di origine | store valido, 119 s |
+| `autosoft export` → copia pulita con manifest; `autosoft check` | ok: 52 record, 0 discrepanze, storia inclusa |
+| Codex spiega tre annotazioni tramite `autosoft ask` | **3/3** in entrambe le esecuzioni: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
+| Codex registra il cambio di criterio (97 s) | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
+| Codex annota P04 nella copia ereditata (141 s) | 3 catene complete e 3 valori corretti; procedura trusted riusata; applica la nuova regola notando che P04 non riporta la popolazione per protocollo |
+| Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile). Nell'esecuzione finale: stato `completed`, risposta che cita la decisione del figlio, due evidenze e il criterio; nel padre episodio con figlio remoto, evidenza di esecuzione e artefatto; store valido |
+| Domande rivolte al ricercatore | 0 in entrambe le esecuzioni; le risposte complete dell'esecuzione finale sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano (correttezza delle spiegazioni, domande evitabili) |
 
 Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.autosoft/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
 

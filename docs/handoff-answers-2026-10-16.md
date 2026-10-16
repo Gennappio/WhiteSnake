@@ -1,85 +1,92 @@
 # Producer (claude) final message
 
-I annotated P02 and P03 for all three fields. `autosoft validate` prints `ok`, all 8 new episodes are closed, and I didn't commit anything.
+I annotated P02 and P03, and `autosoft validate` prints `ok`. P03's `n_analyzed_total` (148) is lower-confidence because the paper's prose and table disagree.
 
-| Paper | n_randomized_total | n_analyzed_total | primary_outcome |
+| Paper | Field | Value | Decision id |
 |---|---|---|---|
-| P02 | 84 (42 + 42) | 80 (41 + 39) | 6-minute walk distance (metres) at 12 weeks |
-| P03 | 150 (75 + 75) | 148 (74 + 74) | Pain intensity (0 to 10 numeric rating scale) at 8 weeks |
+| P02 | `n_randomized_total` | 84 (42 + 42) | `dec_egh38wmqh9zd` |
+| P02 | `n_analyzed_total` | 80 (41 + 39) | `dec_s3rf7m0vqhhd` |
+| P02 | `primary_outcome` | 6-minute walk distance (metres) at 12 weeks | `dec_8rfh4ct0cstz` |
+| P03 | `n_randomized_total` | 150 (75 + 75) | `dec_8zdj16xdfk2k` |
+| P03 | `n_analyzed_total` | 148 (74 + 74) | `dec_s82yfqscaztk` |
+| P03 | `primary_outcome` | Pain intensity (0 to 10 numeric rating scale) at 8 weeks | `dec_zt6xcyekdga7` |
 
-**Decision ids**
+**P03 `n_analyzed_total`:**
+- **The disagreement:** P03's prose says three participants (two mindfulness, one usual care) were excluded from all analyses, which implies 147. Table 2's ITT column sums to 148, so the mindfulness arm differs by one.
+- **How I resolved it:** I applied the existing rule that the table wins (`dec_choice0tabl4`). Table 2 has no arithmetic error that would justify distrusting it. I recorded the decision as active, interpretive, with confidence 0.75. The prose excerpt and my comparison are cited as rebuttal evidence (`ev_db4hshjnbbty`, `ev_2w1y46r06xtb`).
+- **What to check:** if you think the prose is right, the value would be 147. `autosoft why P03/n_analyzed_total` shows the trail.
+- **Per-protocol:** I used the ITT column, not the per-protocol one, per `dec_crit0analyz1`.
 
-| Paper | n_randomized_total | n_analyzed_total | primary_outcome |
-|---|---|---|---|
-| P02 | `dec_kb7qq8b9fznk` | `dec_p4ancyat0fcr` | `dec_94wm0736yank` |
-| P03 | `dec_cv0ggyjcnntr` | `dec_mvwak5ze2tka` | `dec_mn137nqz3zhe` |
+**Everything else:**
+- **P02:** prose and table agree throughout (84 − 4 withdrawals = 80).
+- **Counts:** both count fields in both papers came from `proc_tablecount01`. Its output is stored as execution evidence next to the verbatim table excerpt.
+- **Primary outcomes:** each is a single outcome taken from the Methods sentence.
+- **Episodes:** each paper has a parent episode and one leaf episode per field. All are closed with outcome `success`.
 
-**How I did it**
-- **Counts:** I ran the existing `proc_tablecount01` procedure and recorded its output as execution evidence next to the table excerpt, each with its artifact locator.
-- **Outcomes:** Each primary outcome is the verbatim Methods sentence, licensed by `dec_crit0outcom3`.
-- **P03 per-protocol column:** I ignored the per-protocol column (131), as `dec_crit0analyz1` requires.
-
-**P03 needs your review: `dec_mvwak5ze2tka`.** P03's Results prose says three participants (two mindfulness, one usual care) were excluded from all analyses, which implies 147 analysed. Table 2's ITT column sums to 148, with the mindfulness arm at 74 where the prose implies 73. I used 148, following the standing choice `dec_choice0tabl4` (the table wins over prose). I cited both the prose and the table as evidence, plus an observation node that spells out the mismatch. I lowered confidence to 0.8, marked the decision `interpretive`, and wrote the "would be 147" scenario into its rebuttal. If you'd rather trust the prose, that decision is the one to change. `autosoft affected` will show what depends on it.
-
-P02 had no such conflict. Its prose says 4 withdrawals, which matches 84 − 80.
-
-`dec_choice0tabl4` has never been shown to you (its `shown_at` is empty), so P03's value rests on a rule you haven't confirmed.
-
-The existing open question `q_figonly00001` (counts that appear only in a figure) didn't apply to either paper and is untouched.
+I didn't touch the open question `q_figonly00001`, since neither paper has figure-only counts.
 
 ---
 
 # Why P02/n_analyzed_total (codex)
 
-P02 n_analyzed_total is 80 because decision dec_p4ancyat0fcr sums the Table 1 intention-to-treat counts: 41 participants in aquatic exercise plus 39 in education booklet. It rests on Table 1 evidence ev_jqt8vscc6ncn, the resulting table-count execution ev_50xppwv7sbmb, and the corroborating withdrawals sentence ev_6jxnbfxbnyg6. Criterion dec_crit0analyz1 licenses this value by requiring n_analyzed_total to count the intention-to-treat population for the primary outcome, summed across arms, rather than the per-protocol population.
+P02 n_analyzed_total is 80 under decision dec_s3rf7m0vqhhd: Table 1 reports 41 participants analysed by ITT in the aquatic-exercise arm and 39 in the education-booklet arm (ev_vsf0eacqrcxh), and the recorded table-count execution sums them to 80 (ev_3ye89fjns2k6). Criterion dec_crit0analyz1 licenses this by requiring n_analyzed_total to count the primary-outcome intention-to-treat population summed across arms, excluding per-protocol counts.
 
-records: dec_p4ancyat0fcr, ev_jqt8vscc6ncn, ev_50xppwv7sbmb, ev_6jxnbfxbnyg6, dec_crit0analyz1
-confidence: 0.99
+records: dec_s3rf7m0vqhhd, ev_vsf0eacqrcxh, ev_3ye89fjns2k6, dec_crit0analyz1
+confidence: 1
 
 ---
 
 # Why P03/n_analyzed_total (codex)
 
-P03 n_analyzed_total is 148 under decision dec_mvwak5ze2tka because Table 2 reports 74 mindfulness participants and 74 usual-care participants in the “Analysed (ITT)” column (ev_kvprkvgmw419), whose sum was verified as 148 (ev_yb4exsdfpctj). The primary analysis was explicitly ITT (ev_cnesc24fmwk8). Criterion dec_crit0analyz1 licenses counting the ITT primary-outcome population summed across arms, excluding per-protocol counts. Although the withdrawal sentence implies 147 (ev_7a0gk5he009f; discrepancy recorded in ev_9w7nkphasj40), decision dec_choice0tabl4 directs use of the table when prose and table counts disagree.
+Decision dec_s82yfqscaztk sets P03 n_analyzed_total to 148 because Table 2 reports 74 mindfulness + 74 usual-care participants in the “Analysed (ITT)” column (ev_dkfyt3n7wgde), and the table-count execution confirms the sum of 148 (ev_0eqmzs0a40hw). The methods state that the primary analysis followed ITT (ev_nej01q572wsh). This is licensed by criterion dec_crit0analyz1: count the primary-outcome ITT population summed across arms, excluding per-protocol counts. Although the prose implies 147 (ev_db4hshjnbbty; discrepancy documented in ev_2w1y46r06xtb), backing decision dec_choice0tabl4 directs that the table controls when prose and table disagree.
 
-records: dec_mvwak5ze2tka, ev_kvprkvgmw419, ev_yb4exsdfpctj, ev_cnesc24fmwk8, ev_7a0gk5he009f, ev_9w7nkphasj40, dec_crit0analyz1, dec_choice0tabl4
-confidence: 1
+records: dec_s82yfqscaztk, ev_dkfyt3n7wgde, ev_0eqmzs0a40hw, ev_nej01q572wsh, dec_crit0analyz1, dec_choice0tabl4, ev_db4hshjnbbty, ev_2w1y46r06xtb
+confidence: 0.99
 
 ---
 
 # Why P02/primary_outcome (codex)
 
-P02 primary_outcome is "6-minute walk distance (metres) at 12 weeks" because decision dec_94wm0736yank applies criterion dec_crit0outcom3: record the prespecified primary outcome named in the methods, including its instrument and time point when stated. Evidence ev_y0gyan0w1m17, from Methods / Outcomes, states: "The primary outcome was the 6-minute walk distance (metres) at 12 weeks."
+P02 primary_outcome is "6-minute walk distance (metres) at 12 weeks" because decision dec_8rfh4ct0cstz applies criterion dec_crit0outcom3: record the prespecified primary outcome named in the Methods, including its instrument and time point when stated. Evidence ev_tswj74h910m6, from Methods / Outcomes, states: "The primary outcome was the 6-minute walk distance (metres) at 12 weeks."
 
-records: dec_94wm0736yank, ev_y0gyan0w1m17, dec_crit0outcom3
+records: dec_8rfh4ct0cstz, ev_tswj74h910m6, dec_crit0outcom3
 confidence: 1
 
 ---
 
 # Criterion change (codex) final message
 
-Recorded the rule change without re-annotating.
+Recorded the rule change in AutoSoft.
 
-- New active criterion: `dec_103yh4qkv11s`
-  - Use per-protocol population when reported; otherwise use ITT.
+- New active criterion: `dec_rwdbmybenfdq`
+  - Uses per-protocol population when reported; otherwise ITT.
   - Supersedes `dec_crit0analyz1`.
-- Annotations now needing review:
+- Annotations now marked `needs_review`:
   - `dec_p01nanal0000` — P01, current value 115
-  - `dec_p4ancyat0fcr` — P02, current value 80
-  - `dec_mvwak5ze2tka` — P03, current value 148
-- Store validation: `ok`
+  - `dec_s3rf7m0vqhhd` — P02, current value 80
+  - `dec_s82yfqscaztk` — P03, current value 148
+
+No annotations were re-annotated. `autosoft validate` reports the store is valid.
 
 ---
 
 # P04 annotation (codex) final message
 
-P04 is registered as artifact `art_erw7zz8wga99` and fully annotated:
+P04 was registered as artifact `art_375y230y01wx` and fully annotated:
 
-- `n_randomized_total`: **150** — Table 1 (`50 + 50 + 50`)
-  - Decision: `dec_zavwxnq3xy19`
-- `n_analyzed_total`: **144** ITT — Table 1 (`48 + 47 + 49`). No per-protocol population was reported.
-  - Decision: `dec_xap0dpwg2tmc`
-- `primary_outcome`: **HbA1c (%) at 24 weeks** — Methods / Outcomes sentence.
-  - Decision: `dec_d01mzjd3afpf`
+- `n_randomized_total`: **150** — Table 1
+  - Decision: `dec_j9z10rkjh1f6`
+- `n_analyzed_total`: **144** — Table 1, Analysed (ITT)
+  - Decision: `dec_v4e8tmja75sx`
+- `primary_outcome`: **HbA1c (%) at 24 weeks** — Methods / Outcomes
+  - Decision: `dec_2p62t0nfp6tt`
 
-The trusted table-count procedure was recorded in both count episodes. All leaf and parent episodes were closed, provenance was confirmed with `autosoft why`, and final validation returned `ok: store is valid`.
+The trusted table-count procedure was recorded in both count episodes. All episodes are closed, provenance was checked with `autosoft why`, and final validation returned `ok: store is valid`.
+
+---
+
+# Delegation answer (codex)
+
+P02 randomised 84 participants: 42 to aquatic exercise and 42 to the education booklet, as reported in Table 1 (ev_v24h5dv4w3sv) and summed by recorded execution evidence (ev_rny6s1v1dp0y). This follows criterion dec_crit0random2, requiring n_randomized_total to be the sum of arm-level randomised counts from the participant-flow table; the active annotation is dec_egh38wmqh9zd. Store validation passed.
+
+decisions: dec_egh38wmqh9zd, dec_crit0random2
