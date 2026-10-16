@@ -14,7 +14,13 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `autosoft add <type> --json-in '<json>' [--body "<text>" \| --body-file <path>]` | create a record (id, created, caused_by filled in) |
 | `autosoft set <id> --json-in '<patch>' [--body ...]` | update a record |
 | `autosoft link <id> <field> <ids...>` | append references to an edge field |
-| `autosoft validate` | check the whole store (exit 2 on errors) |
+| `autosoft episode open <title> [--parent id] [--uses ids...]` / `autosoft episode close <id> [--outcome o] [--produces ids...]` | bracket a unit of work |
+| `autosoft shown <ids...>` | record that these decisions were presented to the researcher (promotes procedures over time) |
+| `autosoft correct <id> --reason "<text>" [--value <json>]` | the researcher says a result is wrong: marks it, suspends the procedures behind it, flags dependents |
+| `autosoft resolve --unit U --field F [text]` | cached decision, trusted procedure, or agent work |
+| `autosoft kpi` | resolutions without agent, decisions by status, procedure transitions |
+| `autosoft render` | write review.html for the researcher |
+| `autosoft validate` | check the whole store (exit 2 on errors; warnings do not fail) |
 | `autosoft index [--dump]` | rebuild the SQLite index |
 | `autosoft timeline [--session id]` | prompts and the records each one caused |
 | `autosoft turn` | current turn id |

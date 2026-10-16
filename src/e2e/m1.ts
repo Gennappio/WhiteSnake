@@ -1,224 +1,19 @@
 /**
- * M1 live acceptance test: a real Claude Code session annotates P02 and P03 in a fresh copy of the toy store.
+ * M1 live acceptance test: a real agent session annotates P02 and P03 in a fresh copy of the toy store.
  *
- *   node dist/src/e2e/m1.js [--harness claude|codex] [--runs N] [--budget USD] [--smoke] [--keep] [--settings-flag]
+ *   node dist/src/e2e/m1.js [--harness claude|codex] [--model M] [--runs N] [--budget USD] [--smoke] [--keep] [--settings-flag]
  *
- * --smoke runs a trivial prompt and reports which hooks fired (use it first on a new machine).
- * Exit code 0 only when every hard assertion passes in every run.
+ * --smoke runs a trivial prompt and reports which hooks fired. Exit 0 only when every hard assertion passes in every run.
  */
-import { execFileSync, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { delimiter, dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { readdirSync } from "node:fs";
-import { homedir } from "node:os";
-import { claudeLogPath } from "../ingest/claude.js";
+import { existsSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import { sessionIdFor } from "../schema/ids.js";
 import { loadStore } from "../store/files.js";
 import { sha256 } from "../util.js";
+import { TASK_PROMPT, chainComplete, checkCell, classify, cleanup, cli, hookEvents, parseCommonArgs, prepareStore, runAgent, toolUses, transcriptFor, type AgentRun, type CellReport, type CommonArgs } from "./common.js";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const TOOL_ROOT = resolve(here, "..", "..", "..");
-const CLI = join(TOOL_ROOT, "dist", "src", "cli.js");
-const BIN = join(TOOL_ROOT, "bin");
-const TOY = join(TOOL_ROOT, "examples", "toy-store");
-
-interface Args {
-  harness: "claude" | "codex";
-  runs: number;
-  budget: number;
-  smoke: boolean;
-  keep: boolean;
-  settingsFlag: boolean;
-}
-
-function parseArgs(): Args {
-  const a = process.argv.slice(2);
-  const get = (flag: string, dflt: number) => {
-    const i = a.indexOf(flag);
-    return i >= 0 ? Number(a[i + 1]) : dflt;
-  };
-  const hi = a.indexOf("--harness");
-  const harness = hi >= 0 && a[hi + 1] === "codex" ? "codex" : "claude";
-  return { harness, runs: get("--runs", 1), budget: get("--budget", 10), smoke: a.includes("--smoke"), keep: a.includes("--keep"), settingsFlag: a.includes("--settings-flag") };
-}
-
-function cli(store: string, args: string[], json = true): { status: number; stdout: string; json: unknown } {
-  const r = spawnSync(process.execPath, ["--disable-warning=ExperimentalWarning", CLI, "--store", store, ...(json ? ["--json"] : []), ...args], { encoding: "utf8" });
-  let parsed: unknown = null;
-  if (json) {
-    try {
-      parsed = JSON.parse(r.stdout);
-    } catch {
-      parsed = null;
-    }
-  }
-  return { status: r.status ?? -1, stdout: r.stdout, json: parsed };
-}
-
-function prepareStore(): string {
-  const dir = mkdtempSync(join(tmpdir(), "autosoft-e2e-"));
-  cpSync(TOY, dir, { recursive: true });
-  rmSync(join(dir, ".autosoft"), { recursive: true, force: true });
-  const inst = cli(dir, ["hooks", "install"]);
-  if (inst.status !== 0) throw new Error(`hooks install failed: ${inst.stdout}`);
-  execFileSync("git", ["-C", dir, "init", "-q", "-b", "main"]);
-  execFileSync("git", ["-C", dir, "add", "-A"]);
-  execFileSync("git", ["-C", dir, "commit", "-q", "-m", "store: toy fixture"]);
-  return dir;
-}
-
-function claudeEnv(): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env, PATH: `${BIN}${delimiter}${process.env["PATH"] ?? ""}` };
-  for (const k of Object.keys(env)) if (k === "CLAUDECODE" || k.startsWith("CLAUDE_CODE_")) delete env[k];
-  return env;
-}
-
-interface AgentRun {
-  status: number;
-  stdout: string;
-  stderr: string;
-  result: Record<string, unknown> | null;
-  /** Native session id as the harness reports it (Claude: the --session-id we passed; Codex: thread_id from the event stream). */
-  sessionId: string;
-}
-
-function runAgent(store: string, prompt: string, sessionId: string, args: Args, budget: number): AgentRun {
-  if (args.harness === "codex") return runCodex(store, prompt, args);
-  const r = runClaude(store, prompt, sessionId, args, budget);
-  return { ...r, sessionId };
-}
-
-/** Codex headless: hooks need the bypass flag because a fresh temp store has no persisted hook trust. */
-function runCodex(store: string, prompt: string, args: Args): AgentRun {
-  const lastMsg = join(store, ".autosoft", "codex-last-message.txt");
-  const cmd = ["exec", "-C", store, "--json", "--dangerously-bypass-approvals-and-sandbox", "--dangerously-bypass-hook-trust", "--skip-git-repo-check", "-o", lastMsg, prompt];
-  const r = spawnSync("codex", cmd, { cwd: store, encoding: "utf8", env: claudeEnv(), timeout: 25 * 60 * 1000, maxBuffer: 256 * 1024 * 1024 });
-  let threadId = "";
-  for (const line of r.stdout.split("\n")) {
-    try {
-      const ev = JSON.parse(line) as { type?: string; thread_id?: string };
-      if (ev.type === "thread.started" && typeof ev.thread_id === "string") threadId = ev.thread_id;
-    } catch {
-      // not an event line
-    }
-  }
-  const final = existsSync(lastMsg) ? readFileSync(lastMsg, "utf8") : "";
-  return { status: r.status ?? -1, stdout: r.stdout, stderr: r.stderr, result: { type: "result", result: final, thread_id: threadId }, sessionId: threadId };
-}
-
-function codexRolloutPath(threadId: string): string | null {
-  const base = join(homedir(), ".codex", "sessions");
-  if (!existsSync(base)) return null;
-  const walk = (dir: string): string | null => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        const found = walk(p);
-        if (found) return found;
-      } else if (entry.name.endsWith(`${threadId}.jsonl`)) return p;
-    }
-    return null;
-  };
-  return walk(base);
-}
-
-function runClaude(store: string, prompt: string, sessionId: string, args: Args, budget: number): { status: number; stdout: string; stderr: string; result: Record<string, unknown> | null } {
-  const cmd = ["-p", prompt, "--session-id", sessionId, "--output-format", "json", "--dangerously-skip-permissions", "--max-budget-usd", String(budget)];
-  if (args.settingsFlag) cmd.push("--settings", join(store, ".claude", "settings.json"));
-  const r = spawnSync("claude", cmd, { cwd: store, encoding: "utf8", env: claudeEnv(), timeout: 25 * 60 * 1000, maxBuffer: 256 * 1024 * 1024 });
-  let result: Record<string, unknown> | null = null;
-  try {
-    result = JSON.parse(r.stdout) as Record<string, unknown>;
-  } catch {
-    result = null;
-  }
-  return { status: r.status ?? -1, stdout: r.stdout, stderr: r.stderr, result };
-}
-
-function hookEvents(store: string): { events: Record<string, number>; errors: string[]; denies: number; nudges: number } {
-  const p = join(store, ".autosoft", "hooks.log");
-  const events: Record<string, number> = {};
-  const errors: string[] = [];
-  let denies = 0;
-  let nudges = 0;
-  if (!existsSync(p)) return { events, errors, denies, nudges };
-  for (const line of readFileSync(p, "utf8").split("\n")) {
-    if (!line.trim()) continue;
-    const e = JSON.parse(line) as { event?: string; error?: string; decision?: string };
-    if (e.event) events[e.event] = (events[e.event] ?? 0) + 1;
-    if (e.error) errors.push(`${e.event}: ${e.error}`);
-    if (e.decision === "deny") denies++;
-    if (e.decision === "allow+nudge") nudges++;
-  }
-  return { events, errors, denies, nudges };
-}
-
-interface ToolUse {
-  name: string;
-  input: Record<string, unknown>;
-}
-
-function toolUses(transcript: string): ToolUse[] {
-  const out: ToolUse[] = [];
-  for (const line of readFileSync(transcript, "utf8").split("\n")) {
-    if (!line.trim()) continue;
-    let rec: { type?: string; isSidechain?: boolean; message?: { content?: unknown }; payload?: Record<string, unknown> };
-    try {
-      rec = JSON.parse(line) as typeof rec;
-    } catch {
-      continue;
-    }
-    // Claude Code transcript
-    if (rec.type === "assistant" && !rec.isSidechain && Array.isArray(rec.message?.content)) {
-      for (const block of rec.message!.content as { type?: string; name?: string; input?: Record<string, unknown> }[]) {
-        if (block.type === "tool_use" && block.name) out.push({ name: block.name, input: block.input ?? {} });
-      }
-      continue;
-    }
-    // Codex rollout: custom_tool_call(name, input) | function_call(name, arguments) | local_shell_call(action.command)
-    if (rec.type === "response_item" && rec.payload) {
-      const p = rec.payload;
-      if (p["type"] === "custom_tool_call" && typeof p["name"] === "string") out.push({ name: p["name"] as string, input: typeof p["input"] === "string" ? { command: p["input"] } : (p["input"] as Record<string, unknown>) ?? {} });
-      else if (p["type"] === "function_call" && typeof p["name"] === "string") {
-        let argsObj: Record<string, unknown> = {};
-        try {
-          argsObj = JSON.parse(String(p["arguments"] ?? "{}")) as Record<string, unknown>;
-        } catch {
-          argsObj = { command: String(p["arguments"] ?? "") };
-        }
-        out.push({ name: p["name"] as string, input: argsObj });
-      } else if (p["type"] === "local_shell_call") {
-        const action = p["action"] as { command?: string[] } | undefined;
-        out.push({ name: "shell", input: { command: (action?.command ?? []).join(" ") } });
-      }
-    }
-  }
-  return out;
-}
-
-function classify(t: ToolUse): "cli" | "knowledge_read" | "knowledge_write" | "other" {
-  const paths = ["file_path", "path", "pattern", "notebook_path"].map((k) => t.input[k]).filter((v): v is string => typeof v === "string");
-  const inKnowledge = paths.some((p) => /(^|\/)knowledge\//.test(p));
-  if (["Bash", "shell", "exec_command", "local_shell", "container.exec", "bash"].includes(t.name)) {
-    const raw = t.input["command"] ?? t.input["cmd"];
-    const cmd = Array.isArray(raw) ? raw.map(String).join(" ") : String(raw ?? "");
-    if (/(^|[\s;&|(])autosoft(\s|$)|cli\.js/.test(cmd)) return "cli";
-    if (/knowledge\//.test(cmd) && /\b(cat|sed|tee|echo|cp|mv|rm|>)\b/.test(cmd)) return /\b(cat|sed -n|head|tail|grep|ls)\b/.test(cmd) && !/>/.test(cmd) ? "knowledge_read" : "knowledge_write";
-    return "other";
-  }
-  if (inKnowledge && ["Read", "Grep", "Glob", "LS"].includes(t.name)) return "knowledge_read";
-  if (inKnowledge && ["Edit", "Write", "MultiEdit", "NotebookEdit"].includes(t.name)) return "knowledge_write";
-  if (t.name === "apply_patch") {
-    const patch = String(t.input["patch"] ?? t.input["input"] ?? "");
-    if (/\*\*\* (Add|Update|Delete) File: knowledge\//.test(patch)) return "knowledge_write";
-  }
-  return "other";
-}
-
-const EXPECTED: Record<string, number | RegExp> = {
+export const EXPECTED: Record<string, number | RegExp> = {
   "P02/n_randomized_total": 84,
   "P02/n_analyzed_total": 80,
   "P02/primary_outcome": /6[- ]?minute walk/i,
@@ -226,54 +21,20 @@ const EXPECTED: Record<string, number | RegExp> = {
   "P03/n_analyzed_total": 148,
   "P03/primary_outcome": /pain intensity/i,
 };
+/** P03 reports a prose/table disagreement on purpose; the table-first value is expected but not required. */
 const SOFT_VALUES = new Set(["P03/n_analyzed_total"]);
-
-interface WhyNodeJson {
-  id: string;
-  type: string;
-  kind?: string;
-  value?: unknown;
-  locator?: { artifact?: string | null; path?: string | null };
-  children: { rel: string; node: WhyNodeJson }[];
-}
-
-interface CellReport {
-  cell: string;
-  decision: string | null;
-  data: boolean;
-  locator: boolean;
-  warrant: boolean;
-  caused_by_session: boolean;
-  value: unknown;
-  value_ok: boolean;
-  soft: boolean;
-}
-
-function checkCell(store: string, cell: string, sessionNode: string): CellReport {
-  const r = cli(store, ["why", cell]);
-  const tree = r.status === 0 ? (r.json as WhyNodeJson) : null;
-  const report: CellReport = { cell, decision: tree?.id ?? null, data: false, locator: false, warrant: false, caused_by_session: false, value: tree?.value, value_ok: false, soft: SOFT_VALUES.has(cell) };
-  if (!tree) return report;
-  const data = tree.children.filter((c) => c.rel === "data").map((c) => c.node);
-  report.data = data.length > 0;
-  report.locator = data.some((ev) => ev.children.some((c) => c.rel === "locator" && c.node.type === "artifact") || (typeof ev.locator?.path === "string" && existsSync(join(store, ev.locator.path))));
-  report.warrant = tree.children.some((c) => c.rel === "warrant" && c.node.kind === "criterion");
-  report.caused_by_session = tree.children.some((c) => c.rel === "caused_by" && c.node.type === "turn" && c.node.id.startsWith(sessionNode.replace(/^ses_/, "turn_") + "_"));
-  const expected = EXPECTED[cell];
-  if (expected instanceof RegExp) report.value_ok = typeof tree.value === "string" && expected.test(tree.value);
-  else report.value_ok = Number(tree.value) === expected;
-  return report;
-}
 
 interface RunReport {
   run: number;
   store: string;
   session: string;
-  claude_exit: number;
-  claude_cost_usd: unknown;
-  claude_turns: unknown;
+  harness: string;
+  agent_exit: number;
+  seconds: number;
+  cost_usd: unknown;
+  turns: unknown;
   validate_ok: boolean;
-  cells: CellReport[];
+  cells: (CellReport & { soft: boolean })[];
   index_idempotent: boolean;
   affected_exact: boolean;
   affected_detail: { expected: string[]; actual: string[] };
@@ -288,22 +49,17 @@ interface RunReport {
   soft_notes: string[];
 }
 
-function evaluateRun(store: string, sessionId: string, claude: AgentRun, run: number, harness: "claude" | "codex"): RunReport {
-  const sessionNode = sessionIdFor(harness, sessionId);
+export function evaluateRun(store: string, sessionId: string, agent: AgentRun, run: number, args: CommonArgs): RunReport {
+  const sessionNode = sessionIdFor(args.harness, sessionId);
   const validate = cli(store, ["validate"]);
-  const cells = Object.keys(EXPECTED).map((c) => checkCell(store, c, sessionNode));
+  const cells = Object.entries(EXPECTED).map(([cell, expected]) => ({ ...checkCell(store, cell, sessionNode, expected), soft: SOFT_VALUES.has(cell) }));
 
   const d1 = sha256(cli(store, ["index", "--dump"], false).stdout);
   rmSync(join(store, ".autosoft", "index.sqlite"), { force: true });
   const d2 = sha256(cli(store, ["index", "--dump"], false).stdout);
 
-  // Transcript and hooks before mutating the criterion.
   const hooks = hookEvents(store);
-  const loaded = loadStore(store);
-  const sessionRec = loaded.nodes.get(sessionNode);
-  let transcript: string | null = sessionRec && sessionRec.type === "session" ? sessionRec.log_path : null;
-  if (!transcript || !existsSync(transcript)) transcript = harness === "codex" ? codexRolloutPath(sessionId) : claudeLogPath(sessionId, store);
-  if (!transcript || !existsSync(transcript)) transcript = null;
+  const transcript = transcriptFor(store, args.harness, sessionId);
   let firstAccess: string | null = null;
   let reads = 0;
   let writes = 0;
@@ -317,7 +73,8 @@ function evaluateRun(store: string, sessionId: string, claude: AgentRun, run: nu
     }
   }
 
-  // Criterion change: every n_analyzed_total annotation (P01 fixture + the agent's P02, P03) must be affected, nothing else among annotations.
+  // Criterion change: every n_analyzed_total annotation must be affected, and nothing else among annotations.
+  const loaded = loadStore(store);
   const expectedAffected = [...loaded.nodes.values()]
     .filter((n) => n.type === "decision" && n.kind === "annotation" && n.target?.field === "n_analyzed_total" && n.status !== "superseded" && n.status !== "retired")
     .map((n) => n.id)
@@ -328,21 +85,25 @@ function evaluateRun(store: string, sessionId: string, claude: AgentRun, run: nu
   const actualAffected = aff.map((r) => r.id).filter((id) => annotationIds.has(id)).sort();
   const affectedExact = JSON.stringify(actualAffected) === JSON.stringify(expectedAffected) && expectedAffected.length === 3;
 
-  const hooksOk = (hooks.events["SessionStart"] ?? 0) >= 1 && (hooks.events["UserPromptSubmit"] ?? 0) >= 1 && (hooks.events["Stop"] ?? 0) >= 1 && hooks.errors.length === 0;
-  const hardCells = cells.every((c) => c.decision && c.data && c.locator && c.warrant && c.caused_by_session && (c.soft || c.value_ok));
+  const required = args.harness === "codex" ? ["SessionStart", "UserPromptSubmit", "Stop"] : ["SessionStart", "UserPromptSubmit", "Stop"];
+  const hooksOk = required.every((e) => (hooks.events[e] ?? 0) >= 1) && hooks.errors.length === 0;
+  const hardCells = cells.every((c) => chainComplete(c) && (c.soft || c.value_ok));
   const firstViaCli = firstAccess?.startsWith("cli:") ?? false;
   const softNotes: string[] = [];
   for (const c of cells) if (c.soft && !c.value_ok) softNotes.push(`${c.cell}: value ${JSON.stringify(c.value)} (hard case, expected ${String(EXPECTED[c.cell])})`);
   if (reads) softNotes.push(`${reads} direct read(s) of knowledge/ despite the nudge`);
   if (hooks.denies) softNotes.push(`${hooks.denies} direct write(s) to knowledge/ were denied and redirected`);
+  if (!transcript) softNotes.push("transcript not found: first-access check could not run");
 
   return {
     run,
     store,
     session: sessionNode,
-    claude_exit: claude.status,
-    claude_cost_usd: claude.result?.["total_cost_usd"],
-    claude_turns: claude.result?.["num_turns"],
+    harness: args.harness,
+    agent_exit: agent.status,
+    seconds: agent.seconds,
+    cost_usd: agent.result?.["total_cost_usd"],
+    turns: agent.result?.["num_turns"],
     validate_ok: validate.status === 0,
     cells,
     index_idempotent: d1 === d2,
@@ -355,56 +116,49 @@ function evaluateRun(store: string, sessionId: string, claude: AgentRun, run: nu
     knowledge_reads: reads,
     knowledge_writes: writes,
     transcript,
-    hard_pass: claude.status === 0 && validate.status === 0 && hardCells && d1 === d2 && affectedExact && hooksOk && firstViaCli,
+    hard_pass: agent.status === 0 && validate.status === 0 && hardCells && d1 === d2 && affectedExact && hooksOk && firstViaCli,
     soft_notes: softNotes,
   };
 }
 
-const TASK_PROMPT = [
-  "Annotate papers P02 and P03 (corpus/P02.md, corpus/P03.md) for the three output fields defined in autosoft.yaml:",
-  "n_randomized_total, n_analyzed_total, primary_outcome.",
-  "Follow the autosoft skill in .claude/skills/autosoft/SKILL.md: consult precedents and criteria first, open an episode per paper,",
-  "capture verbatim evidence with its artifact locator, record each value as a decision citing its evidence (data) and the criterion (warrant),",
-  "close the episodes, then run `autosoft validate` and finish by listing the decision ids you created.",
-].join(" ");
-
 function main(): void {
-  const args = parseArgs();
-  const which = spawnSync("sh", ["-c", `command -v ${args.harness}`], { encoding: "utf8" });
-  if (which.status !== 0) throw new Error(`${args.harness} CLI not found on PATH`);
-  if (!existsSync(CLI)) throw new Error("build first: npm run build");
+  const parsed = parseCommonArgs(process.argv.slice(2));
+  const args: CommonArgs = parsed;
+  const runsIdx = parsed.rest.indexOf("--runs");
+  const runs = runsIdx >= 0 ? Number(parsed.rest[runsIdx + 1]) : 1;
+  const smoke = parsed.rest.includes("--smoke");
+  if (!existsSync(join(process.cwd(), "dist")) && !existsSync(new URL(".", import.meta.url).pathname)) throw new Error("build first: npm run build");
 
-  if (args.smoke) {
+  if (smoke) {
     const store = prepareStore();
     const sid = randomUUID();
-    const r = runAgent(store, "Reply with the single word OK and do nothing else.", sid, args, 1);
+    const r = runAgent(store, "Reply with the single word OK and do nothing else.", sid, { ...args, budget: 1 });
     const hooks = hookEvents(store);
     const sessionExists = existsSync(join(store, "knowledge", "sessions", `${sessionIdFor(args.harness, r.sessionId || sid)}.md`));
-    console.log(JSON.stringify({ store, claude_exit: r.status, result_type: r.result?.["type"], hooks, session_node_written: sessionExists, stderr: r.stderr.slice(0, 500) }, null, 2));
-    if (!args.keep) rmSync(store, { recursive: true, force: true });
+    console.log(JSON.stringify({ store, harness: args.harness, agent_exit: r.status, seconds: r.seconds, hooks, session_node_written: sessionExists, stderr: r.stderr.slice(0, 600) }, null, 2));
+    cleanup(store, args.keep);
     process.exitCode = hooks.events["SessionStart"] && hooks.events["UserPromptSubmit"] && hooks.events["Stop"] ? 0 : 1;
     return;
   }
 
   const reports: RunReport[] = [];
-  for (let i = 1; i <= args.runs; i++) {
+  for (let i = 1; i <= runs; i++) {
     const store = prepareStore();
     const sid = randomUUID();
-    console.error(`[run ${i}] store ${store} session ${sid}`);
-    const started = Date.now();
-    const claude = runAgent(store, TASK_PROMPT, sid, args, args.budget);
-    console.error(`[run ${i}] ${args.harness} exited ${claude.status} after ${Math.round((Date.now() - started) / 1000)}s${claude.stderr ? `; stderr: ${claude.stderr.slice(0, 300)}` : ""}`);
-    const report = evaluateRun(store, claude.sessionId || sid, claude, i, args.harness);
+    console.error(`[run ${i}] store ${store} (${args.harness}${args.model ? `, ${args.model}` : ""})`);
+    const agent = runAgent(store, TASK_PROMPT, sid, args);
+    console.error(`[run ${i}] ${args.harness} exited ${agent.status} after ${agent.seconds}s${agent.stderr.trim() ? `; stderr: ${agent.stderr.trim().slice(0, 300)}` : ""}`);
+    const report = evaluateRun(store, agent.sessionId || sid, agent, i, args);
     reports.push(report);
     console.log(JSON.stringify(report, null, 2));
-    if (!args.keep) rmSync(store, { recursive: true, force: true });
+    cleanup(store, args.keep);
   }
   const passed = reports.filter((r) => r.hard_pass).length;
   console.log(`\nM1 live test (${args.harness}): ${passed}/${reports.length} runs passed all hard assertions`);
   for (const r of reports) {
-    const cellsOk = r.cells.filter((c) => c.decision && c.data && c.locator && c.warrant && c.caused_by_session).length;
-    const valuesOk = r.cells.filter((c) => c.value_ok).length;
-    console.log(`  run ${r.run}: ${r.hard_pass ? "PASS" : "FAIL"} validate=${r.validate_ok} chains=${cellsOk}/6 values=${valuesOk}/6 idempotent=${r.index_idempotent} affected=${r.affected_exact} hooks=${r.hooks_ok} firstViaCli=${r.first_access_via_cli} reads=${r.knowledge_reads} denies=${r.hooks.denies} cost=${String(r.claude_cost_usd)}`);
+    const chains = r.cells.filter(chainComplete).length;
+    const values = r.cells.filter((c) => c.value_ok).length;
+    console.log(`  run ${r.run}: ${r.hard_pass ? "PASS" : "FAIL"} ${r.seconds}s validate=${r.validate_ok} chains=${chains}/6 values=${values}/6 idempotent=${r.index_idempotent} affected=${r.affected_exact} hooks=${r.hooks_ok} firstViaCli=${r.first_access_via_cli} reads=${r.knowledge_reads} denies=${r.hooks.denies} cost=${String(r.cost_usd)}`);
     for (const n of r.soft_notes) console.log(`      note: ${n}`);
   }
   process.exitCode = passed === reports.length ? 0 : 1;

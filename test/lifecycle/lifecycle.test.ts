@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { test } from "node:test";
 import { runCli, tempToy } from "../helpers.js";
 
@@ -113,6 +114,23 @@ test("the Stop hook marks the decisions listed in the agent's final message as s
     assert.equal(stop.status, 0, stop.stderr);
     const dec = runCli(["--json", "get", a.dec], { cwd: dir }).json as { shown_at: string[] };
     assert.deepEqual(dec.shown_at, [TURN]);
+  } finally {
+    cleanup();
+  }
+});
+
+test("render writes a self-contained review page that names every decision and the KPI tiles", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const r = runCli(["--json", "render"], { cwd: dir });
+    assert.equal(r.status, 0, r.stdout);
+    const html = readFileSync(join(dir, "review.html"), "utf8");
+    assert.match(html, /<!doctype html>/i);
+    assert.match(html, /resolved without an agent/);
+    assert.match(html, /Toy trial annotation store/);
+    for (const id of ["dec_p01nanal0000", "dec_p01nrand0000", "dec_p01outcm0000", "dec_crit0analyz1", "proc_tablecount01", "q_figonly00001"]) assert.ok(html.includes(id), `${id} missing from review page`);
+    assert.ok(!/<script src=/.test(html), "no external scripts");
+    assert.match(html, /turn_claude_toyseed0001_0002/);
   } finally {
     cleanup();
   }
