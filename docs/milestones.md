@@ -49,3 +49,23 @@ Codex (`--harness codex --model gpt-5.6-sol`):
 | C | 96 s | 3 catene complete e 3 valori corretti; procedura riusata; procedure 1 → 1; quota senza agente 0,50 |
 
 Codex come agente di lavoro: la CLI installata (0.150.1) rifiuta il modello configurato `gpt-6-astra`; con `--model gpt-5.6-sol` gli hook di progetto scattano (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop) e il compito di M1 (`npm run e2e:m1 -- --harness codex --model gpt-5.6-sol --runs 3`) è passato **3 run su 3**: store valido, 6 catene complete e 6 valori corretti per run, `affected` esatto, primo accesso allo store via CLI, zero letture dirette, zero scritture negate. Durate 143, 243 e 131 secondi. Codex esegue ogni passo come programma JavaScript con più comandi shell dentro; gli hook ricevono comunque un evento per singolo comando.
+
+## M3 — Delega simulata, branching, passaggio di consegne
+
+**Parti deterministiche chiuse il 2026-10-16; prova di passaggio dal vivo superata sui punti sostanziali, delega rieseguita dopo una correzione (vedi sotto).**
+
+Test deterministici: 44 verdi, di cui per M3: `export` con manifest e `check` (integrità rilevata a un byte di differenza, export con e senza storia, rifiuto di uno store con modifiche non committate), rami per padre (worktree, rebase all'apertura, merge additivo, conflitto su una decisione rifiutato con uscita 4 e main intatto, rebase in conflitto rifiutato con uscita 3), `delegate` con runner stub (lavoro del figlio sul ramo del padre, evidenza di esecuzione e episodio con figlio remoto nel padre), `ask` con stub, `gate` con snapshot del contratto (44 comandi).
+
+Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in directory pulita, modello `gpt-5.6-sol`):
+
+| Passo | Esito |
+|---|---|
+| Claude Code annota P02 e P03 nello store di origine | store valido, 144 s |
+| `autosoft export` → copia pulita con manifest; `autosoft check` | ok: 53 record, 0 discrepanze, storia inclusa |
+| Codex spiega tre annotazioni tramite `autosoft ask` | **3/3**: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
+| Codex registra il cambio di criterio | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
+| Codex annota P04 nella copia ereditata | 3 catene complete e 3 valori corretti; procedura trusted riusata; applica la nuova regola notando che P04 non riporta la popolazione per protocollo |
+| Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile) e rieseguita |
+| Domande rivolte al ricercatore | 0 rilevate dall'euristica; le risposte complete sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano |
+
+Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.autosoft/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
