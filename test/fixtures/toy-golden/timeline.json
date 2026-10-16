@@ -1,0 +1,145 @@
+[
+  {
+    "session": "ses_claude_toyseed0001",
+    "harness": "claude",
+    "started": "2026-10-01T09:00:00.000Z",
+    "turns": [
+      {
+        "turn": "turn_claude_toyseed0001_0001",
+        "index": 1,
+        "timestamp": "2026-10-01T09:00:00.000Z",
+        "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+        "caused": [
+          {
+            "id": "art_p01a7k3m9q2x",
+            "type": "artifact",
+            "title": "P01 report (markdown)",
+            "status": ""
+          },
+          {
+            "id": "art_p02b8n4p0r5y",
+            "type": "artifact",
+            "title": "P02 report (markdown)",
+            "status": ""
+          },
+          {
+            "id": "art_p03c9m5q1s6z",
+            "type": "artifact",
+            "title": "P03 report (markdown)",
+            "status": ""
+          },
+          {
+            "id": "dec_choice0tabl4",
+            "type": "decision",
+            "title": "Choice: tables are the source of counts when prose and tables disagree",
+            "status": "active"
+          },
+          {
+            "id": "dec_crit0outcom3",
+            "type": "decision",
+            "title": "Criterion: primary outcome is the prespecified measure as named",
+            "status": "active"
+          },
+          {
+            "id": "dec_crit0random2",
+            "type": "decision",
+            "title": "Criterion: randomised total is the sum of randomised per arm",
+            "status": "active"
+          },
+          {
+            "id": "dec_p01nanal0000",
+            "type": "decision",
+            "title": "P01 n_analyzed_total",
+            "status": "active"
+          },
+          {
+            "id": "dec_p01nrand0000",
+            "type": "decision",
+            "title": "P01 n_randomized_total",
+            "status": "active"
+          },
+          {
+            "id": "dec_p01outcm0000",
+            "type": "decision",
+            "title": "P01 primary_outcome",
+            "status": "active"
+          },
+          {
+            "id": "ep_p01nanal0000",
+            "type": "episode",
+            "title": "P01 n_analyzed_total",
+            "status": "success"
+          },
+          {
+            "id": "ep_p01nrand0000",
+            "type": "episode",
+            "title": "P01 n_randomized_total",
+            "status": "success"
+          },
+          {
+            "id": "ep_p01outcm0000",
+            "type": "episode",
+            "title": "P01 primary_outcome",
+            "status": "success"
+          },
+          {
+            "id": "ep_p01root00000",
+            "type": "episode",
+            "title": "Annotate P01",
+            "status": "success"
+          },
+          {
+            "id": "ev_p01execrand0",
+            "type": "evidence",
+            "title": "table_counts output for P01 Randomised",
+            "status": ""
+          },
+          {
+            "id": "ev_p01outcome00",
+            "type": "evidence",
+            "title": "P01 primary outcome sentence",
+            "status": ""
+          },
+          {
+            "id": "ev_p01table1000",
+            "type": "evidence",
+            "title": "P01 Table 1 participant flow",
+            "status": ""
+          },
+          {
+            "id": "proc_tablecount01",
+            "type": "procedure",
+            "title": "Sum a column of the participant-flow table",
+            "status": "provisional"
+          },
+          {
+            "id": "q_ittvspp00001",
+            "type": "question",
+            "title": "Which analysed population counts when both ITT and per-protocol are reported?",
+            "status": "answered"
+          }
+        ]
+      },
+      {
+        "turn": "turn_claude_toyseed0001_0002",
+        "index": 2,
+        "timestamp": "2026-10-01T09:05:00.000Z",
+        "prompt": "When a paper reports both intention-to-treat and per-protocol analysed counts, count the intention-to-treat population.",
+        "caused": [
+          {
+            "id": "dec_crit0analyz1",
+            "type": "decision",
+            "title": "Criterion: analysed population is the ITT population",
+            "status": "active"
+          },
+          {
+            "id": "q_figonly00001",
+            "type": "question",
+            "title": "How should counts be recorded when they appear only in a figure?",
+            "status": "open"
+          }
+        ]
+      }
+    ]
+  }
+]

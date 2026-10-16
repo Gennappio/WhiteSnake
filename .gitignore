@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.autosoft/
+*.sqlite
+*.sqlite-journal
+.DS_Store
+/tmp/

@@ -1,0 +1,32 @@
+{
+  "open_questions": [
+    {
+      "id": "q_figonly00001",
+      "type": "question",
+      "status": "open",
+      "kind": "",
+      "title": "How should counts be recorded when they appear only in a figure?",
+      "created": "2026-10-01T09:20:00.000Z",
+      "caused_by": "turn_claude_toyseed0001_0002"
+    }
+  ],
+  "proposed_decisions": [],
+  "needs_review": [],
+  "provisional_procedures": [
+    {
+      "id": "proc_tablecount01",
+      "type": "procedure",
+      "status": "provisional",
+      "kind": "code",
+      "title": "Sum a column of the participant-flow table",
+      "created": "2026-10-01T09:20:00.000Z",
+      "caused_by": "turn_claude_toyseed0001_0001"
+    }
+  ],
+  "suspended_procedures": [],
+  "open_episodes": [],
+  "resolutions": {
+    "agent": 2,
+    "code": 2
+  }
+}

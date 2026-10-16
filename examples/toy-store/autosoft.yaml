@@ -1,0 +1,20 @@
+id: toy
+name: Toy trial annotation store
+schema_version: 1
+mandate: Annotate the synthetic trial reports in corpus/ with the fields in output.fields. Count the intention-to-treat analysed population. Cite the table or sentence each value comes from.
+harness: claude
+model: null
+corpus:
+  - corpus
+output:
+  unit: paper
+  fields:
+    - name: n_randomized_total
+      type: integer
+      description: Participants randomised, summed over arms
+    - name: n_analyzed_total
+      type: integer
+      description: Participants analysed for the primary outcome (ITT population), summed over arms
+    - name: primary_outcome
+      type: string
+      description: Prespecified primary outcome measure, as named by the paper

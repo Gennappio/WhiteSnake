@@ -1,0 +1,36 @@
+{
+  "name": "autosoft",
+  "version": "0.1.0",
+  "description": "Transferable agentic research processes: a knowledge store with provenance and procedures promoted from experience, for Claude Code and Codex",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "bin": {
+    "autosoft": "dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "skill",
+    "hooks",
+    "schemas"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --disable-warning=ExperimentalWarning --test --test-reporter=spec \"dist/test/**/*.test.js\"",
+    "e2e:m1": "npm run build && node --disable-warning=ExperimentalWarning dist/src/e2e/m1.js",
+    "test:only": "node --disable-warning=ExperimentalWarning --test --test-reporter=spec \"dist/test/**/*.test.js\"",
+    "make-toy": "npm run build && node --disable-warning=ExperimentalWarning dist/src/tools/make-toy.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "yaml": "^2.8.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

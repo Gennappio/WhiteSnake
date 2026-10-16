@@ -1,0 +1,256 @@
+{
+  "id": "dec_p01nrand0000",
+  "type": "decision",
+  "title": "P01 n_randomized_total",
+  "children": [
+    {
+      "rel": "backing",
+      "node": {
+        "id": "dec_choice0tabl4",
+        "type": "decision",
+        "title": "Choice: tables are the source of counts when prose and tables disagree",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          }
+        ],
+        "status": "active",
+        "kind": "choice",
+        "claim": "When the prose and a participant-flow table disagree on counts, the table is used and the disagreement is recorded as evidence."
+      }
+    },
+    {
+      "rel": "caused_by",
+      "node": {
+        "id": "turn_claude_toyseed0001_0001",
+        "type": "turn",
+        "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+        "children": [
+          {
+            "rel": "session",
+            "node": {
+              "id": "ses_claude_toyseed0001",
+              "type": "session",
+              "title": "Claude Code session toyseed0",
+              "children": []
+            }
+          }
+        ],
+        "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from."
+      }
+    },
+    {
+      "rel": "data",
+      "node": {
+        "id": "ev_p01execrand0",
+        "type": "evidence",
+        "title": "table_counts output for P01 Randomised",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "locator",
+            "node": {
+              "id": "art_p01a7k3m9q2x",
+              "type": "artifact",
+              "title": "P01 report (markdown)",
+              "children": [
+                {
+                  "rel": "caused_by",
+                  "node": {
+                    "id": "turn_claude_toyseed0001_0001",
+                    "type": "turn",
+                    "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+                    "children": [],
+                    "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+                    "shallow": true
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "rel": "produced_by",
+            "node": {
+              "id": "ep_p01nrand0000",
+              "type": "episode",
+              "title": "P01 n_randomized_total",
+              "children": [],
+              "status": "success",
+              "kind": "code",
+              "shallow": true
+            }
+          }
+        ],
+        "kind": "execution",
+        "locator": {
+          "artifact": "art_p01a7k3m9q2x",
+          "path": null,
+          "page": null,
+          "table": null,
+          "section": "procedures/table_counts/run.py corpus/P01.md Randomised",
+          "span": null
+        },
+        "excerpt": "{\"column\": \"Randomised\", \"rows\": [[\"Early mobilisation\", 60], [\"Usual care\", 60]], \"total\": 120}"
+      }
+    },
+    {
+      "rel": "data",
+      "node": {
+        "id": "ev_p01table1000",
+        "type": "evidence",
+        "title": "P01 Table 1 participant flow",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "locator",
+            "node": {
+              "id": "art_p01a7k3m9q2x",
+              "type": "artifact",
+              "title": "P01 report (markdown)",
+              "children": [],
+              "truncated": true
+            }
+          },
+          {
+            "rel": "produced_by",
+            "node": {
+              "id": "ep_p01nrand0000",
+              "type": "episode",
+              "title": "P01 n_randomized_total",
+              "children": [],
+              "status": "success",
+              "kind": "code",
+              "shallow": true
+            }
+          }
+        ],
+        "kind": "excerpt",
+        "locator": {
+          "artifact": "art_p01a7k3m9q2x",
+          "path": null,
+          "page": null,
+          "table": "Table 1",
+          "section": "Results",
+          "span": null
+        },
+        "excerpt": "| Arm | Randomised | Analysed (ITT) | |---|---|---| | Early mobilisation | 60 | 58 | | Usual care | 60 | 57 | | Total | 120 | 115 |"
+      }
+    },
+    {
+      "rel": "produced_by",
+      "node": {
+        "id": "ep_p01nrand0000",
+        "type": "episode",
+        "title": "P01 n_randomized_total",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "parent",
+            "node": {
+              "id": "ep_p01root00000",
+              "type": "episode",
+              "title": "Annotate P01",
+              "children": [],
+              "status": "success",
+              "kind": "agent",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "uses",
+            "node": {
+              "id": "dec_crit0random2",
+              "type": "decision",
+              "title": "Criterion: randomised total is the sum of randomised per arm",
+              "children": [],
+              "status": "active",
+              "kind": "criterion",
+              "claim": "n_randomized_total is the number of participants randomised, summed over arms, taken from the participant flow table when present.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "uses",
+            "node": {
+              "id": "proc_tablecount01",
+              "type": "procedure",
+              "title": "Sum a column of the participant-flow table",
+              "children": [],
+              "status": "provisional",
+              "kind": "code",
+              "shallow": true
+            }
+          }
+        ],
+        "status": "success",
+        "kind": "code"
+      }
+    },
+    {
+      "rel": "warrant",
+      "node": {
+        "id": "dec_crit0random2",
+        "type": "decision",
+        "title": "Criterion: randomised total is the sum of randomised per arm",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          }
+        ],
+        "status": "active",
+        "kind": "criterion",
+        "claim": "n_randomized_total is the number of participants randomised, summed over arms, taken from the participant flow table when present."
+      }
+    }
+  ],
+  "status": "active",
+  "kind": "annotation",
+  "claim": "120 participants were randomised (60 early mobilisation + 60 usual care).",
+  "value": 120
+}

@@ -1,0 +1,68 @@
+# AutoSoft: registro delle decisioni di progetto
+
+Questo documento registra le decisioni prese nelle discussioni del 15 e 16 ottobre 2026 (la prima in `docs/origine/discussion.txt`, la seconda nella sessione di pianificazione). Ogni voce riporta la decisione, il perché e le conseguenze. È il punto di partenza per chiunque erediti il progetto: lo scopo di AutoSoft è esattamente rendere trasferibile questo tipo di conoscenza, quindi queste decisioni saranno importate come primi record dello store appena il formato esiste.
+
+## A. Visione e principi
+
+1. **Si consegna un processo, non un software.** Conoscenza, decisioni, procedure e un agente che le usa. Il criterio di accettazione del progetto è la *prova di passaggio*: una persona in ambiente pulito, senza la conversazione originale, deve spiegare un'annotazione a campione, rieseguire un'analisi, cambiare un criterio e completare un caso nuovo.
+2. **Harness esistenti, nessun coding agent da zero.** Claude Code e Codex sono il motore. Un harness custom (pi o opencode) solo in una fase successiva e solo per controlli che gli harness non espongono: assemblaggio esatto del contesto, intercettazione di ogni chiamata al modello, contabilità token per sottoalbero, replay deterministico.
+3. **Nucleo indipendente da dominio e harness.** Formato dei record, validatore, indice, CLI. Adattatori sottili: una skill unica, un solo script di hook, invocazione headless. Il vocabolario del dominio vive nella skill del progetto, non nello schema.
+4. **LLM sublation.** Le procedure sono uno strato deperibile: il prossimo modello può coprire i buchi da solo. Decisioni, criteri, evidenze e provenienza sono durevoli. Quindi: granularità dei record fissa al livello della decisione; granularità delle procedure decisa dall'agente a runtime; procedure usa-e-getta; a ogni cambio di modello si verifica "serve ancora?" rieseguendo i casi di regressione con il modello da solo.
+5. **Convergenza al deterministico per riproducibilità e stabilità dell'API, non per compensare capacità future.** Ordine di risoluzione di ogni richiesta: risultato verificato in cache → codice attivo → prompt congelato → agente pertinente. KPI: frazione di episodi chiusi con risoluzione diversa da `agent`, cioè altezza della frontiera agentica nell'albero.
+6. **Ordine di costruzione guidato dalla prova di passaggio.** Prima le incertezze (l'agente consulta davvero lo store? quale granularità serve? serve delegare?), poi la macchina. Ogni fallimento della prova indica il pezzo mancante.
+
+## B. Modello della conoscenza
+
+7. **Due strutture collegate.** Un *albero frattale degli episodi* (esecuzione e delega) e un *grafo condiviso della conoscenza* (DAG). La conoscenza non si forza nell'albero: la stessa evidenza sostiene decisioni in rami diversi.
+8. **La cella** è il nodo dell'albero, identica a ogni scala: `id`, `question`, `caused_by` (turno del prompt), `resolution` (cached | code | frozen_prompt | agent), `uses`, `produces`, `children` (locali o remoti come `{store, id}`), `outcome` (success | failure | abstained | corrected), `input_hash`. Uno store figlio su un server è una cella con figli remoti: il padre vede esito e riferimenti, non gli interni.
+9. **Tipi di nodo:** `question`; `decision` in forma Toulmin (claim, data, warrant, backing, qualifier, rebuttal) con `kind` (annotation | criterion | choice) ed etichetta di fragilità (meccanica | interpretativa | per analogia | per assenza); `evidence` separata in *record* (estratto verbatim, localizzatore esatto, hash) e `artifact` (file con hash, potabile e recuperabile); `procedure` (resolution code | frozen_prompt | skill, entrypoint, uses, applicabilità, astensione, casi di regressione, episodi di origine, `qualified_on {harness, model}`, stato provisional | trusted | suspended | retired con `history` append-only); `episode`; `session` e `turn` dai log nativi; `template` (nodo compatto). **Un criterio è una decisione con `kind: criterion`**: le annotazioni lo citano come warrant.
+10. **Il database di output è derivato.** Ogni cella del database è generata da una decisione `kind: annotation` (unità, campo, valore); `autosoft export-output` ricostruisce CSV o SQLite dalle decisioni; `why <unità>/<campo>` risolve alla decisione. Nessun file binario come fonte di verità.
+11. **Archi tipizzati, scritti al momento della decisione, mai inferiti dal testo**, con una sola direzione canonica per tipo: `data/backing/rebuttal` (decisione → evidenze), `warrant` (decisione → criterio), `depends_on` (dipendente → dipendenza), `produced_by` (nodo → episodio), `uses` (episodio → procedura/decisione), `supersedes`, `answers`, `caused_by` (nodo → turno). Le viste inverse (`affected`, `supports`) le deriva l'indice. L'invalidazione è corretta solo se gli archi lo sono.
+12. **Identificativi stabili.** Nodi autoriali: prefisso di tipo + suffisso casuale, mai progressivi (due padri in parallelo non devono collidere). Sessioni e turni: derivati deterministicamente dai campi nativi, così la re-ingestione è idempotente.
+13. **Toulmin anche al meta-livello.** La promozione di una procedura è una decisione con lo stesso record: claim "P è adeguata a T", data gli episodi accettati, backing le accettazioni viste, rebuttal i casi di fallimento noti. Se B usa l'output di A, B cita la versione di A come backing: quando A cambia, B torna provvisoria. Una retrocessione è un rebuttal materializzato.
+14. **Domande critiche di Walton su trigger, non sempre.** Attivate quando manca un precedente, la confidenza è bassa o procedura e agente libero divergono. Schemi rilevanti: dal segno, dal precedente, dall'opinione dell'autore, dall'assenza (da marcare come debole). La tassonomia dei ragionamenti è solo etichetta di fragilità. **Non si costruisce RPL.**
+15. **Riempire e segnalare.** Un buco interpretativo viene riempito con una decisione provvisoria marcata "proposta", senza bloccare. Il figlio ha un mandato dichiarato (`autosoft.yaml`) per distinguere buco da fuori ambito.
+
+## C. Promozione, bocciatura, sublation
+
+16. **Le transizioni di stato sono regole della CLI calcolate da eventi registrati, non giudizi dell'agente.** L'agente registra eventi (`episode close`, `correct`, `shown`, `case add`); la CLI deriva lo stato e lo mette in cache nel frontmatter, e il validatore controlla che cache e derivazione coincidano. Creazione → provisional; N usi mostrati senza correzione → trusted; correzione → suspended e needs_review propagato lungo `depends_on` e `warrant`; eseguita in ogni episodio di un tipo → candidato hook. **Il ricercatore non tocca mai lo stato.**
+17. **Il silenzio vale come accettazione solo per risultati effettivamente mostrati.** "Mostrato" si registra in due modi: l'agente chiama `shown` quando presenta risultati (regola della skill) e l'hook Stop scansiona il messaggio finale alla ricerca di identificativi. Un risultato mostrato è accettato se il turno successivo della sessione non lo corregge o se la sessione termina senza correzione. I risultati di un figlio headless non sono mostrati finché il padre non li presenta. I provvisori vengono campionati.
+18. **Promozione = collasso di un sottoalbero** tutto deterministico in una procedura composta; la chiamata all'agente sale di un livello. Bocciatura = riespansione. Sublation = collasso nel nulla: il modello fa la cosa direttamente, la procedura si ritira, gli output restano validi.
+19. **Quattro operazioni, due potano.** Ritiro per sublation (si archivia la composizione); invalidazione per errore (needs_review transitivo, nulla cancellato); sostituzione (ricalcolo del deterministico, segnalazione dell'interpretativo); scarto di una linea di lavoro (ramo git). I tentativi falliti si comprimono in esempi negativi.
+20. **Prompt congelato** = prompt + modello con versione puntata + schema di output + contesto fisso, come chiamata diretta all'API, con casi di regressione obbligatori.
+21. **Motore di apprendimento v1 = tre query sull'indice:** procedure usate in ogni episodio di un tipo; procedure con output corretto; richieste risolte da `agent` senza procedura applicabile.
+
+## D. Delega, topologia, branching
+
+22. **Padre e figlio sono un confine di proprietà dello store**, non una decomposizione del ragionamento. Verso il basso scorrono criteri e versione della conoscenza; verso l'alto risultati, evidenze e riferimenti stabili. Il figlio espone il "perché" come interfaccia. Profondità = topologia degli store. **Per ora il confine è simulato**: due directory, invocazioni headless.
+23. **CLI a due strati.** Primitive deterministiche e sopra `ask`, che lancia Claude Code o Codex headless sullo store con schema di output e restituisce risposta più identificativi. Il figlio usa le stesse primitive. Il validatore in scrittura vive nel figlio.
+24. **Branching per padre.** L'identità del padre è lo **store padre** (id in `autosoft.yaml`); ogni uso del figlio avviene sul ramo `parent/<store-id>` in un worktree; rebase su main all'apertura (conflitto → uscita con errore, nessuno stato parziale); tre politiche di merge: evidenze append-only si fondono da sole, decisioni e criteri richiedono riconciliazione esplicita, codice della CLI entra su main solo se passa i test di contratto. **La riconciliazione semantica è rinviata.** Identità a livello utente in una fase successiva.
+25. **Il figlio può automodificarsi quanto necessario** sul proprio ramo; la modifica a skill o CLI è registrata come decisione.
+
+## E. Osservabilità e compattazione
+
+26. **Ogni record porta il turno di origine.** L'hook UserPromptSubmit crea il nodo `turn` all'inizio del turno e scrive `.autosoft/current-turn`, così `caused_by` è disponibile durante la sessione, non solo dopo l'ingestione. Comando `timeline`. Pagina HTML statica generata dall'indice con KPI (procedure per stato, promozioni e bocciature per sessione, frazione risolta senza agente). **Sola lettura**: le correzioni passano dall'agente.
+27. **I log nativi sono il livello esperienza**, estratti da un parser, anche retroattivamente. Per i figli headless la trascrizione autorevole è lo stdout `--json` catturato in `.autosoft/transcripts/`.
+28. **L'indice SQLite non contiene nulla di unico.** Tutto ciò che serve a report, KPI e consegna vive nei record; l'indice si ricostruisce sempre.
+29. **Compattazione = garbage collection.** Radici vive: decisioni `active`, procedure provisional o trusted, righe correnti dell'output, domande aperte, HEAD di ogni ramo padre. Freddo: sottoalbero con tutti gli episodi chiusi, nessun provisional, needs_review o domanda aperta raggiungibile, più vecchio di N sessioni (default 5). Compact: nodi `template` con `compacted_from {count, commit, ids}`, riassunto nella forma della cella più Toulmin, localizzatori, esempi negativi. Sweep: dall'albero di lavoro; la storia git conserva. Validatore: ogni arco da un nodo attivo deve risolvere, altrimenti rifiuto. Alla consegna il manifest dichiara se la storia è esclusa.
+
+## F. Stack e strumenti
+
+30. **Nucleo costruito da noi:** formato, validatore, indicizzatore, CLI, parser dei log, renderer HTML. Le parti grandi non sono nostre: loop agentico (harness), parsing dei PDF (procedure scritte dall'agente, di solito Python), chiamate al modello (API).
+31. **TypeScript strict su Node**: `node:sqlite`, `node:test`, `zod`, nessuna dipendenza nativa; ricerca per precedenti con indice invertito nostro perché `node:sqlite` non include FTS5; `better-sqlite3` solo come ripiego. Eseguibile unico per la consegna (Node SEA) o, in mancanza, `npm install -g`.
+32. **Store = file di testo in git + indice SQLite ricostruibile.** Un database a grafo embedded solo come eventuale ricambio dell'indice, mai fonte di verità.
+33. **Strumenti esterni:** da graphify si copia lo schema di hook "interroga prima di leggere"; uso opzionale in fase 2 solo sulla cartella del corpus, mai sullo store. Da codegraph l'approccio tree-sitter per derivare dipendenze tra procedure, in fase 2 dentro il nostro indicizzatore. codemem non si usa. Deciduous è ispirazione per la forma dei record.
+34. **Fuori ambito ora:** scheduler e coda, OpenTelemetry, RO-Crate, database a grafo, trasporto di rete, riconciliazione semantica, agente custom, identità utente.
+
+## G. Layout
+
+35. **Due repository.** Questo è il repository del *tool* (CLI, skill, hook, documentazione, test, store giocattolo in `examples/`). Ogni *progetto* è uno store separato con il proprio git, creato da `autosoft init`. I file di origine della discussione sono in `docs/origine/`.
+
+## Milestone
+
+| | Cosa esiste alla fine | Test che chiude la milestone |
+|---|---|---|
+| M1 | Store, validatore, indice, CLI di base, skill, hook, parser log Claude Code, store giocattolo | Test deterministici su golden e corruzioni seminate; sessione `claude -p` sul giocattolo con 0 errori di validazione, catena `why` completa, `affected` esatto, primo accesso allo store via CLI |
+| M2 | Ciclo di vita delle procedure, `correct`, `shown`, KPI, pagina HTML, Codex, store reale | Golden del ciclo di vita; correzione dal vivo su entrambi gli harness; riuso di procedure; tracciabilità 5/5 giudicata dal ricercatore |
+| M3 | `ask`, `delegate`, branching per padre, `gate`, export/check | Prova di passaggio con Codex in directory pulita: spiegazioni 3/3, `affected` esatto dopo cambio criterio, riuso, zero domande evitabili; branching e delega automatici |
+| M4 | GC, collasso di sottoalberi, prompt congelato, `recheck` | GC idempotente e reversibile; collasso con 0 chiamate all'agente nel sottoalbero; ritiro per sublation con provenienza intatta |

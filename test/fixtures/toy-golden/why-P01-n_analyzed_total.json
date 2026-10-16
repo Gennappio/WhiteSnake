@@ -1,0 +1,190 @@
+{
+  "id": "dec_p01nanal0000",
+  "type": "decision",
+  "title": "P01 n_analyzed_total",
+  "children": [
+    {
+      "rel": "caused_by",
+      "node": {
+        "id": "turn_claude_toyseed0001_0001",
+        "type": "turn",
+        "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+        "children": [
+          {
+            "rel": "session",
+            "node": {
+              "id": "ses_claude_toyseed0001",
+              "type": "session",
+              "title": "Claude Code session toyseed0",
+              "children": []
+            }
+          }
+        ],
+        "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from."
+      }
+    },
+    {
+      "rel": "data",
+      "node": {
+        "id": "ev_p01table1000",
+        "type": "evidence",
+        "title": "P01 Table 1 participant flow",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "locator",
+            "node": {
+              "id": "art_p01a7k3m9q2x",
+              "type": "artifact",
+              "title": "P01 report (markdown)",
+              "children": [
+                {
+                  "rel": "caused_by",
+                  "node": {
+                    "id": "turn_claude_toyseed0001_0001",
+                    "type": "turn",
+                    "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+                    "children": [],
+                    "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+                    "shallow": true
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "rel": "produced_by",
+            "node": {
+              "id": "ep_p01nrand0000",
+              "type": "episode",
+              "title": "P01 n_randomized_total",
+              "children": [],
+              "status": "success",
+              "kind": "code",
+              "shallow": true
+            }
+          }
+        ],
+        "kind": "excerpt",
+        "locator": {
+          "artifact": "art_p01a7k3m9q2x",
+          "path": null,
+          "page": null,
+          "table": "Table 1",
+          "section": "Results",
+          "span": null
+        },
+        "excerpt": "| Arm | Randomised | Analysed (ITT) | |---|---|---| | Early mobilisation | 60 | 58 | | Usual care | 60 | 57 | | Total | 120 | 115 |"
+      }
+    },
+    {
+      "rel": "produced_by",
+      "node": {
+        "id": "ep_p01nanal0000",
+        "type": "episode",
+        "title": "P01 n_analyzed_total",
+        "children": [
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0001",
+              "type": "turn",
+              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "children": [],
+              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "parent",
+            "node": {
+              "id": "ep_p01root00000",
+              "type": "episode",
+              "title": "Annotate P01",
+              "children": [],
+              "status": "success",
+              "kind": "agent",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "uses",
+            "node": {
+              "id": "dec_crit0analyz1",
+              "type": "decision",
+              "title": "Criterion: analysed population is the ITT population",
+              "children": [],
+              "status": "active",
+              "kind": "criterion",
+              "claim": "n_analyzed_total counts participants in the intention-to-treat analysis of the primary outcome, summed over arms; per-protocol counts are not used.",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "uses",
+            "node": {
+              "id": "proc_tablecount01",
+              "type": "procedure",
+              "title": "Sum a column of the participant-flow table",
+              "children": [],
+              "status": "provisional",
+              "kind": "code",
+              "shallow": true
+            }
+          }
+        ],
+        "status": "success",
+        "kind": "code"
+      }
+    },
+    {
+      "rel": "warrant",
+      "node": {
+        "id": "dec_crit0analyz1",
+        "type": "decision",
+        "title": "Criterion: analysed population is the ITT population",
+        "children": [
+          {
+            "rel": "answers",
+            "node": {
+              "id": "q_ittvspp00001",
+              "type": "question",
+              "title": "Which analysed population counts when both ITT and per-protocol are reported?",
+              "children": [],
+              "status": "answered",
+              "shallow": true
+            }
+          },
+          {
+            "rel": "caused_by",
+            "node": {
+              "id": "turn_claude_toyseed0001_0002",
+              "type": "turn",
+              "title": "Turn 2: When a paper reports both intention-to-treat and per-protoco",
+              "children": [],
+              "prompt": "When a paper reports both intention-to-treat and per-protocol analysed counts, count the intention-to-treat population.",
+              "shallow": true
+            }
+          }
+        ],
+        "status": "active",
+        "kind": "criterion",
+        "claim": "n_analyzed_total counts participants in the intention-to-treat analysis of the primary outcome, summed over arms; per-protocol counts are not used."
+      }
+    }
+  ],
+  "status": "active",
+  "kind": "annotation",
+  "claim": "115 participants were analysed in the ITT population (58 + 57).",
+  "value": 115
+}

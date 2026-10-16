@@ -1,0 +1,972 @@
+Bella domanda! In effetti, gli esseri umani non hanno un solo tipo di ragionamento: il cervello usa diverse “famiglie” di processi logici (alcuni più lenti e riflessivi, altri più rapidi e intuitivi). Ti faccio una mappa dettagliata:
+ 
+🧠 1) Ragionamenti logici e deduttivi
+•	Deduzione classica:
+Parti da regole generali → arrivi a una conclusione specifica.
+Es.: “Tutti gli esseri umani sono mortali. Socrate è un uomo. → Socrate è mortale.”
+•	Dimostrazioni formali:
+Usano simboli, logica matematica, sillogismi.
+•	Caratteristica: Se le premesse sono vere, la conclusione è certa.
+ 
+🧠 2) Ragionamenti induttivi
+•	Osservi casi particolari → generalizzi a una regola.
+Es.: “Ho visto molti cigni bianchi → tutti i cigni sono bianchi” (che può essere falsificato).
+•	Tipico del metodo scientifico: accumulo di evidenze, estrazione di pattern.
+ 
+🧠 3) Ragionamenti abduittivi (inference to the best explanation)
+•	Parti da un fatto sorprendente → ipotizzi la spiegazione più plausibile.
+Es.: “Il prato è bagnato → probabilmente ha piovuto.”
+•	È il cuore del pensiero diagnostico (medicina, investigazioni, ecc.).
+ 
+🧠 4) Ragionamenti causali
+•	Analizzi relazioni di causa-effetto, spesso con controfattuali:
+Se tolgo X, succede ancora Y?
+•	Serve per capire direzione causale (come nel tuo esempio: “D→L o L→D?”).
+ 
+🧠 5) Ragionamenti condizionali (“if… then…”)
+•	Analisi di scenari alternativi: “Se faccio X, accade Y?”
+•	Fondamentali per pianificazione e decision making.
+•	Cervello simula scenari con modelli mentali (piccole “simulazioni mentali”).
+ 
+🧠 6) Ragionamenti analogici e per metafora
+•	Trasferisci conoscenza da un dominio noto a uno nuovo.
+Es.: “Il cervello funziona come un computer.”
+•	Potente per creatività e problem solving.
+ 
+🧠 7) Ragionamenti per similarità o associazione
+•	Più veloci, basati su pattern:
+“Questa situazione sembra quella volta che… → probabilmente succederà lo stesso.”
+ 
+🧠 8) Ragionamenti bayesiani/probabilistici
+•	Stimano probabilità invece di certezze.
+•	Molti processi cognitivi sono inconsciamente bayesiani: aggiorniamo credenze con nuove prove.
+ 
+🧠 9) Ragionamenti euristici
+•	Scorciatoie mentali: utili ma fallibili.
+Esempi: disponibilità (giudichi la probabilità di un evento in base a quanto facilmente ti viene in mente), rappresentatività, ecc.
+ 
+🧠 10) Ragionamenti pragmatici e retorici
+•	Basati sul contesto e sull’effetto comunicativo, non solo sulla logica.
+•	Qui entra il framing: una frase può cambiare percezione pur dicendo lo stesso.
+ 
+🧠 11) Ragionamenti morali e valoriali
+•	Mescolano emozioni e principi astratti.
+•	Coinvolgono aree limbiche + corteccia prefrontale.
+•	Non sono puramente logici, ma guidano scelte profonde.
+ 
+🧠 12) Ragionamenti metacognitivi
+•	Ragioni sul tuo stesso ragionamento:
+“Perché penso così? Sto confondendo causa ed effetto?”
+•	Essenziali per il pensiero critico.
+ 
+🔑 Sintesi
+Tipo	Caratteristica principale	Esempio breve
+Deduttivo	Da generale a particolare, conclusione certa	Matematica
+Induttivo	Da casi a regola generale, probabile	Scienza
+Abduittivo	Ipotesi migliore spiegazione	Medicina
+Causale	Capire cause ed effetti	Politica
+Condizionale	“What if?”, simulazione scenari	Strategie
+Analogico	Trasferire struttura concettuale	Metafore
+Associativo	Basato su somiglianza e memoria	Intuizione
+Probabilistico (Bayesiano)	Stima di probabilità	Previsioni
+Euristico	Scorciatoie cognitive	Bias
+Pragmatico/Retorico	Linguaggio, contesto, framing	Politica
+Morale	Valori e norme	Etica
+Metacognitivo	Riflessione sul proprio pensiero	Filosofia
+ 
+Vuoi che li ordini in una specie di mappa mentale (schema grafico) per vedere come si collegano, o preferisci una tabella più dettagliata (con esempi concreti per ciascuno)?
+Ecco un’espansione ancora più completa:
+ 
+🧠 1) Ragionamenti logico-formali (livello astratto)
+•	Sillogistico: uso di sillogismi formali (“A implica B; B implica C; quindi A implica C”).
+•	Ragionamento matematico: deduzioni simboliche, dimostrazioni, algebra.
+•	Ragionamento assiomatico: costruzione su postulati fissi.
+•	Ragionamento modale: valuta possibilità, necessità, obblighi (logica modale).
+ 
+🧠 2) Ragionamenti empirici e scientifici
+•	Inferenza statistica: uso di dati numerici per generalizzare.
+•	Ragionamento sperimentale: ipotesi → esperimento → revisione.
+•	Ragionamento controfattuale rigoroso: immaginare mondi alternativi per isolare variabili (“se non fosse successo X, sarebbe successo Y?”).
+ 
+🧠 3) Ragionamenti pratici (decision making)
+•	Strumentale/teleologico: scelte basate su scopi e mezzi.
+•	Economico: analisi costi-benefici, teoria dei giochi.
+•	Ragionamento sotto incertezza: valutazione di rischi, scenari possibili.
+•	Heuristics & biases avanzati: scorciatoie cognitive (ancoraggio, effetto framing, ecc.).
+ 
+🧠 4) Ragionamenti creativi
+•	Laterale (Edward de Bono): cerca soluzioni non ovvie, rompe schemi logici.
+•	Divergente: generazione di molte ipotesi senza filtri iniziali.
+•	Sintetico: unisce idee lontane in una nuova configurazione.
+•	Analogico complesso: non solo somiglianze superficiali, ma strutturali.
+ 
+🧠 5) Ragionamenti intuitivi e associativi
+•	Pattern recognition: riconoscimento istantaneo di schemi (esperienza).
+•	Priming semantico: parole e concetti attivano altre idee inconsciamente.
+•	Ragionamento embodied: ragionare attraverso esperienze corporee e sensoriali.
+ 
+🧠 6) Ragionamenti sociali
+•	Teoria della mente: inferire stati mentali di altri (“pensa che io pensi che…”).
+•	Ragionamento negoziale: prevedere reazioni, compromessi.
+•	Ragionamento morale-sociale: equità, norme, status.
+ 
+🧠 7) Ragionamenti narrativi
+•	Costruzione di storie: organizziamo eventi in una sequenza coerente.
+•	Bias di coerenza narrativa: preferiamo spiegazioni che “raccontano bene”, anche se non rigorose.
+ 
+🧠 8) Ragionamenti metacognitivi e riflessivi
+•	Meta-razionalità: sapere quando applicare logica rigorosa vs intuizione.
+•	Epistemico: riflessione su cosa significa “sapere” e “credere”.
+•	De-biasing: strategie per riconoscere e correggere i propri errori.
+ 
+🧠 9) Ragionamenti etici e filosofici
+•	Deontologico: giusto/sbagliato a priori (regole).
+•	Consequenzialista: valutazione degli effetti.
+•	Virtù etica: basato su carattere e intenzioni.
+•	Esistenziale: domande di significato e valore.
+ 
+🧠 10) Ragionamenti estetici e valutativi
+•	Giudicare bellezza, armonia, qualità artistica: meno logico, più olistico e percettivo.
+ 
+💡 Osservazione chiave:
+Il cervello alterna due sistemi principali (secondo la psicologia cognitiva):
+•	Sistema 1: veloce, automatico, intuitivo (pattern recognition, associazioni).
+•	Sistema 2: lento, deliberato, logico (deduzione, analisi critica).
+Ma in realtà è una rete dinamica: logica, emozione, intuizione e linguaggio lavorano insieme.
+ 
+📌 Numeri indicativi:
+Se volessimo fare una tassonomia completa, potremmo arrivare a 30-40 sottotipi di ragionamento distinguendo livello (astratto, pratico, creativo), scopo (descrivere, decidere, immaginare), modalità (logico, intuitivo, sociale).
+
+
+🌳 Tassonomia dei tipi di ragionamento (con spiegazioni semplici)
+ 
+1. Ragionamenti logico-formali
+💡 Obiettivo: seguire regole astratte e arrivare a conclusioni certe.
+1.1 Deduttivo
+•	Parti da una regola generale → arrivi a un caso specifico.
+•	Esempio: “Tutti i gatti sono mammiferi. Luna è un gatto. → Luna è un mammifero.”
+1.2 Sillogistico
+•	Versione formale del deduttivo con frasi tipo “Tutti… alcuni… nessuno”.
+•	Esempio: “Tutti gli esseri viventi respirano. Gli alberi sono esseri viventi. → Gli alberi respirano.”
+1.3 Matematico/Assiomatico
+•	Ragionamenti rigorosi basati su simboli e postulati.
+•	Esempio: Dimostrare che la somma degli angoli di un triangolo è 180°.
+1.4 Modale
+•	Considera concetti come possibile, necessario, obbligatorio.
+•	Esempio: “È possibile che piova, ma non è necessario.”
+ 
+1.5 Induttivo
+•	Parti da molti esempi → deduci una regola generale (ma può essere falsa).
+•	Esempio: “Ho visto solo cigni bianchi → tutti i cigni sono bianchi.” (sbagliato se appare un cigno nero!)
+ 
+1.6 Abduzione
+•	Ragionamento detective: spieghi un fatto con l’ipotesi più plausibile.
+•	Esempio: “Trovo il prato bagnato. Probabile spiegazione: ha piovuto.”
+ 
+ 
+2. Ragionamenti causali e condizionali
+💡 Obiettivo: capire perché succede qualcosa e cosa accadrebbe se cambiamo qualcosa.
+2.1 Causale diretto
+•	Trovi relazioni di causa-effetto.
+•	Esempio: “Spingo il bicchiere → cade.”
+2.2 Controfattuale
+•	Immagini un mondo alternativo: “Se non avessi preso il treno, sarei arrivato in ritardo?”
+•	Serve a capire cause vere.
+2.3 Condizionale/Ipotesi (“se… allora…”)
+•	Simuli scenari.
+•	Esempio: “Se studio, supero l’esame.”
+2.4 Necessario vs sufficiente
+•	Necessario: senza A non c’è B.
+•	Sufficiente: se c’è A, basta per avere B.
+•	Esempio: “L’acqua è necessaria per vivere, ma non sufficiente.”
+2.5 Sistemico
+•	Ragionare su reti complesse (causa-effetto a catena).
+•	Esempio: Economia: “Alzare le tasse riduce consumi, che riduce crescita…”
+ 
+3. Ragionamenti pratici e decisionali
+💡 Obiettivo: scegliere cosa fare.
+3.1 Teleologico/Strumentale
+•	Parti da un obiettivo → cerchi i mezzi.
+•	Esempio: “Voglio laurearmi → devo studiare e superare esami.”
+3.2 Economico (costi-benefici)
+•	Valuti guadagni e perdite.
+•	Esempio: “Comprare l’auto: costa tanto ma risparmio tempo.”
+3.3 Strategico
+•	Pianifichi a lungo termine, come in scacchi.
+3.4 Decisione sotto incertezza
+•	Prendi decisioni senza avere tutti i dati.
+•	Esempio: “Non so che tempo farà, porto l’ombrello?”
+3.5 Euristico
+•	Scorciatoie mentali: “Ho sempre visto semafori verdi qui → passo veloce.”
+•	Veloce ma può sbagliare.
+ 
+4. Ragionamenti creativi e divergenti
+💡 Obiettivo: trovare idee nuove, rompere schemi.
+4.1 Laterale
+•	Cambi prospettiva per risolvere un problema.
+•	Esempio: Se non riesci a uscire dalla stanza dalla porta, esci dalla finestra.
+4.2 Divergente
+•	Generi tante idee, senza giudicare.
+•	Esempio: Brainstorming.
+4.3 Sintetico
+•	Unisci concetti lontani in una nuova combinazione.
+•	Esempio: Smartphone = telefono + computer.
+4.4 Analogico complesso
+•	Usi somiglianze profonde per capire cose nuove.
+•	Esempio: “Il cervello è come una rete di città collegate (neuroni).”
+4.5 Progettuale
+•	Ragionamento da designer: creare soluzioni funzionali ed estetiche.
+ 
+5. Ragionamenti intuitivi e associativi
+💡 Obiettivo: risposte veloci grazie all’esperienza.
+5.1 Pattern recognition
+•	Riconosci schemi: “Questa febbre + tosse = influenza.”
+5.2 Priming semantico
+•	Parole e idee attivano altre idee inconsciamente.
+•	Esempio: Leggi “pane” → pensi “burro”.
+5.3 Somiglianza superficiale
+•	Ti basi su ricordi simili, anche se poco accurati.
+•	Esempio: “Questa persona mi ricorda un amico → mi fido.”
+5.4 Embodied cognition
+•	Usi il corpo per ragionare.
+•	Esempio: Contare sulle dita, usare gesti per capire spazio.
+ 
+6. Ragionamenti sociali
+💡 Obiettivo: capire gli altri.
+6.1 Teoria della mente
+•	Immagini pensieri ed emozioni altrui.
+•	Esempio: “Lui pensa che io sia arrabbiato.”
+6.2 Negoziale
+•	Prevedi le mosse di altri per ottenere compromessi.
+•	Esempio: Trattare uno stipendio.
+6.3 Empatico
+•	Integrare emozioni altrui nelle scelte.
+•	Esempio: Aiuti un amico triste.
+6.4 Culturale
+•	Ragioni in base a norme sociali.
+•	Esempio: In Giappone fai un inchino, non una stretta di mano.
+ 
+7. Ragionamenti narrativi
+💡 Obiettivo: dare senso agli eventi come storia.
+7.1 Sequenziale
+•	Racconti eventi in ordine cronologico.
+•	Esempio: “Prima mi sono svegliato, poi ho fatto colazione…”
+7.2 Causale narrativo
+•	Colleghi eventi per renderli coerenti.
+•	Esempio: “Ha perso il lavoro perché era sempre in ritardo.”
+7.3 Bias narrativo
+•	Preferisci storie semplici anche se incomplete.
+•	Esempio: Teorie del complotto: storie lineari per eventi complessi.
+7.4 Identitario
+•	Usi storie per definire chi sei.
+•	Esempio: “Sono diventato forte perché da piccolo ero bullizzato.”
+ 
+8. Ragionamenti metacognitivi
+💡 Obiettivo: riflettere sul tuo stesso pensiero.
+8.1 Meta-razionalità
+•	Scegli come ragionare.
+•	Esempio: “Per questa decisione userò logica, non intuizione.”
+8.2 De-biasing
+•	Riconosci e correggi errori mentali.
+•	Esempio: “Sto giudicando male perché sono arrabbiato.”
+8.3 Epistemico
+•	Ti chiedi cosa significa sapere o credere.
+•	Esempio: “Come faccio a sapere che è vero?”
+8.4 Critico-filosofico
+•	Analizzi concetti profondi.
+•	Esempio: “Cos’è il libero arbitrio?”
+ 
+9. Ragionamenti morali ed etici
+💡 Obiettivo: stabilire cosa è giusto/sbagliato.
+9.1 Deontologico
+•	Regole assolute.
+•	Esempio: “Rubare è sempre sbagliato.”
+9.2 Consequenzialista
+•	Guardi alle conseguenze.
+•	Esempio: “Mentire è ok se salvi una vita.”
+9.3 Virtù etica
+•	Conta il carattere, non solo regole.
+•	Esempio: “Un uomo onesto non mentirebbe.”
+9.4 Contrattualista
+•	Norme condivise per convivenza.
+•	Esempio: “Rispettiamo semafori per sicurezza.”
+ 
+10. Ragionamenti estetici
+💡 Obiettivo: giudicare bellezza e armonia.
+10.1 Percezione estetica
+•	Simmetria, proporzioni.
+•	Esempio: “Questo dipinto è armonioso.”
+10.2 Creativo-emotivo
+•	Basato sull’emozione artistica.
+•	Esempio: “Questo brano mi commuove.”
+10.3 Culturale
+•	Influenza di gusti e moda.
+•	Esempio: Apprezzare arte astratta perché culturalmente riconosciuta.
+ 
+11. Ragionamenti scientifici avanzati
+💡 Obiettivo: ragionamenti rigorosi basati su dati.
+11.1 Bayesiano
+•	Aggiorni le credenze con probabilità.
+•	Esempio: “Il test è positivo, ma la probabilità reale di malattia è 5%.”
+11.2 Statistico
+•	Analisi di dati numerici.
+•	Esempio: “Il 70% degli studenti ha superato il test.”
+11.3 Sperimentale
+•	Metodo: ipotesi → esperimento → revisione.
+•	Esempio: Testare un nuovo farmaco.
+11.4 Model-based
+•	Crei modelli matematici per predire eventi (clima, economia).
+ 
+12. Ragionamenti specializzati
+💡 Obiettivo: contesti specifici.
+12.1 Giuridico
+•	Interpreti leggi, casi, precedenti.
+•	Esempio: Avvocati in tribunale.
+12.2 Tecnico/ingegneristico
+•	Analisi di sistemi complessi.
+•	Esempio: Progettare un ponte.
+12.3 Clinico
+•	Diagnosi medica (abduzione + esperienza).
+•	Esempio: Un medico analizza sintomi.
+12.4 Strategico-militare
+•	Pianificazione in scenari incerti.
+•	Esempio: Scacchi, guerra, geopolitica.
+ 
+💡 In sintesi:
+•	Logico: rigore e certezza.
+•	Empirico/Scientifico: osservazione e test.
+•	Creativo: idee nuove.
+•	Sociale/Morale: relazioni ed etica.
+•	Metacognitivo: riflessione su sé stessi.
+•	Specializzato: applicazioni professionali.
+
+
+Ah, chiaro! 💡
+Vuoi sapere se esiste qualcuno che ha tentato di fare proprio quello che stiamo facendo noi adesso: una classificazione generale e organica di tutti i tipi di ragionamento umano (non solo logica, non solo psicologia, ma una sintesi).
+La risposta è: sì, ci sono alcuni filosofi e scienziati cognitivi che hanno provato a costruire tassonomie generali.
+Ti elenco i più rilevanti:
+ 
+📚 1. Charles Sanders Peirce (1839–1914)
+•	🔑 Perché è importante: È forse il primo a sistematizzare tre categorie di ragionamento:
+1.	Deduzione → Derivi conclusioni certe da premesse.
+2.	Induzione → Generalizzi dai casi.
+3.	Abduzione → Ipotesi migliori per spiegare fenomeni.
+•	📖 Opere: “Collected Papers of Charles Sanders Peirce”.
+•	🧩 Anche se la sua tassonomia è più semplice della nostra, è la base di TUTTE le classificazioni moderne.
+ 
+📚 2. Stephen Toulmin (1922–2009)
+•	🔑 Ha creato il Toulmin Model of Argumentation, che analizza struttura e tipi di ragionamento in argomentazioni: claim, data, warrant, backing, qualifier, rebuttal.
+•	Non una tassonomia di “tipi” psicologici, ma un quadro universale per capire COME ragioniamo e argomentiamo.
+ 
+📚 3. Johnson-Laird e la Teoria dei Modelli Mentali (anni ’80–oggi)
+•	🔑 Propone che tutti i ragionamenti (deduzione, controfattuali, causali, ecc.) derivano da un unico meccanismo mentale: la costruzione di modelli mentali nella mente.
+•	Hanno fatto studi sperimentali su come ragioniamo in modo condizionale (“se… allora…”), causale, narrativo.
+ 
+📚 4. Daniel Kahneman & Amos Tversky (anni ’70–2010)
+•	🔑 Classificazione dei processi cognitivi in Sistema 1 (intuitivo) e Sistema 2 (analitico).
+•	Hanno discusso decine di bias cognitivi, mostrando come diversi “tipi” di ragionamento convivono.
+•	📖 Thinking, Fast and Slow è una “tassonomia pratica” dei meccanismi decisionali umani.
+ 
+📚 5. Gerd Gigerenzer
+•	🔑 Propone una tassonomia delle euristiche, distinguendole dal ragionamento logico puro.
+•	Mostra che gli esseri umani usano strategie adattive diverse in base al contesto (non un unico “tipo di logica”).
+ 
+📚 6. Howard Gardner – Teoria delle Intelligenze Multiple (1983)
+•	🔑 Non è una classificazione di “ragionamenti” in senso stretto, ma mostra che il cervello ha modi diversi di elaborare: logico-matematico, linguistico, spaziale, musicale, interpersonale, intrapersonale, naturalistico.
+•	Implica che ci sono tipi diversi di ragionamento legati a queste intelligenze.
+ 
+📚 7. Douglas Walton (1942–2020)
+•	🔑 Ha creato una tipologia completa dei tipi di argomentazione (causale, analogica, per esempio, autorità, ecc.).
+•	In “Argumentation Schemes” (2008) mappa decine di schemi di ragionamento, con regole e condizioni.
+ 
+📚 8. Paul Thagard – Cognitive Science of Reasoning
+•	🔑 Ha integrato filosofia, IA, neuroscienze: propone che il ragionamento umano è una rete di micro-strategie: analogico, causale, probabilistico, basato su vincoli.
+•	Opere: “Mind: Introduction to Cognitive Science”.
+ 
+📚 9. Edward de Bono – Pensiero Laterale
+•	🔑 Non una tassonomia formale, ma distingue chiaramente pensiero verticale (logico) e pensiero laterale (creativo), aprendo la strada a studi sul ragionamento divergente.
+ 
+📚 10. Manuali di logica e scienza cognitiva
+•	Libri come “Cognitive Science” (Stillings et al.) e “The Cambridge Handbook of Thinking and Reasoning” (Holyoak & Morrison, 2005) offrono mappe sintetiche di tutti i tipi di ragionamento (deduzione, induzione, abduzione, causale, analogico, probabilistico…).
+ 
+🔑 In sintesi: chi ha fatto un “lavoro come il nostro”
+Autore	Cosa ha fatto	Rilevanza per tassonomia generale
+Peirce	Distinse Deduzione, Induzione, Abduzione	Prima classificazione formale
+Walton	Schemi di argomentazione	Tipologia ricchissima
+Johnson-Laird	Modelli mentali per tutti i ragionamenti	Base cognitiva unificante
+Kahneman & Tversky	Sistema 1/2, bias cognitivi	Spiegano razionale vs intuitivo
+Gigerenzer	Tassonomia euristiche	Ragionamento adattivo
+Thagard	Visione unificata (logico, causale, analogico)	Sintesi moderna
+Toulmin	Schema universale di argomentazione	Struttura di ogni ragionamento
+ 
+💡 Osservazione:
+Nessuno ha scritto esattamente una lista di 30-40 tipi di ragionamento come stiamo facendo noi, ma Peirce, Walton, Johnson-Laird, Kahneman/Tversky e Thagard sono quelli che più ci si avvicinano:
+•	Peirce → classi di base
+•	Walton → schemi di argomentazione
+•	Johnson-Laird → meccanismo cognitivo unico
+•	Kahneman/Tversky → psicologia dei processi
+•	Thagard → sintesi cognitiva-scientifica
+
+per esempio immagina di descrivere una negoziazione con teoria dei giochi. e di conseguenza dimmi l'argoritmo che combinano primitive di ragionamento.
+ChatGPT said:
+Ottimo! 💡 Facciamo così:
+1.	Descrivo una negoziazione in termini di teoria dei giochi.
+2.	Scompongo i ragionamenti necessari in “primitive cognitive” (i mattoni puri).
+3.	Mostro l’algoritmo mentale che li combina.
+ 
+🧩 1. Negoziazione vista con la teoria dei giochi
+Scenario:
+Due persone, Alice e Bob, devono dividere 100€. Entrambi vogliono massimizzare il guadagno, ma se non raggiungono un accordo, nessuno prende nulla.
+È una classica situazione di “bargaining game”.
+In teoria dei giochi:
+•	Giocatori: Alice, Bob
+•	Strategie: quanto chiedere, come fare offerte
+•	Payoff: guadagno finale di ciascuno
+•	Equilibrio: punto in cui nessuno può migliorare la propria posizione cambiando strategia unilateralmente (Nash equilibrium).
+ 
+🔍 2. Primitive di ragionamento coinvolte
+Per ragionare in questa situazione, il cervello usa:
+Tipo di ragionamento (primitivo)	Ruolo nella negoziazione
+Deduzione logica	Applicare regole: “Se offro troppo poco, lui rifiuterà.”
+Ragionamento causale	“Se faccio X, Bob reagirà con Y.”
+Ragionamento controfattuale	“E se chiedessi 60 invece di 50?”
+Analogico	“Questo è come la trattativa per comprare una casa.”
+Probabilistico (Bayesiano)	Stimare probabilità delle reazioni: “80% che accetti 50.”
+Teoria della mente (sociale)	Inferire intenzioni: “Vuole sembrare duro ma ha fretta.”
+Euristico	“Dividiamolo a metà: soluzione veloce.”
+Narrativo	Creare una storia convincente per persuadere: “Se accetti ora, entrambi vinciamo.”
+Quindi il ragionamento negoziale non è “nuovo”: è una rete di primitive combinate.
+ 
+⚙️ 3. Algoritmo mentale della negoziazione (semplificato)
+Vediamolo come pseudo-codice cognitivo:
+INPUT: Offerta iniziale, informazioni su controparte, tempo, obiettivo.
+
+1. Raccogli informazioni
+   - Osserva segnali (linguaggio del corpo, storie passate) [Analogico + Sociale]
+   - Stima bisogni e priorità dell’altro [Teoria della mente]
+
+2. Genera scenari possibili
+   - Lista di mosse (offerte) [Creativo/Divergente]
+   - Prevedi reazioni dell’altro [Causale + Controfattuale]
+
+3. Valuta probabilità e payoff
+   - Assegna probabilità a ogni reazione [Probabilistico/Bayesiano]
+   - Calcola guadagno atteso [Deduttivo/Logico]
+
+4. Applica vincoli emotivi/sociali
+   - Considera reputazione, norme culturali [Culturale + Sociale]
+   - Aggiusta strategia (es. fare una concessione per sembrare equo)
+
+5. Scegli strategia ottimale
+   - Usa euristiche (“puntiamo al 50/50 se il tempo stringe”) [Euristico]
+   - O calcola equilibrio di Nash se razionale [Logico-Formale]
+
+6. Comunica e persuadi
+   - Presenta offerta con narrativa convincente [Narrativo + Sociale]
+
+7. Adatta dinamicamente
+   - Se rifiuto: aggiorna modello di controparte [Bayesiano]
+   - Ripeti dal passo 2 con nuove informazioni.
+
+OUTPUT: Accordo ottimale (o fallimento con lezione appresa).
+ 
+🧠 Cosa succede nel cervello
+•	La corteccia prefrontale dorsolaterale fa calcoli logici e probabilistici.
+•	L’amigdala e il sistema limbico gestiscono segnali emotivi (pressione, bluff).
+•	La corteccia temporale elabora segnali sociali (volto, tono di voce).
+•	L’ippocampo richiama esempi analogici (altre negoziazioni).
+ 
+🔑 Sintesi
+Il ragionamento negoziale è:
+Una pipeline cognitiva che combina deduzione, ragionamento causale, probabilistico, analogico, teoria della mente, euristiche e narrativa.
+È come un algoritmo multi-modulo: ogni modulo è una “primitiva” di ragionamento, e la negoziazione è il flusso che li orchestra per massimizzare payoff e cooperazione.
+
+🧩 1. Idee chiave per il linguaggio
+•	Deve essere astratto ma espressivo: poche regole base, ma componibili.
+•	Ogni primitiva è una funzione cognitiva (come if, loop, map in programmazione).
+•	Il linguaggio è dichiarativo: descrivi cosa stai facendo (tipo Prolog), non come eseguirlo passo-passo.
+•	Ogni primitiva può avere input (informazioni, credenze) e output (nuove credenze, decisioni).
+ 
+🧩 2. Set di primitive proposte
+Sigla	Nome	Descrizione
+DED	Deduzione	Inferisci conclusioni certe da regole generali.
+IND	Induzione	Generalizza da casi a regola.
+ABD	Abduzione	Ipotesi plausibile che spiega osservazioni.
+CAU	Causale	Stima relazioni causa-effetto.
+CF	Controfattuale	Simula scenari alternativi: “Se non X, allora…”.
+COND	Condizionale	Se… allora…
+PROB	Probabilistico	Aggiornamento credenze basato su probabilità.
+ANA	Analogico	Trasferisci struttura da un dominio noto a uno nuovo.
+HEU	Euristico	Scorciatoia basata su esperienza.
+SOC	Sociale	Inferisci stati mentali altrui (Teoria della Mente).
+NAR	Narrativo	Costruisci una storia coerente per dare senso o persuadere.
+META	Metacognitivo	Ragiona sul tuo stesso ragionamento.
+ 
+🧩 3. Sintassi base (pseudo-linguaggio)
+// Esempio di regola
+RULE: IF condition THEN conclusion
+
+// Primitive
+DED(rule, facts) -> conclusion
+IND(cases) -> general_rule
+ABD(observation) -> plausible_hypothesis
+CAU(eventX, eventY) -> causal_link
+CF(changeX) -> predicted_outcome
+PROB(event, prior) -> updated_probability
+ANA(source, target) -> mapping
+HEU(pattern) -> guess
+SOC(agent) -> inferred_beliefs
+NAR(events) -> story
+META(process) -> reflection
+ 
+🧩 4. Negoziazione in questo linguaggio
+Scenario: Alice e Bob negoziano 100€.
+// 1. Osserva segnali sociali
+beliefs_Bob = SOC(Bob)
+
+// 2. Genera scenari alternativi
+scenarios = CF({Alice_offer = 50}, {Alice_offer = 60})
+
+// 3. Stima reazioni probabilistiche
+prob_accept_50 = PROB(accept, prior_data)
+prob_accept_60 = PROB(accept, prior_data)
+
+// 4. Calcola payoff attesi
+payoff_50 = DED({prob_accept_50, offer=50}, payoff_formula)
+payoff_60 = DED({prob_accept_60, offer=60}, payoff_formula)
+
+// 5. Scegli migliore strategia
+best_offer = HEU(max(payoff_50, payoff_60))
+
+// 6. Narrazione per persuadere
+message = NAR({context, fairness, mutual_benefit})
+
+// 7. Meta-riflessione
+META({strategy, Bob_reaction}) -> adjust_plan
+Questo mostra come primitive cognitive (SOC, CF, PROB, DED, HEU, NAR, META) si combinano per produrre un ragionamento complesso.
+ 
+🧩 5. Livelli di astrazione
+1.	Primitiva (Assembly del pensiero): DED, ABD, PROB, ANA, ecc.
+2.	Pattern combinati (funzioni cognitive): Decision making, Pianificazione, Diagnosi.
+3.	Dominio applicativo (algoritmo completo): Negoziazione, Strategia militare, Argomentazione giuridica.
+ 
+🧩 6. Esempio di composizione per altri casi
+Diagnosi medica
+symptoms -> ABD(symptoms) -> hypothesis
+hypothesis -> PROB(test_result) -> updated_belief
+DECIDE(treatment) = DED({guidelines, updated_belief})
+Giudizio legale
+facts -> DED(law) -> ruling
+witness_variants -> CF(alibi) -> consistency_check
+HEU(precedent_patterns) -> likely_outcome
+ 
+💡 In pratica, questo linguaggio sarebbe una grammatica di alto livello per il ragionamento:
+•	DED, IND, ABD = fondamenti logico-epistemici
+•	CF, PROB, ANA = strumenti di simulazione
+•	HEU, SOC, NAR, META = strumenti adattivi, sociali e riflessivi.
+
+
+Ecco un linguaggio minimale ma “vero” per scrivere algoritmi cognitivi a partire dalle primitive di ragionamento. Lo chiamo RPL — Reasoning Primitives Language.
+ 
+RPL — Reasoning Primitives Language (v0.1)
+1) Tipi di dato (statici, con inferenza)
+•	Bool, Num, Str
+•	Atom (simbolo: Rain, Alice, Offer(60))
+•	Fact = Atom | Pred(…args…) (es. Likes(Alice, Tea))
+•	Rule = Premises => Conclusion [weight:?Num]
+•	Set[T], List[T], Map[K,V]
+•	Dist[T] (distribuzione discreta su T)
+•	Model = {facts:Set[Fact], rules:Set[Rule]}
+•	Agent = {beliefs:Model, priors:Map[Atom,Num]}
+Alias utili
+•	Belief[T] = {value:T, conf:Num} (confidenza 0..1)
+•	Payoff = Num
+ 
+2) Lessico e identificatori
+•	Nomi: snake_case o CamelCase
+•	Variabili: iniziano con ? (es. ?x, ?offer)
+•	Commenti: // …
+•	Stringhe: "…". Numeri: 42, 0.75.
+ 
+3) Sintassi di base (EBNF ridotta)
+program      ::= { decl | stmt }
+decl         ::= "let" id "=" expr
+stmt         ::= expr ";"
+expr         ::= literal | id | lambda | app | if | block | match
+literal      ::= Num | Str | Bool | Atom | set | list | map
+lambda       ::= "\" "(" params ")" "->" expr
+app          ::= id "(" [args] ")"
+if           ::= "if" expr "then" expr "else" expr
+block        ::= "{" {decl|stmt} expr "}"
+match        ::= "match" expr "{" { case } "}"
+case         ::= "case" pattern "->" expr
+pattern      ::= literal | id | "_" | Pred(pattern, …)
+args         ::= expr { "," expr }
+params       ::= id ":" type { "," id ":" type }
+type         ::= basic | generic
+ 
+4) Primitive di ragionamento (firma + intuizione)
+Logico-epistemiche
+•	DED(rule:Rule, facts:Set[Fact]) : Fact|Set[Fact]
+Applica regole a fatti.
+•	IND(cases:Set[Fact]) : Rule
+Induce una regola dai casi (greedy, pesata).
+•	ABD(obs:Set[Fact], model:Model) : Set[Hypothesis]
+Ipotesi che spiegano le osservazioni.
+Causali/condizionali
+•	CAU(x:Atom, y:Atom, data:Set[Fact]) : Belief[Link]
+Stima nesso causale (confidenza).
+•	COND(if:Fact, then:Fact) : Rule
+•	CF(world:Model, change:Set[Fact], query:Fact) : Belief[Fact]
+Controfattuale: valuta query nel mondo modificato.
+Probabilistiche
+•	PROB(event:Atom, prior:Num, likelihoods:Map[Atom,Num]) : Num
+Bayes semplice (restituisce posteriore).
+•	UPDATE(dist:Dist[Atom], evidence:Atom) : Dist[Atom]
+Analogiche / strutturali
+•	ANA(src:Model, tgt:Model, map_hint:Map[Atom,Atom]) : Map[Atom,Atom]
+Mappatura analogica (ritorna corrispondenze).
+Sociali / narrative / meta
+•	SOC(agent:Agent) : Belief[Map[Atom,Num]]
+Cosa crede/valuza l’altro.
+•	NAR(events:List[Fact], goal:Atom) : Str
+Testo persuasivo minimale.
+•	META(proof:any) : Str
+Spiega perché una conclusione è stata scelta.
+Utility
+•	ARGMAX(xs:List[T], f:\(T)->Num) : T
+•	EXPECT(p:Num, win:Num, lose:Num) : Num (valore atteso p*win+(1-p)*lose)
+ 
+5) Semantica (intuitiva, deterministica dove possibile)
+•	DED: applica rules in modo forward-chaining finché non ci sono nuovi fatti (chiusura limitata all’ambito del blocco).
+•	IND: genera Rule con confidenza = copertura casi corretti / tot.
+•	ABD: propone ipotesi minime il cui DED spiega obs; ordina per parsimonia (Occam) e conf.
+•	CF: crea una copia del world con change, poi esegue DED/PROB, restituisce Belief.
+•	PROB/UPDATE: normalizzazione bayesiana su insiemi finiti.
+•	ANA: cerca isomorfismi di grafo grezzi tra predicati e relazioni (euristica).
+ 
+6) Mini–standard library (regole utili)
+let payoff_of(offer:Num, accept_prob:Num) =
+  offer * accept_prob;
+
+let fairness_baseline = 50;
+
+let accept_rule =
+  COND( Offer(?x) & ?x >= 50 , Accept ); // esempio toy
+
+let bargain_model : Model = {
+  facts = {},
+  rules = { accept_rule }
+};
+ 
+7) Esempio completo: negoziazione (bargaining 100€)
+Obiettivo
+Alice deve scegliere un’offerta a Bob. Se Bob accetta, payoff di Alice = offerta; se rifiuta, 0.
+// ── Dati iniziali
+let offers = [40, 50, 60, 70];          // spazio d’azione
+let prior_accept = Map{ 40:0.3, 50:0.7, 60:0.5, 70:0.2 };
+
+let bob : Agent = {
+  beliefs = bargain_model,
+  priors  = Map{ Accept:0.5 }
+};
+
+// ── Stima probabilistica di accettazione con Bayes “poverissimo”
+let estimate_accept = \(o:Num) -> {
+  // Likelihood semplificata via deduzione di regola di equità
+  let fair = (o >= fairness_baseline);
+  let like = if fair then 0.8 else 0.3;
+  let prior = prior_accept[o];
+  PROB(Accept, prior, Map{ Evidence: like })
+};
+
+// ── Valore atteso per ogni offerta
+let expected_payoff = \(o:Num) -> {
+  let p = estimate_accept(o);
+  payoff_of(o, p)
+};
+
+// ── Scelta ottima (greedy sul valore atteso)
+let best_offer = ARGMAX(offers, expected_payoff);
+
+// ── Narrazione persuasiva (framing di equità + urgenza)
+let pitch = NAR(
+  [ Fact("MutualBenefit"), Fact("TimeCost") ],
+  Goal("AgreeFast")
+);
+
+// ── Output finale
+{ best_offer, expected_payoff(best_offer), pitch }
+Cosa fa il programma
+1.	Usa una euristica di equità per la likelihood (o>=50 ⇒ più probabile accettazione).
+2.	Bayes aggiorna la probabilità di accettazione per ogni offer.
+3.	Calcola valore atteso e sceglie l’ARGMAX.
+4.	Genera una narrazione per presentare l’offerta.
+ 
+8) Esempio: diagnosi medica (ABD + PROB + DED)
+let symptoms = { Fever, Cough };
+let med_model : Model = {
+  facts = {},
+  rules = {
+    COND( Flu , Fever & Cough ),
+    COND( Covid, Fever & Cough & LossSmell )
+  }
+};
+
+// Ipotesi che spiegano i sintomi osservati
+let hyps = ABD(symptoms, med_model); // → { Flu, Covid }
+
+// Aggiorna probabilità con test rapido negativo su Covid
+let post_flu   = PROB(Flu,   0.10, Map{ TestNeg: 0.9 });
+let post_covid = PROB(Covid, 0.08, Map{ TestNeg: 0.95 });
+
+// Scegli trattamento guidato da linee guida
+let treat = if post_flu >= post_covid
+            then DED(Guideline(Flu), symptoms)
+            else DED(Guideline(Covid), symptoms);
+ 
+9) Esempio: verifica controfattuale legale (CF)
+let case_world : Model = {
+  facts = { Speeding, Rain, Crash },
+  rules = { COND(Speeding & Rain, Crash) }
+};
+
+// Sarebbe avvenuto il Crash senza Speeding?
+let alt = CF(case_world, { not Speeding }, Crash);
+// alt : Belief[Fact] con confidenza ~ bassa ⇒ Speeding è causa necessaria
+ 
+10) Tracciabilità (spiegazioni)
+Qualsiasi primitiva può restituire un proof object. Con META ottieni una spiegazione:
+let concl = DED(accept_rule, { Offer(60) });
+let why   = META(concl);   // "Applicata regola accept_rule con premessa Offer(60)…"
+ 
+11) Errori e tipi (checker minimo)
+•	DED richiede Rule compatibili con i Fact in input.
+•	PROB restituisce Num ∈ [0,1]; UPDATE normalizza sempre.
+•	CF lavora su copie di Model (immutabilità per default).
+•	ARGMAX richiede lista non vuota (altrimenti Option[T]).
+ 
+12) Estendibilità (macro & moduli)
+•	Macro: definisci schemi di argomentazione alla Walton come funzioni:
+let from_authority = \(claim:Fact, expert:Atom, domain:Atom) ->
+  COND( Expert(expert, domain) & Says(expert, claim), claim );
+•	Moduli: import prob, import causal, import walton_schemes.
+ 
+13) Cheat-sheet rapido
+•	Deduzione: DED(rule, facts)
+•	Induzione: IND(cases)
+•	Abduzione: ABD(obs, model)
+•	Causale: CAU(x,y,data)
+•	Controfattuale: CF(world, change, query)
+•	Probabilità: PROB(event, prior, likelihoods)
+•	Analogia: ANA(src,tgt,hint)
+•	Sociale: SOC(agent)
+•	Narrazione: NAR(events, goal)
+•	Meta: META(proof)
+•	Scelta: ARGMAX(list, f)
+ 
+14) Perché questo è “un linguaggio vero”
+•	Tipi e firme precise → composizione sicura.
+•	Semantica (forward-chaining, Bayes, copie di mondo per CF).
+•	Primitive ridotte ma espressive → scrivi negoziazione, diagnosi, casi legali.
+•	Trasparenza: META obbliga alla spiegabilità.
+ 
+
+
+1️⃣ Grammatica Completa (BNF)
+<program>       ::= { <decl> | <stmt> }
+
+<decl>          ::= "let" <id> "=" <expr>
+<stmt>          ::= <expr> ";"
+
+<expr>          ::= <literal> 
+                  | <id> 
+                  | <lambda>
+                  | <app>
+                  | <if>
+                  | <block>
+                  | <match>
+
+<lambda>        ::= "\" "(" <params> ")" "->" <expr>
+<params>        ::= <id> ":" <type> { "," <id> ":" <type> }
+
+<app>           ::= <id> "(" [<args>] ")"
+<args>          ::= <expr> { "," <expr> }
+
+<if>            ::= "if" <expr> "then" <expr> "else" <expr>
+
+<block>         ::= "{" {<decl> | <stmt>} <expr> "}"
+
+<match>         ::= "match" <expr> "{" { <case> } "}"
+<case>          ::= "case" <pattern> "->" <expr>
+<pattern>       ::= <literal> | <id> | "_" | <pred>
+
+<literal>       ::= <num> | <str> | <bool> | <atom> 
+                  | <set> | <list> | <map>
+
+<set>           ::= "{" [<expr> {"," <expr>}] "}"
+<list>          ::= "[" [<expr> {"," <expr>}] "]"
+<map>           ::= "Map" "{" [<map_entry> {"," <map_entry>}] "}"
+<map_entry>     ::= <expr> ":" <expr>
+
+<atom>          ::= <upper_id> [ "(" [<args>] ")" ]
+<pred>          ::= <atom>
+
+<type>          ::= "Num" | "Bool" | "Str" | "Atom" 
+                  | "Fact" | "Rule" | "Model" | "Agent"
+                  | "Dist" "<" <type> ">"
+                  | "List" "<" <type> ">"
+                  | "Set" "<" <type> ">"
+                  | "Map" "<" <type> "," <type> ">"
+                  | <id>
+
+<id>            ::= <lower_letter> {<letter> | <digit> | "_"}
+<upper_id>      ::= <upper_letter> {<letter> | <digit> | "_"}
+<num>           ::= <digit>+ ["." <digit>+]
+<str>           ::= '"' {<char>} '"'
+<bool>          ::= "true" | "false"
+
+<letter>        ::= "a" | ... | "z" | "A" | ... | "Z"
+<digit>         ::= "0" | ... | "9"
+<char>          ::= any printable character
+🔑 Nota: questa grammatica è minimalista ma Turing-complete: ha funzioni, applicazioni, strutture dati.
+ 
+2️⃣ Mini-interprete (Specifiche Operative)
+Definiamo come il linguaggio esegue codice.
+Pensa a un interprete funzionale, immutabile per default.
+ 
+Ambiente di esecuzione
+•	Env: mappa da identificatori → valori.
+•	Value: può essere Num, Str, Bool, Atom, List, Set, Map, Lambda, Fact, Rule, Model, ecc.
+ 
+Valutazione espressioni (semantica a piccoli passi)
+⟦x⟧env           = lookup(env, x)
+⟦n⟧env           = n
+⟦"text"⟧env      = "text"
+
+⟦let x = e1; e2⟧env = ⟦e2⟧(env[x ↦ ⟦e1⟧env])
+
+⟦λ(p).e⟧env       = closure(p,e,env)
+⟦f(arg)⟧env      = apply(⟦f⟧env, ⟦arg⟧env)
+
+⟦if e1 then e2 else e3⟧env = if ⟦e1⟧env then ⟦e2⟧env else ⟦e3⟧env
+
+⟦{a,b,c}⟧env     = Set{⟦a⟧,⟦b⟧,⟦c⟧}
+⟦[a,b,c]⟧env     = List[⟦a⟧,⟦b⟧,⟦c⟧]
+⟦Map{a:b}⟧env    = Map{⟦a⟧:⟦b⟧}
+ 
+Primitive (semantica intuitiva)
+Primitiva	Semantica
+DED(rules,facts)	Algoritmo di forward-chaining: applica rules finché non emergono nuovi fatti.
+IND(cases)	Analisi frequenze: genera Rule con confidence = countTrue / total.
+ABD(obs,model)	Ricerca abduzione: genera set minimo di ipotesi che spiegano obs sotto model.
+CAU(x,y,data)	Causalità: valuta dipendenza `P(y
+CF(world,change,query)	Copia world, applica change, esegue DED, calcola probabilità di query.
+PROB(event,prior,likelihoods)	Bayes: posterior = (likelihood*prior)/Z.
+ANA(src,tgt)	Matching grafo: cerca isomorfismi tra src e tgt.
+SOC(agent)	Stima credenze dell’agente (usando priors e modelli).
+NAR(events,goal)	Genera frase narrativa semplice: "Because X,Y -> Goal".
+META(obj)	Genera spiegazione di derivazione (proof tree).
+ 
+Passi di esecuzione
+1.	Parsing → AST secondo BNF.
+2.	Type-checking: verifica firme di funzioni, tipi dati (Num, Rule, ecc.).
+3.	Evaluation: modello funzionale immutabile, ambiente di binding, applicazione closure.
+4.	Primitive reasoning engine:
+o	DED/IND/ABD usano algoritmi di logica proposizionale.
+o	CF crea copie di modelli (world) con modifiche.
+o	PROB implementa Bayes.
+5.	Output: valore o Belief[value,confidence].
+ 
+3️⃣ Manuale RPL (2 pagine)
+ 
+🌐 Cos’è RPL
+Reasoning Primitives Language è un linguaggio minimale per modellare ragionamenti umani come composizioni di primitive cognitive: deduzione, induzione, abduzione, causale, probabilistica, analogica, narrativa, sociale, meta.
+Obiettivo: descrivere algoritmi cognitivi complessi (negoziazioni, diagnosi, decisioni legali) con blocchi di base.
+ 
+📦 Tipi principali
+Tipo	Significato
+Fact	Fatti atomici: Rain, Offer(60)
+Rule	Regola logica: COND(Premises, Conclusion)
+Model	Insieme di fatti e regole
+Agent	Credenze e priors di un attore
+Dist[T]	Distribuzione probabilistica su T
+Belief[T]	Valore + confidenza (0..1)
+ 
+🛠️ Primitive cognitive (API)
+Nome	Firma	Descrizione
+DED	(rules:Set[Rule], facts:Set[Fact]) → Set[Fact]	Forward chaining.
+IND	(cases:Set[Fact]) → Rule	Induzione.
+ABD	(obs:Set[Fact], model:Model) → Set[Hypothesis]	Diagnosi ipotesi plausibili.
+CAU	(x:Atom, y:Atom, data:Set[Fact]) → Belief[Link]	Causalità.
+CF	(world:Model, change:Set[Fact], query:Fact) → Belief[Fact]	Controfattuali.
+PROB	(event:Atom, prior:Num, likelihoods:Map[Atom,Num]) → Num	Bayes.
+ANA	(src:Model, tgt:Model, hint:Map[Atom,Atom]) → Map[Atom,Atom]	Analogia strutturale.
+SOC	(agent:Agent) → Belief[Map[Atom,Num]]	Teoria della mente.
+NAR	(events:List[Fact], goal:Atom) → Str	Narrazione persuasiva.
+META	(obj:any) → Str	Spiegazione proof.
+ 
+📜 Sintassi essenziale
+let x = expr;        // dichiarazione
+f(x, y);             // chiamata
+if cond then a else b
+{ ... }              // blocco
+\ (a:Type) -> expr   // lambda
+
+// dati
+{a,b,c}              // set
+[a,b,c]              // lista
+Map{a:b}             // mappa
+COND(Prem,Conc)      // regola
+ 
+🔥 Esempi End-to-End
+1. Negoziazione (bargain 100€)
+let offers = [40,50,60];
+let prior_accept = Map{40:0.3, 50:0.7, 60:0.5};
+
+let estimate = \(o:Num) -> PROB(Accept, prior_accept[o], Map{Fair: if o>=50 then 0.8 else 0.3});
+let expected = \(o:Num) -> o * estimate(o);
+let best = ARGMAX(offers, expected);
+
+let pitch = NAR([Fact("MutualBenefit")], Goal("AgreeFast"));
+{ best, expected(best), pitch }
+ 
+2. Diagnosi medica
+let model = {
+  facts = {},
+  rules = {
+    COND(Flu, Fever & Cough),
+    COND(Covid, Fever & Cough & LossSmell)
+  }
+};
+
+let obs = {Fever, Cough};
+let hyps = ABD(obs, model);
+ 
+3. Analisi controfattuale legale
+let world = {
+  facts = {Speeding, Rain, Crash},
+  rules = {COND(Speeding & Rain, Crash)}
+};
+let alt = CF(world, {not Speeding}, Crash);
+META(alt);
+ 
+4. Spiegazione (Meta)
+let r = COND(Offer(60), Accept);
+let concl = DED({r}, {Offer(60)});
+META(concl);  // "Accept derivato applicando r a Offer(60)"
+ 
+🧩 Architettura
+•	Interprete funzionale, immutabile.
+•	Motore logico: forward/backward chaining.
+•	Probabilità: Bayes discreto.
+•	Controfattuali: copia e muta Model.
+•	Analogico: matching di grafo.
+•	Meta: proof tree.
+ 
+🎯 Filosofia
+RPL è assembly cognitivo:
+•	Poche primitive universali (logiche, probabilistiche, analogiche, narrative).
+•	Algoritmi complessi = combinazioni (negoziazione, diagnosi, giuridico).
+•	Ogni espressione è spiegabile con META.
+

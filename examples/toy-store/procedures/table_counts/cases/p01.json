@@ -1,0 +1,7 @@
+{
+  "input": [
+    "corpus/P01.md",
+    "Randomised"
+  ],
+  "expected_total": 120
+}

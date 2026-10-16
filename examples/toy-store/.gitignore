@@ -1,0 +1,3 @@
+.autosoft/
+output/*.sqlite
+.DS_Store
