@@ -22,6 +22,11 @@ import { reinstate, retire } from "./lifecycle/procedures.js";
 import { resolve as resolveLadder } from "./lifecycle/resolve.js";
 import { markShown } from "./lifecycle/shown.js";
 import { renderReview } from "./render/html.js";
+import { checkStore, exportStore } from "./handoff.js";
+import { branchStatus, mergeParentBranch, openParentBranch } from "./branch.js";
+import { askStore } from "./agent/ask.js";
+import { childRootFor, delegateTask } from "./agent/delegate.js";
+import type { RunnerHarness } from "./agent/runner.js";
 import { CliError, ensureDir, nowIso, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -489,6 +494,94 @@ program
   });
 
 program
+  .command("export <dest>")
+  .description("export the store for handoff: clone, manifest with integrity hashes, review page, derived output")
+  .option("--no-history", "shallow export without git history (the manifest says so)")
+  .action((dest: string, opts: { history: boolean }) => {
+    const m = exportStore(root(), dest, { history: opts.history });
+    print(`exported ${m.store_id} (${m.nodes} nodes, ${Object.keys(m.files).length} files hashed, history ${m.history_included ? "included" : "excluded"}) to ${resolve(dest)}`, m);
+  });
+
+program
+  .command("check")
+  .description("first-open check of a store: manifest integrity, artifacts, validation, index")
+  .action(() => {
+    const r = checkStore(root());
+    print(
+      [
+        `${r.ok ? "ok" : "PROBLEMS"}: ${r.nodes} nodes, ${r.validation_errors} validation errors, ${r.validation_warnings} warnings`,
+        r.manifest_found ? `manifest from ${r.exported_at} (history ${r.history_included ? "included" : "excluded"}): ${r.mismatched.length} mismatched, ${r.missing.length} missing, ${r.extra.length} new files` : "no manifest (not an export)",
+        r.artifacts_missing.length ? `artifacts missing: ${r.artifacts_missing.join(", ")}` : "all artifacts present",
+        ...r.mismatched.map((f) => `  mismatched ${f}`),
+        ...r.missing.map((f) => `  missing ${f}`),
+      ].join("\n"),
+      r,
+    );
+    if (!r.ok) process.exitCode = 2;
+  });
+
+program
+  .command("branch")
+  .description("per-parent branches of a child store")
+  .addCommand(
+    new Command("open").requiredOption("--parent <id>", "parent store id").description("create or reuse parent/<id> with its worktree, rebased on main").action((opts: { parent: string }) => {
+      const r = openParentBranch(root(), opts.parent);
+      print(`${r.branch} at ${r.worktree}${r.created ? " (created)" : ""}${r.rebased ? ` (rebased, was ${r.behind_before} behind)` : ""}`, r);
+    }),
+  )
+  .addCommand(
+    new Command("status").description("parent branches with ahead/behind counts").action(() => {
+      const rows = branchStatus(root());
+      print(rows.map((r) => `${r.branch}\tahead ${r.ahead}\tbehind ${r.behind}\t${r.worktree ?? "-"}`).join("\n") || "(no parent branches)", rows);
+    }),
+  )
+  .addCommand(
+    new Command("merge").argument("<parent>").description("reconcile parent/<id> into main; conflicts abort and are listed").action((parent: string) => {
+      const r = mergeParentBranch(root(), parent);
+      print(r.merged ? `merged ${r.commits} commit(s) from ${r.branch}` : `${r.branch} has nothing to merge`, r);
+    }),
+  );
+
+program
+  .command("ask <question...>")
+  .description("ask a coding agent a question about this store; it answers from CLI queries and cites record ids")
+  .option("--harness <h>", "claude | codex | stub", "claude")
+  .option("--model <m>", "model override for the harness")
+  .option("--budget <usd>", "spending cap for the agent", "3")
+  .action((question: string[], opts: { harness: string; model?: string; budget: string }) => {
+    const r = askStore(root(), question.join(" "), { harness: opts.harness as RunnerHarness, model: opts.model ?? null, budgetUsd: Number(opts.budget) });
+    print([r.answer, `records: ${r.records.join(", ") || "none"}`, `confidence: ${r.confidence}`].join("\n"), r);
+  });
+
+program
+  .command("delegate")
+  .description("delegate a question to a child store: its agent works on this store's branch and the answer comes back as evidence")
+  .requiredOption("--child <id-or-dir>", "child store: a directory or an id registered under stores: in autosoft.yaml")
+  .requiredOption("--question <text>", "what the child must find out")
+  .option("--why <text>", "why it matters to this store", "")
+  .option("--inputs <ids...>", "record ids or paths the child should start from")
+  .option("--harness <h>", "claude | codex | stub", "claude")
+  .option("--model <m>", "model override for the harness")
+  .option("--budget <usd>", "spending cap for the child agent", "10")
+  .action((opts: { child: string; question: string; why: string; inputs?: string[]; harness: string; model?: string; budget: string }) => {
+    const r = root();
+    const child = childRootFor(r, opts.child);
+    const result = delegateTask(r, child, { question: opts.question, why: opts.why, inputs: opts.inputs ?? [], harness: opts.harness as RunnerHarness, model: opts.model ?? null, budgetUsd: Number(opts.budget) });
+    printWarnings();
+    print(
+      [
+        `task ${result.task.id} -> ${result.child_store} on ${result.branch} (${result.worktree})`,
+        `child: ${result.output ? `${result.output.status}: ${result.output.result}` : "no structured output"}`,
+        result.output?.decision_ids.length ? `child decisions: ${result.output.decision_ids.join(", ")}` : "",
+        `parent episode ${result.parent_episode}, evidence ${result.parent_evidence}, artifact ${result.parent_artifact}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      result,
+    );
+  });
+
+program
   .command("doctor")
   .description("check runtime, SQLite features, harness CLIs and the store")
   .action(() => {
@@ -521,6 +614,74 @@ program
   .action(() => {
     const store = loadStore(root());
     print(YAML.stringify(store.config), store.config);
+  });
+
+/** The CLI contract: every command with its arguments and long options, recursively. */
+interface ContractCommand {
+  name: string;
+  args: string[];
+  options: string[];
+}
+
+function contractOf(cmd: Command, prefix = ""): ContractCommand[] {
+  const out: ContractCommand[] = [];
+  for (const sub of cmd.commands) {
+    const name = `${prefix}${sub.name()}`;
+    out.push({
+      name,
+      args: sub.registeredArguments.map((a) => (a.required ? `<${a.name()}${a.variadic ? "..." : ""}>` : `[${a.name()}${a.variadic ? "..." : ""}]`)),
+      options: sub.options.map((o) => o.long ?? o.short ?? "").filter(Boolean).sort(),
+    });
+    out.push(...contractOf(sub, `${name} `));
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export interface GateReport {
+  snapshot: string;
+  additive: string[];
+  breaking: string[];
+  ok: boolean;
+}
+
+function compareContracts(before: ContractCommand[], after: ContractCommand[]): Omit<GateReport, "snapshot" | "ok"> {
+  const additive: string[] = [];
+  const breaking: string[] = [];
+  const byName = (list: ContractCommand[]) => new Map(list.map((c) => [c.name, c]));
+  const b = byName(before);
+  const a = byName(after);
+  for (const [name, cmd] of b) {
+    const now = a.get(name);
+    if (!now) {
+      breaking.push(`command removed: ${name}`);
+      continue;
+    }
+    if (JSON.stringify(cmd.args) !== JSON.stringify(now.args)) breaking.push(`arguments of ${name} changed: ${cmd.args.join(" ")} -> ${now.args.join(" ")}`);
+    for (const o of cmd.options) if (!now.options.includes(o)) breaking.push(`option removed: ${name} ${o}`);
+    for (const o of now.options) if (!cmd.options.includes(o)) additive.push(`option added: ${name} ${o}`);
+  }
+  for (const name of a.keys()) if (!b.has(name)) additive.push(`command added: ${name}`);
+  return { additive, breaking };
+}
+
+program
+  .command("gate")
+  .description("compare the CLI contract with the committed snapshot: additive changes pass, removals and renames fail")
+  .option("--snapshot", "write the current contract as the new snapshot")
+  .option("--against <file>", "compare with a specific snapshot file", join(TOOL_ROOT, "contract.json"))
+  .action((opts: { snapshot?: boolean; against: string }) => {
+    const current = contractOf(program);
+    if (opts.snapshot) {
+      writeText(opts.against, `${JSON.stringify(current, null, 2)}\n`);
+      print(`snapshot written: ${current.length} commands -> ${opts.against}`, { snapshot: opts.against, commands: current.length });
+      return;
+    }
+    if (!existsSync(opts.against)) throw new CliError(`no snapshot at ${opts.against}; run autosoft gate --snapshot`, 1);
+    const before = JSON.parse(readText(opts.against)) as ContractCommand[];
+    const cmp = compareContracts(before, current);
+    const report: GateReport = { snapshot: opts.against, ...cmp, ok: cmp.breaking.length === 0 };
+    print([report.ok ? "ok: no breaking change" : "BREAKING changes", ...cmp.breaking.map((s) => `  breaking: ${s}`), ...cmp.additive.map((s) => `  additive: ${s}`)].join("\n"), report);
+    if (!report.ok) process.exitCode = 1;
   });
 
 async function main(): Promise<void> {

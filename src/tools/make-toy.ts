@@ -47,6 +47,7 @@ writeConfig(target, {
   harness: "claude",
   model: null,
   corpus: ["corpus"],
+  stores: {},
   promotion: { shown_uses_to_trust: 3 },
   output: {
     unit: "paper",

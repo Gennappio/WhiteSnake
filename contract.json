@@ -1,0 +1,328 @@
+[
+  {
+    "name": "add",
+    "args": [
+      "<type>"
+    ],
+    "options": [
+      "--actor",
+      "--body",
+      "--body-file",
+      "--caused-by",
+      "--json-in"
+    ]
+  },
+  {
+    "name": "affected",
+    "args": [
+      "<id>"
+    ],
+    "options": []
+  },
+  {
+    "name": "ask",
+    "args": [
+      "<question...>"
+    ],
+    "options": [
+      "--budget",
+      "--harness",
+      "--model"
+    ]
+  },
+  {
+    "name": "branch",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "branch merge",
+    "args": [
+      "<parent>"
+    ],
+    "options": []
+  },
+  {
+    "name": "branch open",
+    "args": [],
+    "options": [
+      "--parent"
+    ]
+  },
+  {
+    "name": "branch status",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "check",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "config",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "correct",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--reason",
+      "--turn",
+      "--value"
+    ]
+  },
+  {
+    "name": "delegate",
+    "args": [],
+    "options": [
+      "--budget",
+      "--child",
+      "--harness",
+      "--inputs",
+      "--model",
+      "--question",
+      "--why"
+    ]
+  },
+  {
+    "name": "doctor",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "episode",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "episode close",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--body",
+      "--outcome",
+      "--produces",
+      "--uses"
+    ]
+  },
+  {
+    "name": "episode open",
+    "args": [
+      "<title>"
+    ],
+    "options": [
+      "--parent",
+      "--question",
+      "--resolution",
+      "--uses"
+    ]
+  },
+  {
+    "name": "export",
+    "args": [
+      "<dest>"
+    ],
+    "options": [
+      "--no-history"
+    ]
+  },
+  {
+    "name": "export-output",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "frontier",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "gate",
+    "args": [],
+    "options": [
+      "--against",
+      "--snapshot"
+    ]
+  },
+  {
+    "name": "get",
+    "args": [
+      "<ref>"
+    ],
+    "options": []
+  },
+  {
+    "name": "hooks",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "hooks install",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "hooks run",
+    "args": [
+      "<event>"
+    ],
+    "options": [
+      "--harness"
+    ]
+  },
+  {
+    "name": "index",
+    "args": [],
+    "options": [
+      "--dump"
+    ]
+  },
+  {
+    "name": "ingest",
+    "args": [
+      "[log]"
+    ],
+    "options": [
+      "--session"
+    ]
+  },
+  {
+    "name": "init",
+    "args": [
+      "<dir>"
+    ],
+    "options": [
+      "--field",
+      "--harness",
+      "--id",
+      "--mandate",
+      "--name",
+      "--no-git",
+      "--no-hooks",
+      "--unit"
+    ]
+  },
+  {
+    "name": "kpi",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "link",
+    "args": [
+      "<src>",
+      "<rel>",
+      "<dst...>"
+    ],
+    "options": []
+  },
+  {
+    "name": "ls",
+    "args": [
+      "[type]"
+    ],
+    "options": [
+      "--kind",
+      "--status"
+    ]
+  },
+  {
+    "name": "precedent",
+    "args": [
+      "<text...>"
+    ],
+    "options": [
+      "--limit",
+      "--type"
+    ]
+  },
+  {
+    "name": "procedure",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "procedure reinstate",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--reason"
+    ]
+  },
+  {
+    "name": "procedure retire",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--reason"
+    ]
+  },
+  {
+    "name": "render",
+    "args": [],
+    "options": [
+      "--out"
+    ]
+  },
+  {
+    "name": "resolve",
+    "args": [
+      "[text...]"
+    ],
+    "options": [
+      "--field",
+      "--unit"
+    ]
+  },
+  {
+    "name": "set",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--body",
+      "--body-file",
+      "--json-in"
+    ]
+  },
+  {
+    "name": "shown",
+    "args": [
+      "<ids...>"
+    ],
+    "options": [
+      "--turn"
+    ]
+  },
+  {
+    "name": "timeline",
+    "args": [],
+    "options": [
+      "--session"
+    ]
+  },
+  {
+    "name": "turn",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "validate",
+    "args": [],
+    "options": []
+  },
+  {
+    "name": "why",
+    "args": [
+      "<ref>"
+    ],
+    "options": []
+  }
+]

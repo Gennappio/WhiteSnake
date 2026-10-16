@@ -20,6 +20,9 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `autosoft resolve --unit U --field F [text]` | cached decision, trusted procedure, or agent work |
 | `autosoft kpi` | resolutions without agent, decisions by status, procedure transitions |
 | `autosoft render` | write review.html for the researcher |
+| `autosoft ask "<question>"` | ask an agent about the store; answer cites record ids |
+| `autosoft delegate --child <dir> --question "..."` | hand a question to a child store; its answer comes back as evidence |
+| `autosoft export <dir>` / `autosoft check` | hand the store over, verify an imported copy |
 | `autosoft validate` | check the whole store (exit 2 on errors; warnings do not fail) |
 | `autosoft index [--dump]` | rebuild the SQLite index |
 | `autosoft timeline [--session id]` | prompts and the records each one caused |

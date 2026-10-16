@@ -26,6 +26,8 @@ export const ConfigSchema = z.strictObject({
       fields: z.array(FieldSchema).default([]),
     })
     .default({ unit: "unit", fields: [] }),
+  /** Child stores this store delegates to: id -> path (absolute or relative to the store). */
+  stores: z.record(z.string(), z.string()).default({}),
   promotion: z
     .strictObject({
       /** Shown uses without a correction after which a provisional procedure becomes trusted. */

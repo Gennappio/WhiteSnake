@@ -52,6 +52,13 @@ States are never edited by hand; the CLI derives them from recorded events and t
 - `autosoft resolve --unit U --field F` applies the resolution ladder: an accepted decision, a trusted procedure, or agent work.
 - `autosoft kpi` and `autosoft render` (writes `review.html`) show how the store is doing: episodes resolved without an agent, decisions by status and whether they were shown, procedure transitions per session, items to review, the timeline by prompt, and recording warnings.
 
+## Handoff, branches and delegation
+
+- `autosoft export <dir> [--no-history]` clones the store for handoff with a `manifest.json` (integrity hashes of every record, artifacts present or excluded, whether git history is included), the rendered review page and the derived output. `autosoft check` on the imported copy verifies the manifest, the artifacts, the records and rebuilds the index.
+- `autosoft branch open --parent <id>` gives a parent store its own branch `parent/<id>` and worktree in a child store, rebased on main; `branch status` and `branch merge <id>` reconcile explicitly. Evidence merges by itself; a conflict on decisions, criteria or procedures aborts and is listed, leaving main untouched.
+- `autosoft delegate --child <dir|id> --question "..." [--why ...] [--harness claude|codex]` runs the child store's agent on this store's branch with a structured task and records the answer here as execution evidence plus an episode whose child is a remote reference. `autosoft ask "<question>"` answers a question about the store from CLI queries, citing record ids.
+- `autosoft gate` compares the CLI surface with the committed `contract.json`: additive changes pass, removals and renames fail. Run `gate --snapshot` when a breaking change is intended and versioned.
+
 ## CLI
 
 `autosoft --help` lists every command. The ones an agent uses most: `precedent`, `frontier`, `why`, `affected`, `add`, `set`, `link`, `shown`, `validate`. See `skill/autosoft/references/cli-cheatsheet.md`.
