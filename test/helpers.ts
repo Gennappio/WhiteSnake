@@ -38,8 +38,8 @@ export function runCli(args: string[], opts: { cwd?: string; input?: string; env
 
 /** Fresh copy of the toy store in a temp directory; call the returned cleanup when done. */
 export function tempToy(): { dir: string; cleanup: () => void } {
-  const dir = mkdtempSync(join(tmpdir(), "autosoft-toy-"));
+  const dir = mkdtempSync(join(tmpdir(), "whitesnake-toy-"));
   cpSync(TOY_STORE, dir, { recursive: true });
-  rmSync(join(dir, ".autosoft"), { recursive: true, force: true });
+  rmSync(join(dir, ".whitesnake"), { recursive: true, force: true });
   return { dir, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
 }

@@ -13,7 +13,7 @@ test("UserPromptSubmit creates the turn node and the current-turn file; add pick
     const r = hook(dir, "UserPromptSubmit", { prompt: "Annotate P02" });
     assert.equal(r.status, 0);
     assert.match(r.stdout, /turn_claude_11111111222233334444555555555555_0001/);
-    assert.equal(readFileSync(join(dir, ".autosoft", "current-turn"), "utf8").trim(), "turn_claude_11111111222233334444555555555555_0001");
+    assert.equal(readFileSync(join(dir, ".whitesnake", "current-turn"), "utf8").trim(), "turn_claude_11111111222233334444555555555555_0001");
     assert.ok(existsSync(join(dir, "knowledge", "sessions", "ses_claude_11111111222233334444555555555555.md")));
     const add = runCli(["--json", "add", "question", "--json-in", JSON.stringify({ title: "Q?", why: "because" })], { cwd: dir });
     assert.equal(add.status, 0, add.stderr);
@@ -37,7 +37,7 @@ test("PreToolUse denies direct writes under knowledge/ and nudges on direct read
     assert.match(out.hookSpecificOutput.additionalContext, /precedent/);
     const elsewhere = hook(dir, "PreToolUse", { tool_name: "Edit", tool_input: { file_path: join(dir, "corpus", "P02.md") } });
     assert.equal(elsewhere.stdout.trim(), "");
-    const log = readFileSync(join(dir, ".autosoft", "hooks.log"), "utf8").trim().split("\n");
+    const log = readFileSync(join(dir, ".whitesnake", "hooks.log"), "utf8").trim().split("\n");
     assert.equal(log.length, 3);
   } finally {
     cleanup();
@@ -71,7 +71,7 @@ test("PreToolUse denies shell commands that write under knowledge/ but allows th
     assert.equal(decision("cat body.md | tee knowledge/evidence/ev_aaaaaaaaaaaa.md"), "deny");
     assert.equal(decision("sed -i '' 's/a/b/' knowledge/decisions/dec_p01nanal0000.md"), "deny");
     assert.equal(decision("rm -rf knowledge/episodes"), "deny");
-    assert.equal(decision("autosoft add decision --json-in '{\"title\":\"x\"}' --body 'see knowledge/'"), "silent");
+    assert.equal(decision("whitesnake add decision --json-in '{\"title\":\"x\"}' --body 'see knowledge/'"), "silent");
     assert.equal(decision("cat knowledge/decisions/dec_p01nanal0000.md"), "allow");
     assert.equal(decision("ls -R corpus knowledge | head"), "allow");
     assert.equal(decision("python3 procedures/table_counts/run.py corpus/P02.md Randomised"), "silent");

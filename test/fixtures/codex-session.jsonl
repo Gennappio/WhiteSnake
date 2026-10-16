@@ -3,7 +3,7 @@
 {"timestamp":"2026-10-16T12:00:01.000Z","ordinal":2,"type":"response_item","payload":{"type":"message","id":"msg-dev","role":"developer","content":[{"type":"input_text","text":"developer instructions"}]}}
 {"timestamp":"2026-10-16T12:00:01.100Z","ordinal":3,"type":"response_item","payload":{"type":"message","id":"msg-u1","role":"user","content":[{"type":"input_text","text":"<environment_context>\n  <cwd>/x/store</cwd>\n</environment_context>"},{"type":"input_text","text":"Annotate P02 following the output schema."}]}}
 {"timestamp":"2026-10-16T12:00:01.200Z","ordinal":4,"type":"turn_context","payload":{"turn_id":"turn-aaa-1","cwd":"/x/store","model":"gpt-test","approval_policy":"never"}}
-{"timestamp":"2026-10-16T12:00:05.000Z","ordinal":5,"type":"response_item","payload":{"type":"custom_tool_call","name":"shell","input":"autosoft frontier","call_id":"c1"}}
+{"timestamp":"2026-10-16T12:00:05.000Z","ordinal":5,"type":"response_item","payload":{"type":"custom_tool_call","name":"shell","input":"whitesnake frontier","call_id":"c1"}}
 {"timestamp":"2026-10-16T12:00:05.500Z","ordinal":6,"type":"response_item","payload":{"type":"custom_tool_call_output","call_id":"c1","output":"Open questions: none"}}
 {"timestamp":"2026-10-16T12:00:09.000Z","ordinal":7,"type":"response_item","payload":{"type":"message","id":"msg-a1","role":"assistant","content":[{"type":"output_text","text":"Done with P02."}]}}
 {"timestamp":"2026-10-16T12:00:09.500Z","ordinal":8,"type":"event_msg","payload":{"type":"task_complete","turn_id":"turn-aaa-1","last_agent_message":"Done with P02."}}

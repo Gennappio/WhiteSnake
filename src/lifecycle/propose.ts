@@ -53,7 +53,7 @@ export function proposeFromEvidence(store: LoadedStore, evidenceIds: string[], o
   const evs = evidenceIds.map((id) => {
     const n = store.nodes.get(id);
     if (!n || n.type !== "evidence") throw new CliError(`${id} is not an evidence record`, 1);
-    if (n.kind !== "execution" || !n.execution) throw new CliError(`${id} is not an execution with a recorded command (use autosoft run)`, 2);
+    if (n.kind !== "execution" || !n.execution) throw new CliError(`${id} is not an execution with a recorded command (use whitesnake run)`, 2);
     return n as Evidence & { execution: NonNullable<Evidence["execution"]> };
   });
   if (!evs.length) throw new CliError("pass at least one execution evidence id", 1);
@@ -81,7 +81,7 @@ export function proposeFromEvidence(store: LoadedStore, evidenceIds: string[], o
   if (!/^[a-z0-9_-]+$/.test(name)) throw new CliError("--name must be lowercase letters, digits, _ or -", 1);
   const dir = join("procedures", name);
   const entrypoint = join(dir, "run.sh");
-  writeText(join(store.root, entrypoint), `#!/bin/sh\n# Proposed by autosoft from recorded executions: ${evs.map((e) => e.id).join(", ")}\n# Parameters: ${params.length ? params.map((_, k) => `$${k + 1}`).join(" ") : "none"}\nset -e\n${template}\n`);
+  writeText(join(store.root, entrypoint), `#!/bin/sh\n# Proposed by whitesnake from recorded executions: ${evs.map((e) => e.id).join(", ")}\n# Parameters: ${params.length ? params.map((_, k) => `$${k + 1}`).join(" ") : "none"}\nset -e\n${template}\n`);
   chmodSync(join(store.root, entrypoint), 0o755);
   const cases: string[] = [];
   evs.forEach((e, k) => {

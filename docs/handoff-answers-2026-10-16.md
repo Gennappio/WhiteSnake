@@ -1,6 +1,6 @@
 # Producer (claude) final message
 
-I annotated P02 and P03, and `autosoft validate` prints `ok`. P03's `n_analyzed_total` (148) is lower-confidence because the paper's prose and table disagree.
+I annotated P02 and P03, and `whitesnake validate` prints `ok`. P03's `n_analyzed_total` (148) is lower-confidence because the paper's prose and table disagree.
 
 | Paper | Field | Value | Decision id |
 |---|---|---|---|
@@ -14,7 +14,7 @@ I annotated P02 and P03, and `autosoft validate` prints `ok`. P03's `n_analyzed_
 **P03 `n_analyzed_total`:**
 - **The disagreement:** P03's prose says three participants (two mindfulness, one usual care) were excluded from all analyses, which implies 147. Table 2's ITT column sums to 148, so the mindfulness arm differs by one.
 - **How I resolved it:** I applied the existing rule that the table wins (`dec_choice0tabl4`). Table 2 has no arithmetic error that would justify distrusting it. I recorded the decision as active, interpretive, with confidence 0.75. The prose excerpt and my comparison are cited as rebuttal evidence (`ev_db4hshjnbbty`, `ev_2w1y46r06xtb`).
-- **What to check:** if you think the prose is right, the value would be 147. `autosoft why P03/n_analyzed_total` shows the trail.
+- **What to check:** if you think the prose is right, the value would be 147. `whitesnake why P03/n_analyzed_total` shows the trail.
 - **Per-protocol:** I used the ITT column, not the per-protocol one, per `dec_crit0analyz1`.
 
 **Everything else:**
@@ -56,7 +56,7 @@ confidence: 1
 
 # Criterion change (codex) final message
 
-Recorded the rule change in AutoSoft.
+Recorded the rule change in WhiteSnake.
 
 - New active criterion: `dec_rwdbmybenfdq`
   - Uses per-protocol population when reported; otherwise ITT.
@@ -66,7 +66,7 @@ Recorded the rule change in AutoSoft.
   - `dec_s3rf7m0vqhhd` — P02, current value 80
   - `dec_s82yfqscaztk` — P03, current value 148
 
-No annotations were re-annotated. `autosoft validate` reports the store is valid.
+No annotations were re-annotated. `whitesnake validate` reports the store is valid.
 
 ---
 
@@ -81,7 +81,7 @@ P04 was registered as artifact `art_375y230y01wx` and fully annotated:
 - `primary_outcome`: **HbA1c (%) at 24 weeks** — Methods / Outcomes
   - Decision: `dec_2p62t0nfp6tt`
 
-The trusted table-count procedure was recorded in both count episodes. All episodes are closed, provenance was checked with `autosoft why`, and final validation returned `ok: store is valid`.
+The trusted table-count procedure was recorded in both count episodes. All episodes are closed, provenance was checked with `whitesnake why`, and final validation returned `ok: store is valid`.
 
 ---
 

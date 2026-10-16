@@ -1,4 +1,4 @@
-.autosoft/
+.whitesnake/
 output/*.sqlite
 review.html
 .DS_Store

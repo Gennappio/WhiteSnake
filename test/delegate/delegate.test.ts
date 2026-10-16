@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { FIXTURES, REPO_ROOT, runCli, tempToy } from "../helpers.js";
 
 const STUB = join(FIXTURES, "stub-agent.sh");
-const env = { AUTOSOFT_STUB_SCRIPT: STUB, PATH: `${join(REPO_ROOT, "bin")}:${process.env["PATH"] ?? ""}` };
+const env = { WHITESNAKE_STUB_SCRIPT: STUB, PATH: `${join(REPO_ROOT, "bin")}:${process.env["PATH"] ?? ""}` };
 const git = (dir: string, ...args: string[]) => execFileSync("git", ["-C", dir, "-c", "user.name=t", "-c", "user.email=t@example.com", ...args], { encoding: "utf8" }).trim();
 const gitInit = (dir: string) => {
   git(dir, "init", "-q", "-b", "main");
@@ -33,7 +33,7 @@ test("delegation runs the child on the parent's branch and records the answer as
   const child = tempToy();
   try {
     // Distinct store ids: the branch in the child is named after the parent.
-    const cfg = join(parent.dir, "autosoft.yaml");
+    const cfg = join(parent.dir, "whitesnake.yaml");
     writeFileSync(cfg, readFileSync(cfg, "utf8").replace(/^id: toy$/m, "id: parent-lab"));
     gitInit(parent.dir);
     gitInit(child.dir);

@@ -7,7 +7,7 @@ import { REPO_ROOT, runCli, tempToy } from "../helpers.js";
 
 test("the committed contract snapshot matches the CLI, and removals or renames are reported as breaking", () => {
   const { dir, cleanup } = tempToy();
-  const tmp = mkdtempSync(join(tmpdir(), "autosoft-gate-"));
+  const tmp = mkdtempSync(join(tmpdir(), "whitesnake-gate-"));
   try {
     const committed = join(REPO_ROOT, "contract.json");
     const ok = runCli(["--json", "gate", "--against", committed], { cwd: dir });

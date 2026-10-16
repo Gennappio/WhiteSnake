@@ -3,7 +3,7 @@
  *
  *   A) annotate P02 and P03: valid store, six complete chains, and the table procedure promoted to trusted
  *      by the results shown in the agent's final message;
- *   B) the researcher changes the analysed-population criterion: the agent must record it through `autosoft correct`
+ *   B) the researcher changes the analysed-population criterion: the agent must record it through `whitesnake correct`
  *      so every n_analyzed_total annotation leaves `active`, while randomised and outcome annotations stay untouched;
  *   C) a fourth paper arrives: three complete chains, the trusted procedure is reused, no duplicate procedure.
  *
@@ -19,15 +19,15 @@ import { TASK_PROMPT, TOY_EXTRA, chainComplete, checkCell, cleanup, cli, cliComm
 const CORRECTION_PROMPT = [
   "The researcher reviewed the annotations and changed a rule: from now on n_analyzed_total must count the per-protocol population",
   "when a paper reports one, and the intention-to-treat population otherwise.",
-  "Record this change through the store, not by editing files: run `autosoft correct dec_crit0analyz1 --reason \"...\"` so that every",
+  "Record this change through the store, not by editing files: run `whitesnake correct dec_crit0analyz1 --reason \"...\"` so that every",
   "annotation relying on the old criterion is flagged for review, then add the new criterion as a decision of kind criterion that supersedes",
   "dec_crit0analyz1, and finish by listing the annotations that now need review. Do not re-annotate anything yet.",
 ].join(" ");
 
 const P04_PROMPT = [
-  "A new paper P04 arrived at corpus/P04.md. Register its artifact, then annotate it for the three output fields following the autosoft skill:",
-  "check `autosoft resolve --unit P04 --field <field>` and reuse trusted procedures where they apply, recording them in the episode's uses;",
-  "capture verbatim evidence, cite the current criteria as warrant, close the episodes, run `autosoft validate` and list the decision ids you created.",
+  "A new paper P04 arrived at corpus/P04.md. Register its artifact, then annotate it for the three output fields following the whitesnake skill:",
+  "check `whitesnake resolve --unit P04 --field <field>` and reuse trusted procedures where they apply, recording them in the episode's uses;",
+  "capture verbatim evidence, cite the current criteria as warrant, close the episodes, run `whitesnake validate` and list the decision ids you created.",
 ].join(" ");
 
 const P04_EXPECTED: Record<string, number | RegExp> = {
@@ -84,7 +84,7 @@ function nonAgentShare(store: string, prefix: string): number {
 function main(): void {
   const parsed = parseCommonArgs(process.argv.slice(2));
   const args: CommonArgs = parsed;
-  const store = prepareStore("autosoft-m2-");
+  const store = prepareStore("whitesnake-m2-");
   console.error(`[m2] store ${store} (${args.harness}${args.model ? `, ${args.model}` : ""})`);
 
   // Phase A
@@ -121,7 +121,7 @@ function main(): void {
   const cellsAfterB = [...untouchedBefore.keys()].map((c) => checkCell(store, c, sessionIdFor(args.harness, sessionA), null));
   const b: PhaseB = {
     seconds: runB.seconds,
-    correct_invoked: commandsB.some((c) => /autosoft\s+correct\s+dec_crit0analyz1/.test(c)) || hookEvents(store).commands.some((c) => /autosoft correct dec_crit0analyz1/.test(c)),
+    correct_invoked: commandsB.some((c) => /whitesnake\s+correct\s+dec_crit0analyz1/.test(c)) || hookEvents(store).commands.some((c) => /whitesnake correct dec_crit0analyz1/.test(c)),
     analysed_flagged: analysedOriginal.map((n) => ({ id: n.id, status: n.type === "decision" ? n.status : "" })).sort((x, y) => x.id.localeCompare(y.id)),
     untouched_ok: cellsAfterB.every((c) => {
       const before = untouchedBefore.get(c.cell);

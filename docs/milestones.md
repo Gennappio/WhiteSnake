@@ -37,7 +37,7 @@ Prova dal vivo a tre sessioni (`npm run e2e:m2`): **superata con Claude Code e c
 | Fase | Durata | Esito |
 |---|---|---|
 | A. Annotazione di P02 e P03 | 135 s | store valido, 6 catene complete; `proc_tablecount01` promossa a `trusted` senza intervento umano, con 5 usi mostrati registrati dallo Stop hook |
-| B. Il ricercatore cambia il criterio della popolazione analizzata | 45 s | l'agente ha usato `autosoft correct dec_crit0analyz1`; le tre annotazioni `n_analyzed_total` (P01, P02, P03) sono passate a `needs_review`; le sei annotazioni di randomizzati e outcome sono rimaste `active` con gli stessi valori; creato un nuovo criterio che sostituisce il vecchio |
+| B. Il ricercatore cambia il criterio della popolazione analizzata | 45 s | l'agente ha usato `whitesnake correct dec_crit0analyz1`; le tre annotazioni `n_analyzed_total` (P01, P02, P03) sono passate a `needs_review`; le sei annotazioni di randomizzati e outcome sono rimaste `active` con gli stessi valori; creato un nuovo criterio che sostituisce il vecchio |
 | C. Arriva P04 | 97 s | 3 catene complete e 3 valori corretti; episodi che riusano la procedura trusted; numero di procedure invariato; quota di episodi risolti senza agente 0,50 contro 0,375 della fase A |
 
 Codex (`--harness codex --model gpt-5.6-sol`):
@@ -45,7 +45,7 @@ Codex (`--harness codex --model gpt-5.6-sol`):
 | Fase | Durata | Esito |
 |---|---|---|
 | A | 141 s | store valido, 6 catene complete, procedura promossa a `trusted` con 5 usi mostrati; quota senza agente 0,50 |
-| B | 77 s | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
+| B | 77 s | `whitesnake correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
 | C | 96 s | 3 catene complete e 3 valori corretti; procedura riusata; procedure 1 → 1; quota senza agente 0,50 |
 
 Codex come agente di lavoro: la CLI installata (0.150.1) rifiuta il modello configurato `gpt-6-astra`; con `--model gpt-5.6-sol` gli hook di progetto scattano (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop) e il compito di M1 (`npm run e2e:m1 -- --harness codex --model gpt-5.6-sol --runs 3`) è passato **3 run su 3**: store valido, 6 catene complete e 6 valori corretti per run, `affected` esatto, primo accesso allo store via CLI, zero letture dirette, zero scritture negate. Durate 143, 243 e 131 secondi. Codex esegue ogni passo come programma JavaScript con più comandi shell dentro; gli hook ricevono comunque un evento per singolo comando.
@@ -61,14 +61,14 @@ Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in d
 | Passo | Esito |
 |---|---|
 | Claude Code annota P02 e P03 nello store di origine | store valido, 119 s |
-| `autosoft export` → copia pulita con manifest; `autosoft check` | ok: 52 record, 0 discrepanze, storia inclusa |
-| Codex spiega tre annotazioni tramite `autosoft ask` | **3/3** in entrambe le esecuzioni: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
-| Codex registra il cambio di criterio (97 s) | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
+| `whitesnake export` → copia pulita con manifest; `whitesnake check` | ok: 52 record, 0 discrepanze, storia inclusa |
+| Codex spiega tre annotazioni tramite `whitesnake ask` | **3/3** in entrambe le esecuzioni: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
+| Codex registra il cambio di criterio (97 s) | `whitesnake correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
 | Codex annota P04 nella copia ereditata (141 s) | 3 catene complete e 3 valori corretti; procedura trusted riusata; applica la nuova regola notando che P04 non riporta la popolazione per protocollo |
 | Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile). Nell'esecuzione finale: stato `completed`, risposta che cita la decisione del figlio, due evidenze e il criterio; nel padre episodio con figlio remoto, evidenza di esecuzione e artefatto; store valido |
 | Domande rivolte al ricercatore | 0 in entrambe le esecuzioni; le risposte complete dell'esecuzione finale sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano (correttezza delle spiegazioni, domande evitabili) |
 
-Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.autosoft/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
+Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.whitesnake/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
 
 ## M4 — Compattazione, collasso, sublation
 

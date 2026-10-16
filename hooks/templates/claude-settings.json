@@ -1,28 +1,28 @@
 {
   "hooks": {
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run SessionStart", "timeout": 30 }] }
+      { "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run SessionStart", "timeout": 30 }] }
     ],
     "UserPromptSubmit": [
-      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run UserPromptSubmit", "timeout": 15 }] }
+      { "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run UserPromptSubmit", "timeout": 15 }] }
     ],
     "PreToolUse": [
       {
         "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|Bash",
-        "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PreToolUse", "timeout": 15 }]
+        "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run PreToolUse", "timeout": 15 }]
       }
     ],
     "PostToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PostToolUse", "timeout": 15 }] }
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run PostToolUse", "timeout": 15 }] }
     ],
     "Stop": [
-      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run Stop", "timeout": 60 }] }
+      { "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run Stop", "timeout": 60 }] }
     ],
     "PreCompact": [
-      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PreCompact", "timeout": 60 }] }
+      { "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run PreCompact", "timeout": 60 }] }
     ],
     "SessionEnd": [
-      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run SessionEnd", "timeout": 60 }] }
+      { "hooks": [{ "type": "command", "command": "{{WHITESNAKE}} hooks run SessionEnd", "timeout": 60 }] }
     ]
   }
 }

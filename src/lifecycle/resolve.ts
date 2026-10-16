@@ -23,7 +23,7 @@ export function resolve(db: DatabaseSync, unit: string | undefined, field: strin
   let advice: string;
   if (decision) {
     mode = "cached";
-    advice = `An accepted decision already exists for ${unit}/${field}: ${decision}. Reuse it (autosoft why ${decision}) unless the researcher asked to redo it.`;
+    advice = `An accepted decision already exists for ${unit}/${field}: ${decision}. Reuse it (whitesnake why ${decision}) unless the researcher asked to redo it.`;
   } else if (trusted.length) {
     mode = "code";
     advice = `Run a trusted procedure if its applicability matches, record its output as execution evidence and list it in the episode's uses: ${trusted.map((p) => p.id).join(", ")}.`;

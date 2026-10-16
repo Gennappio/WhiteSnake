@@ -54,10 +54,10 @@ export function cli(store: string, args: string[], json = true): { status: numbe
 }
 
 /** Fresh copy of the toy store with skill, hooks and a git repository, in a temp directory. */
-export function prepareStore(prefix = "autosoft-e2e-"): string {
+export function prepareStore(prefix = "whitesnake-e2e-"): string {
   const dir = mkdtempSync(join(tmpdir(), prefix));
   cpSync(TOY, dir, { recursive: true });
-  rmSync(join(dir, ".autosoft"), { recursive: true, force: true });
+  rmSync(join(dir, ".whitesnake"), { recursive: true, force: true });
   const inst = cli(dir, ["hooks", "install"]);
   if (inst.status !== 0) throw new Error(`hooks install failed: ${inst.stdout}`);
   execFileSync("git", ["-C", dir, "init", "-q", "-b", "main"]);
@@ -105,7 +105,7 @@ function runClaude(store: string, prompt: string, sessionId: string, args: Commo
 
 /** Codex headless. A fresh temp store has no persisted hook trust, hence the bypass flag; the sandbox bypass mirrors Claude's. */
 function runCodex(store: string, prompt: string, args: CommonArgs): Omit<AgentRun, "seconds"> {
-  const lastMsg = join(store, ".autosoft", `codex-last-message-${Date.now()}.txt`);
+  const lastMsg = join(store, ".whitesnake", `codex-last-message-${Date.now()}.txt`);
   const cmd = ["exec", "-C", store, "--json", "--dangerously-bypass-approvals-and-sandbox", "--dangerously-bypass-hook-trust", "--skip-git-repo-check", "-o", lastMsg];
   if (args.model) cmd.push("-m", args.model);
   cmd.push(prompt);
@@ -160,7 +160,7 @@ export interface HookSummary {
 }
 
 export function hookEvents(store: string): HookSummary {
-  const p = join(store, ".autosoft", "hooks.log");
+  const p = join(store, ".whitesnake", "hooks.log");
   const out: HookSummary = { events: {}, errors: [], denies: 0, nudges: 0, commands: [] };
   if (!existsSync(p)) return out;
   for (const line of readFileSync(p, "utf8").split("\n")) {
@@ -244,7 +244,7 @@ export function classify(t: ToolUse): Access {
     const raw = t.input["command"] ?? t.input["cmd"];
     const cmd = Array.isArray(raw) ? raw.map(String).join(" ") : String(raw ?? "");
     // A Codex exec script may mix several commands: whichever touches the store first decides the class.
-    const cliAt = cmd.search(/(^|[\s;&|(])autosoft(\s|$)|cli\.js/);
+    const cliAt = cmd.search(/(^|[\s;&|(])whitesnake(\s|$)|cli\.js/);
     const knowledgeAt = cmd.search(/(^|[\s'"=\/])knowledge(\/|\b)/);
     if (cliAt >= 0 && (knowledgeAt < 0 || cliAt <= knowledgeAt)) return "cli";
     if (knowledgeAt >= 0) return /(^|[^<])>{1,2}\s*\S*knowledge\/|\b(tee|cp|mv|rm|sed\s+-i)\b[^;&|]*knowledge/.test(cmd) ? "knowledge_write" : "knowledge_read";
@@ -267,11 +267,11 @@ export function cliCommands(transcript: string): string[] {
 }
 
 export const TASK_PROMPT = [
-  "Annotate papers P02 and P03 (corpus/P02.md, corpus/P03.md) for the three output fields defined in autosoft.yaml:",
+  "Annotate papers P02 and P03 (corpus/P02.md, corpus/P03.md) for the three output fields defined in whitesnake.yaml:",
   "n_randomized_total, n_analyzed_total, primary_outcome.",
-  "Follow the autosoft skill in .claude/skills/autosoft/SKILL.md: consult precedents and criteria first, open an episode per paper,",
+  "Follow the whitesnake skill in .claude/skills/whitesnake/SKILL.md: consult precedents and criteria first, open an episode per paper,",
   "capture verbatim evidence with its artifact locator, record each value as a decision citing its evidence (data) and the criterion (warrant),",
-  "close the episodes, then run `autosoft validate` and finish by listing the decision ids you created.",
+  "close the episodes, then run `whitesnake validate` and finish by listing the decision ids you created.",
 ].join(" ");
 
 export interface WhyNodeJson {

@@ -2,10 +2,10 @@
  * M3 live test: the handoff. One harness builds the store, the other inherits it in a clean directory.
  *
  *   1. producer (default claude) annotates P02 and P03; the store is exported with its manifest;
- *   2. in the exported copy, `autosoft check` passes;
- *   3. the inheritor (default codex) answers "why" questions through `autosoft ask`: the cited records must include
+ *   2. in the exported copy, `whitesnake check` passes;
+ *   3. the inheritor (default codex) answers "why" questions through `whitesnake ask`: the cited records must include
  *      the decision, one of its evidence records and the criterion;
- *   4. the inheritor applies a criterion change through `autosoft correct`: exactly the analysed annotations are flagged;
+ *   4. the inheritor applies a criterion change through `whitesnake correct`: exactly the analysed annotations are flagged;
  *   5. the inheritor annotates the new paper P04 with complete chains, reusing the procedure;
  *   6. a parent store delegates a question to the inherited store; the answer comes back as evidence.
  *   Final messages are saved to <report>.answers.md for the researcher's judgment (correctness, avoidable questions).
@@ -33,18 +33,18 @@ const inheritor: Harness = arg(a, "--inheritor") === "claude" ? "claude" : "code
 const producerArgs: CommonArgs = { harness: producer, model: arg(a, "--producer-model"), budget: 10, keep: true, settingsFlag: false };
 const inheritorArgs: CommonArgs = { harness: inheritor, model: arg(a, "--inheritor-model"), budget: 10, keep: true, settingsFlag: false };
 const keep = a.includes("--keep");
-const scratch = mkdtempSync(join(tmpdir(), "autosoft-m3-"));
+const scratch = mkdtempSync(join(tmpdir(), "whitesnake-m3-"));
 const reportPath = join(scratch, "m3-report");
 const answers: string[] = [];
 
 const CRITERION_PROMPT = [
   "You inherited this store. The researcher changed a rule: n_analyzed_total must count the per-protocol population when a paper reports one, otherwise the intention-to-treat population.",
-  "Record it through the store: run `autosoft correct dec_crit0analyz1 --reason \"...\"`, add the new criterion as a decision of kind criterion superseding dec_crit0analyz1, and list the annotations that now need review. Do not re-annotate yet.",
+  "Record it through the store: run `whitesnake correct dec_crit0analyz1 --reason \"...\"`, add the new criterion as a decision of kind criterion superseding dec_crit0analyz1, and list the annotations that now need review. Do not re-annotate yet.",
 ].join(" ");
 const P04_PROMPT = [
-  "A new paper P04 arrived at corpus/P04.md. Register its artifact, then annotate it for the three output fields following the autosoft skill:",
-  "use `autosoft resolve --unit P04 --field <field>` and reuse trusted procedures where they apply, recording them in the episode's uses;",
-  "capture verbatim evidence, cite the current criteria as warrant, close the episodes, run `autosoft validate` and list the decision ids you created.",
+  "A new paper P04 arrived at corpus/P04.md. Register its artifact, then annotate it for the three output fields following the whitesnake skill:",
+  "use `whitesnake resolve --unit P04 --field <field>` and reuse trusted procedures where they apply, recording them in the episode's uses;",
+  "capture verbatim evidence, cite the current criteria as warrant, close the episodes, run `whitesnake validate` and list the decision ids you created.",
 ].join(" ");
 
 function turnPrefix(h: Harness, sid: string): string {
@@ -53,7 +53,7 @@ function turnPrefix(h: Harness, sid: string): string {
 
 function main(): void {
   // 1. Producer builds the store.
-  const source = prepareStore("autosoft-m3-src-");
+  const source = prepareStore("whitesnake-m3-src-");
   const sidP = randomUUID();
   const prod = runAgent(source, TASK_PROMPT, sidP, producerArgs);
   console.error(`[m3] producer ${producer} exited ${prod.status} after ${prod.seconds}s`);
@@ -103,7 +103,7 @@ function main(): void {
   const flagged = analysedBefore.map((id) => ({ id, status: (after.get(id) as { status?: string } | undefined)?.status ?? "missing" }));
   const untouched = othersBefore.every(([id, status]) => (after.get(id) as { status?: string } | undefined)?.status === status);
   const correction = {
-    correct_invoked: commands.some((c) => /autosoft\s+correct\s+dec_crit0analyz1/.test(c)),
+    correct_invoked: commands.some((c) => /whitesnake\s+correct\s+dec_crit0analyz1/.test(c)),
     flagged,
     untouched,
     new_criterion: [...after.values()].find((n) => n.type === "decision" && n.kind === "criterion" && n.supersedes.includes("dec_crit0analyz1"))?.id ?? null,
@@ -124,8 +124,8 @@ function main(): void {
   const p04Ok = neu.status === 0 && p04.every(chainComplete) && p04.filter((c) => c.value_ok).length >= 2 && reused && cli(exportDir, ["validate"]).status === 0;
 
   // 6. Delegation from a parent store to the inherited store.
-  const parent = prepareStore("autosoft-m3-parent-");
-  const cfgPath = join(parent, "autosoft.yaml");
+  const parent = prepareStore("whitesnake-m3-parent-");
+  const cfgPath = join(parent, "whitesnake.yaml");
   writeFileSync(cfgPath, readFileSync(cfgPath, "utf8").replace(/^id: toy$/m, "id: parent-lab"));
   cli(parent, ["validate"]);
   let delegation: Record<string, unknown> = {};

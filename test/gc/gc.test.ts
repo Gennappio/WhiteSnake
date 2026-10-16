@@ -11,7 +11,7 @@ const gitInit = (dir: string) => {
   git(dir, "add", "-A");
   git(dir, "commit", "-q", "-m", "fixture");
 };
-const stubEnv = { AUTOSOFT_STUB_SCRIPT: join(FIXTURES, "stub-agent.sh"), PATH: `${join(REPO_ROOT, "bin")}:${process.env["PATH"] ?? ""}` };
+const stubEnv = { WHITESNAKE_STUB_SCRIPT: join(FIXTURES, "stub-agent.sh"), PATH: `${join(REPO_ROOT, "bin")}:${process.env["PATH"] ?? ""}` };
 
 /** A cold, failed root episode with its own evidence: the kind of attempt gc compacts into a negative example. */
 function plantGarbage(dir: string): { ep: string; ev: string } {

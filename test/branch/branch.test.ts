@@ -20,7 +20,7 @@ test("a parent branch gets its own worktree, is rebased on main when reopened, a
     const open = runCli(["--json", "branch", "open", "--parent", "alpha"], { cwd: dir });
     assert.equal(open.status, 0, open.stdout);
     const wt = (open.json as { worktree: string; created: boolean }).worktree;
-    assert.ok(existsSync(join(wt, "autosoft.yaml")));
+    assert.ok(existsSync(join(wt, "whitesnake.yaml")));
     assert.equal(git(wt, "rev-parse", "--abbrev-ref", "HEAD"), "parent/alpha");
     // Work on the branch: a new question, committed.
     const q = runCli(["--json", "add", "question", "--json-in", JSON.stringify({ title: "From alpha", why: "test" })], { cwd: wt });

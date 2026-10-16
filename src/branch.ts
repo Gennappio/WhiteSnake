@@ -26,11 +26,11 @@ function gitTry(cwd: string, args: string[]): { status: number; stdout: string; 
 }
 
 function requireRepo(root: string): void {
-  if (!existsSync(join(root, ".git"))) throw new CliError(`${root} is not a git repository; branching needs one (autosoft init creates it)`, 1);
+  if (!existsSync(join(root, ".git"))) throw new CliError(`${root} is not a git repository; branching needs one (whitesnake init creates it)`, 1);
 }
 
 export function worktreeDir(root: string, parentId: string): string {
-  return join(root, ".autosoft", "worktrees", parentId);
+  return join(root, ".whitesnake", "worktrees", parentId);
 }
 
 export interface OpenResult {
@@ -50,7 +50,7 @@ export function openParentBranch(root: string, parentId: string): OpenResult {
   const dir = worktreeDir(root, parentId);
   let created = false;
   if (!existsSync(dir)) {
-    ensureDir(join(root, ".autosoft", "worktrees"));
+    ensureDir(join(root, ".whitesnake", "worktrees"));
     git(root, ["worktree", "add", "-q", dir, branch]);
     created = true;
   }

@@ -14,7 +14,7 @@ function gitInit(dir: string): void {
 
 test("export of a plain store carries a manifest, passes check, and answers why identically", () => {
   const { dir, cleanup } = tempToy();
-  const dest = join(mkdtempSync(join(tmpdir(), "autosoft-export-")), "copy");
+  const dest = join(mkdtempSync(join(tmpdir(), "whitesnake-export-")), "copy");
   try {
     const ex = runCli(["--json", "export", dest], { cwd: dir });
     assert.equal(ex.status, 0, ex.stdout);
@@ -43,7 +43,7 @@ test("export of a plain store carries a manifest, passes check, and answers why 
 
 test("export of a git store clones it; --no-history yields a single commit and says so", () => {
   const { dir, cleanup } = tempToy();
-  const base = mkdtempSync(join(tmpdir(), "autosoft-export-"));
+  const base = mkdtempSync(join(tmpdir(), "whitesnake-export-"));
   try {
     gitInit(dir);
     const full = runCli(["--json", "export", join(base, "full")], { cwd: dir });

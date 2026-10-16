@@ -1,5 +1,5 @@
 {
-  "name": "autosoft",
+  "name": "whitesnake",
   "version": "0.1.0",
   "description": "Transferable agentic research processes: a knowledge store with provenance and procedures promoted from experience, for Claude Code and Codex",
   "type": "module",
@@ -8,7 +8,7 @@
     "node": ">=22.13"
   },
   "bin": {
-    "autosoft": "dist/src/cli.js"
+    "whitesnake": "dist/src/cli.js"
   },
   "files": [
     "dist/src",

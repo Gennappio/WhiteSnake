@@ -36,17 +36,17 @@ import { CliError, ensureDir, nowIso, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const TOOL_ROOT = resolve(here, "..", "..");
-const SKILL_DIR = join(TOOL_ROOT, "skill", "autosoft");
+const SKILL_DIR = join(TOOL_ROOT, "skill", "whitesnake");
 const CLI_PATH = fileURLToPath(import.meta.url);
 /** Command used by hooks: absolute, so it works without PATH configuration. */
-const AUTOSOFT_CMD = `${JSON.stringify(process.execPath)} --disable-warning=ExperimentalWarning ${JSON.stringify(CLI_PATH)}`;
+const WHITESNAKE_CMD = `${JSON.stringify(process.execPath)} --disable-warning=ExperimentalWarning ${JSON.stringify(CLI_PATH)}`;
 
 const program = new Command();
 program
-  .name("autosoft")
+  .name("whitesnake")
   .description("Knowledge store with provenance for agentic research processes")
   .version(JSON.parse(readFileSync(join(TOOL_ROOT, "package.json"), "utf8")).version as string)
-  .option("--store <dir>", "store directory (default: nearest autosoft.yaml upwards from cwd)")
+  .option("--store <dir>", "store directory (default: nearest whitesnake.yaml upwards from cwd)")
   .option("--json", "machine-readable output");
 
 type GlobalOpts = { store?: string; json?: boolean };
@@ -75,7 +75,7 @@ const bodyFrom = (opts: { body?: string; bodyFile?: string }): string => {
 
 program
   .command("init <dir>")
-  .description("create a new store: autosoft.yaml, knowledge/, skill link, hooks, git repository")
+  .description("create a new store: whitesnake.yaml, knowledge/, skill link, hooks, git repository")
   .requiredOption("--id <id>", "store id (lowercase, digits, dashes)")
   .option("--name <name>", "human name")
   .option("--mandate <text>", "what this store is for", "")
@@ -98,13 +98,13 @@ program
       ensureDir(join(target, "knowledge", d));
       writeText(join(target, "knowledge", d, ".gitkeep"), "");
     }
-    for (const d of ["corpus", "procedures", "artifacts", "output", ".autosoft"]) ensureDir(join(target, d));
-    writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
+    for (const d of ["corpus", "procedures", "artifacts", "output", ".whitesnake"]) ensureDir(join(target, d));
+    writeText(join(target, ".gitignore"), ".whitesnake/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
     installSkillAndHooks(target, opts.hooks);
     if (opts.git && !existsSync(join(target, ".git"))) {
       execFileSync("git", ["-C", target, "init", "-q", "-b", "main"]);
       execFileSync("git", ["-C", target, "add", "-A"]);
-      execFileSync("git", ["-C", target, "commit", "-q", "-m", "store: initialise AutoSoft store"]);
+      execFileSync("git", ["-C", target, "commit", "-q", "-m", "store: initialise WhiteSnake store"]);
     }
     print(`Initialised store ${cfg.id} at ${target}`, { root: target, config: cfg });
   });
@@ -112,31 +112,31 @@ program
 function installSkillAndHooks(target: string, hooks: boolean): void {
   for (const skillsDir of [join(target, ".claude", "skills"), join(target, ".agents", "skills")]) {
     ensureDir(skillsDir);
-    const link = join(skillsDir, "autosoft");
+    const link = join(skillsDir, "whitesnake");
     if (!existsSync(link)) symlinkSync(SKILL_DIR, link, "dir");
   }
   const pointer = [
-    "# AutoSoft store",
+    "# WhiteSnake store",
     "",
-    "This directory is an AutoSoft knowledge store. Follow the `autosoft` skill (`.claude/skills/autosoft/SKILL.md`):",
-    "consult `autosoft precedent` and `autosoft frontier` before deciding, record decisions and evidence through the CLI,",
+    "This directory is an WhiteSnake knowledge store. Follow the `whitesnake` skill (`.claude/skills/whitesnake/SKILL.md`):",
+    "consult `whitesnake precedent` and `whitesnake frontier` before deciding, record decisions and evidence through the CLI,",
     "and never edit files under `knowledge/` by hand.",
     "",
   ].join("\n");
   writeText(join(target, "CLAUDE.md"), pointer);
   writeText(join(target, "AGENTS.md"), pointer);
   if (hooks) {
-    const escaped = AUTOSOFT_CMD.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+    const escaped = WHITESNAKE_CMD.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
     // Claude Code: hooks live inside .claude/settings.json, merged with whatever else is there.
     const claudeTemplate = readText(join(TOOL_ROOT, "hooks", "templates", "claude-settings.json"));
     const settingsPath = join(target, ".claude", "settings.json");
     const existing = existsSync(settingsPath) ? (JSON.parse(readText(settingsPath)) as Record<string, unknown>) : {};
-    const hookCfg = JSON.parse(claudeTemplate.replaceAll("{{AUTOSOFT}}", escaped)) as Record<string, unknown>;
+    const hookCfg = JSON.parse(claudeTemplate.replaceAll("{{WHITESNAKE}}", escaped)) as Record<string, unknown>;
     writeText(settingsPath, `${JSON.stringify({ ...existing, ...hookCfg }, null, 2)}\n`);
     // Codex: a dedicated .codex/hooks.json with the same event/matcher/handler shape. Codex runs project hooks only once
     // the .codex layer is trusted (or with --dangerously-bypass-hook-trust in headless automation).
     const codexTemplate = readText(join(TOOL_ROOT, "hooks", "templates", "codex-hooks.json"));
-    writeText(join(target, ".codex", "hooks.json"), codexTemplate.replaceAll("{{AUTOSOFT}}", escaped));
+    writeText(join(target, ".codex", "hooks.json"), codexTemplate.replaceAll("{{WHITESNAKE}}", escaped));
   }
 }
 
@@ -177,7 +177,7 @@ program
   .option("--body <text>", "markdown body (evidence excerpt, rationale, prompt)")
   .option("--body-file <path>", "read the body from a file")
   .option("--caused-by <turn>", "override the current turn")
-  .option("--actor <name>", "created_by value (default: AUTOSOFT_ACTOR or agent)")
+  .option("--actor <name>", "created_by value (default: WHITESNAKE_ACTOR or agent)")
   .action((type: string, opts: { jsonIn?: string; body?: string; bodyFile?: string; causedBy?: string; actor?: string }) => {
     if (!(NODE_TYPES as readonly string[]).includes(type)) throw new CliError(`unknown type ${type}; one of ${NODE_TYPES.join(", ")}`, 1);
     const r = root();
@@ -466,7 +466,7 @@ program
   )
   .addCommand(
     new Command("propose")
-      .requiredOption("--from-evidence <ids...>", "execution evidence recorded with autosoft run")
+      .requiredOption("--from-evidence <ids...>", "execution evidence recorded with whitesnake run")
       .option("--name <name>", "directory name under procedures/")
       .option("--title <text>")
       .option("--applicability <text...>")
@@ -590,7 +590,7 @@ program
 program
   .command("delegate")
   .description("delegate a question to a child store: its agent works on this store's branch and the answer comes back as evidence")
-  .requiredOption("--child <id-or-dir>", "child store: a directory or an id registered under stores: in autosoft.yaml")
+  .requiredOption("--child <id-or-dir>", "child store: a directory or an id registered under stores: in whitesnake.yaml")
   .requiredOption("--question <text>", "what the child must find out")
   .option("--why <text>", "why it matters to this store", "")
   .option("--inputs <ids...>", "record ids or paths the child should start from")
@@ -619,7 +619,7 @@ program
   .command("gc")
   .description("compact cold episode subtrees nothing live depends on into template nodes; git history keeps the raw files")
   .option("--apply", "apply the plan (default: print it)")
-  .option("--cold-after <n>", "sessions of age after which a closed subtree is cold (default from autosoft.yaml)")
+  .option("--cold-after <n>", "sessions of age after which a closed subtree is cold (default from whitesnake.yaml)")
   .action((opts: { apply?: boolean; coldAfter?: string }) => {
     const r = root();
     const plan = planGc(loadStore(r), { coldAfter: opts.coldAfter !== undefined ? Number(opts.coldAfter) : undefined });
@@ -683,7 +683,7 @@ program
       checks[bin] = { ok: w.status === 0, path: w.stdout.trim() || null };
     }
     const r = findStoreRoot(resolve(globals().store ?? process.cwd()));
-    checks["store"] = r ? { ok: true, root: r, validation_errors: validateStore(loadStore(r)).length } : { ok: false, note: "no autosoft.yaml found" };
+    checks["store"] = r ? { ok: true, root: r, validation_errors: validateStore(loadStore(r)).length } : { ok: false, note: "no whitesnake.yaml found" };
     checks["skill"] = { ok: existsSync(join(SKILL_DIR, "SKILL.md")), path: SKILL_DIR };
     const allOk = Object.values(checks).every((c) => (c as { ok: boolean }).ok);
     print(Object.entries(checks).map(([k, v]) => `${(v as { ok: boolean }).ok ? "ok  " : "FAIL"} ${k} ${JSON.stringify(v)}`).join("\n"), { ok: allOk, checks });
@@ -758,7 +758,7 @@ program
       print(`snapshot written: ${current.length} commands -> ${opts.against}`, { snapshot: opts.against, commands: current.length });
       return;
     }
-    if (!existsSync(opts.against)) throw new CliError(`no snapshot at ${opts.against}; run autosoft gate --snapshot`, 1);
+    if (!existsSync(opts.against)) throw new CliError(`no snapshot at ${opts.against}; run whitesnake gate --snapshot`, 1);
     const before = JSON.parse(readText(opts.against)) as ContractCommand[];
     const cmp = compareContracts(before, current);
     const report: GateReport = { snapshot: opts.against, ...cmp, ok: cmp.breaking.length === 0 };

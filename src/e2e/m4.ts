@@ -16,7 +16,7 @@ import { cleanup, cli, parseCommonArgs, prepareStore, type CommonArgs } from "./
 
 function main(): void {
   const args: CommonArgs = parseCommonArgs(process.argv.slice(2));
-  const store = prepareStore("autosoft-m4-");
+  const store = prepareStore("whitesnake-m4-");
   const harnessArgs = ["--harness", args.harness, ...(args.model ? ["--model", args.model] : [])];
 
   const easy = cli(store, ["procedure", "recheck", "proc_tablecount01", "--retire", ...harnessArgs]);

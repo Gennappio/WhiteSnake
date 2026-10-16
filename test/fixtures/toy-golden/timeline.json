@@ -8,7 +8,7 @@
         "turn": "turn_claude_toyseed0001_0001",
         "index": 1,
         "timestamp": "2026-10-01T09:00:00.000Z",
-        "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+        "prompt": "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from.",
         "caused": [
           {
             "id": "art_p01a7k3m9q2x",

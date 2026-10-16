@@ -34,9 +34,9 @@ for (const d of Object.values(TYPE_DIR)) {
   ensureDir(join(target, "knowledge", d));
   writeText(join(target, "knowledge", d, ".gitkeep"), "");
 }
-for (const d of ["corpus", "procedures/table_counts/cases", "artifacts", "output", ".autosoft"]) ensureDir(join(target, d));
+for (const d of ["corpus", "procedures/table_counts/cases", "artifacts", "output", ".whitesnake"]) ensureDir(join(target, d));
 cpSync(CORPUS_SRC, join(target, "corpus"), { recursive: true });
-writeText(join(target, ".gitignore"), ".autosoft/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
+writeText(join(target, ".gitignore"), ".whitesnake/\noutput/*.sqlite\nreview.html\n.DS_Store\n");
 
 writeConfig(target, {
   id: "toy",
@@ -70,7 +70,7 @@ const base = (id: string, title: string, created: string) => ({ id, title, creat
 
 // Session and turns of the seeding researcher session
 add({ ...base(SES, "Claude Code session toyseed0", T0), type: "session", harness: "claude", native_id: SEED_SESSION, cwd: "/toy", git_branch: "main", log_path: null, model: "fixture", started: T0, ended: T3 });
-const prompt1 = "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.";
+const prompt1 = "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from.";
 const prompt2 = "When a paper reports both intention-to-treat and per-protocol analysed counts, count the intention-to-treat population.";
 add({ ...base(TURN1, `Turn 1: ${prompt1.slice(0, 60)}`, T0), type: "turn", session: SES, index: 1, native_id: null, prompt_excerpt: prompt1, prompt_hash: sha256(prompt1), timestamp: T0 }, prompt1);
 add({ ...base(TURN2, `Turn 2: ${prompt2.slice(0, 60)}`, T1), type: "turn", session: SES, index: 2, native_id: null, prompt_excerpt: prompt2, prompt_hash: sha256(prompt2), timestamp: T1 }, prompt2);

@@ -11,7 +11,7 @@ import type { ValidationIssue } from "./files.js";
 /** Warnings produced by the last createNode/updateNode call, for the CLI to print. */
 export let lastWarnings: ValidationIssue[] = [];
 
-export const CURRENT_TURN_FILE = ".autosoft/current-turn";
+export const CURRENT_TURN_FILE = ".whitesnake/current-turn";
 
 export function currentTurn(root: string): string | null {
   const p = join(root, CURRENT_TURN_FILE);
@@ -49,7 +49,7 @@ export function createNode(root: string, type: NodeType, input: Record<string, u
     raw["id"] = newId(type);
   }
   if (raw["created"] === undefined) raw["created"] = nowIso();
-  if (raw["created_by"] === undefined) raw["created_by"] = opts.actor ?? process.env["AUTOSOFT_ACTOR"] ?? "agent";
+  if (raw["created_by"] === undefined) raw["created_by"] = opts.actor ?? process.env["WHITESNAKE_ACTOR"] ?? "agent";
   if (HAS_CAUSED_BY.includes(type) && raw["caused_by"] === undefined) {
     raw["caused_by"] = opts.causedBy === undefined ? currentTurn(root) : opts.causedBy;
   }

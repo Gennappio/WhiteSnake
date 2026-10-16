@@ -2,7 +2,7 @@
 
 Every node is a Markdown file `knowledge/<type-dir>/<id>.md` with YAML frontmatter and an optional body. Ids are `prefix_` plus twelve lowercase alphanumerics (`dec_`, `ev_`, `art_`, `proc_`, `ep_`, `q_`, `tpl_`); sessions and turns derive their ids from the harness session (`ses_claude_…`, `turn_claude_…_0003`). The CLI generates ids, `created`, `created_by` and `caused_by` for you.
 
-Edges are frontmatter fields holding ids. Their direction is fixed: a decision points to its evidence (`data`), to the criterion that licenses it (`warrant`), to the episode that produced it (`produced_by`); an episode points to the procedures and decisions it `uses` and to what it `produces`. `autosoft affected <id>` walks these edges backwards to find everything that relies on a node.
+Edges are frontmatter fields holding ids. Their direction is fixed: a decision points to its evidence (`data`), to the criterion that licenses it (`warrant`), to the episode that produced it (`produced_by`); an episode points to the procedures and decisions it `uses` and to what it `produces`. `whitesnake affected <id>` walks these edges backwards to find everything that relies on a node.
 
 ## decision (`knowledge/decisions/`)
 
@@ -24,7 +24,7 @@ Edges are frontmatter fields holding ids. Their direction is fixed: a decision p
 Body: the rationale in a few lines. Example:
 
 ```
-autosoft add decision --json-in '{
+whitesnake add decision --json-in '{
   "title": "P02 n_analyzed_total",
   "kind": "annotation", "status": "active",
   "claim": "80 participants were analysed in the ITT population (41 + 39)",
@@ -38,7 +38,7 @@ autosoft add decision --json-in '{
 
 ## evidence (`knowledge/evidence/`)
 
-`kind`: `excerpt` (verbatim from a source), `observation` (something you measured), `execution` (output of a command or script). `locator`: `{artifact, path, page, table, section, span}` with at least `artifact` or `path`. `hash` is the sha256 of the body and is computed by the CLI. Body: the verbatim excerpt or the raw output. Keep excerpts short and exact. For `execution`, `autosoft run` fills `execution: {command, cwd, exit_code, duration_ms, platform, input_hashes, truncated}` so the run can be reproduced and compared across machines.
+`kind`: `excerpt` (verbatim from a source), `observation` (something you measured), `execution` (output of a command or script). `locator`: `{artifact, path, page, table, section, span}` with at least `artifact` or `path`. `hash` is the sha256 of the body and is computed by the CLI. Body: the verbatim excerpt or the raw output. Keep excerpts short and exact. For `execution`, `whitesnake run` fills `execution: {command, cwd, exit_code, duration_ms, platform, input_hashes, truncated}` so the run can be reproduced and compared across machines.
 
 ## artifact (`knowledge/artifacts/`)
 
@@ -58,4 +58,4 @@ Something unresolved: `why` (what depends on the answer), `status` (`open`, `ans
 
 ## session, turn (`knowledge/sessions/`, `knowledge/turns/`)
 
-Created by hooks and by `autosoft ingest` from the harness logs. A turn is one user prompt; every record's `caused_by` points to the turn during which it was created, so `autosoft timeline` shows what each prompt led to.
+Created by hooks and by `whitesnake ingest` from the harness logs. A turn is one user prompt; every record's `caused_by` points to the turn during which it was created, so `whitesnake timeline` shows what each prompt led to.

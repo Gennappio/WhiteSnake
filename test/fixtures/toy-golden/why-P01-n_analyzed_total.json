@@ -8,7 +8,7 @@
       "node": {
         "id": "turn_claude_toyseed0001_0001",
         "type": "turn",
-        "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+        "title": "Turn 1: Annotate P01 following the output schema in whitesnake.yaml.",
         "children": [
           {
             "rel": "session",
@@ -20,7 +20,7 @@
             }
           }
         ],
-        "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from."
+        "prompt": "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from."
       }
     },
     {
@@ -35,9 +35,9 @@
             "node": {
               "id": "turn_claude_toyseed0001_0001",
               "type": "turn",
-              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "title": "Turn 1: Annotate P01 following the output schema in whitesnake.yaml.",
               "children": [],
-              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "prompt": "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from.",
               "shallow": true
             }
           },
@@ -53,9 +53,9 @@
                   "node": {
                     "id": "turn_claude_toyseed0001_0001",
                     "type": "turn",
-                    "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+                    "title": "Turn 1: Annotate P01 following the output schema in whitesnake.yaml.",
                     "children": [],
-                    "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+                    "prompt": "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from.",
                     "shallow": true
                   }
                 }
@@ -99,9 +99,9 @@
             "node": {
               "id": "turn_claude_toyseed0001_0001",
               "type": "turn",
-              "title": "Turn 1: Annotate P01 following the output schema in autosoft.yaml. C",
+              "title": "Turn 1: Annotate P01 following the output schema in whitesnake.yaml.",
               "children": [],
-              "prompt": "Annotate P01 following the output schema in autosoft.yaml. Cite the table each count comes from.",
+              "prompt": "Annotate P01 following the output schema in whitesnake.yaml. Cite the table each count comes from.",
               "shallow": true
             }
           },

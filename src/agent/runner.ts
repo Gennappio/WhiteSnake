@@ -51,15 +51,15 @@ function parseJsonLoose(text: string): unknown {
 
 /**
  * Run a coding agent headless in `cwd` with a prompt and, optionally, a JSON schema for its final answer.
- * The stub harness runs the script named by AUTOSOFT_STUB_SCRIPT with the prompt on stdin: deterministic tests.
+ * The stub harness runs the script named by WHITESNAKE_STUB_SCRIPT with the prompt on stdin: deterministic tests.
  */
 export function runHeadless(cwd: string, prompt: string, opts: HeadlessOptions): HeadlessResult {
   const timeout = opts.timeoutMs ?? 25 * 60 * 1000;
-  ensureDir(join(cwd, ".autosoft"));
+  ensureDir(join(cwd, ".whitesnake"));
   if (opts.harness === "stub") {
-    const script = process.env["AUTOSOFT_STUB_SCRIPT"];
-    if (!script || !existsSync(script)) throw new CliError("stub harness needs AUTOSOFT_STUB_SCRIPT pointing to an executable script", 1);
-    const r = spawnSync(script, [], { cwd, input: prompt, encoding: "utf8", env: { ...env(), AUTOSOFT_SCHEMA: opts.schema ? JSON.stringify(opts.schema) : "" }, timeout });
+    const script = process.env["WHITESNAKE_STUB_SCRIPT"];
+    if (!script || !existsSync(script)) throw new CliError("stub harness needs WHITESNAKE_STUB_SCRIPT pointing to an executable script", 1);
+    const r = spawnSync(script, [], { cwd, input: prompt, encoding: "utf8", env: { ...env(), WHITESNAKE_SCHEMA: opts.schema ? JSON.stringify(opts.schema) : "" }, timeout });
     return { status: r.status ?? -1, sessionId: `stub${Date.now().toString(36)}`, text: r.stdout, json: parseJsonLoose(r.stdout), stdout: r.stdout, stderr: r.stderr };
   }
   if (opts.harness === "claude") {
@@ -79,10 +79,10 @@ export function runHeadless(cwd: string, prompt: string, opts: HeadlessOptions):
   }
   // codex
   const stamp = Date.now().toString(36);
-  const last = join(cwd, ".autosoft", `codex-last-${stamp}.txt`);
+  const last = join(cwd, ".whitesnake", `codex-last-${stamp}.txt`);
   const cmd = ["exec", "-C", cwd, "--json", "--dangerously-bypass-approvals-and-sandbox", "--dangerously-bypass-hook-trust", "--skip-git-repo-check", "-o", last];
   if (opts.schema) {
-    const schemaPath = join(cwd, ".autosoft", `schema-${stamp}.json`);
+    const schemaPath = join(cwd, ".whitesnake", `schema-${stamp}.json`);
     writeText(schemaPath, JSON.stringify(opts.schema));
     cmd.push("--output-schema", schemaPath);
   }

@@ -13,8 +13,8 @@ export interface AskResult {
 export function askStore(root: string, question: string, opts: { harness: RunnerHarness; model?: string | null; budgetUsd?: number }): AskResult {
   const cfg = loadConfig(root);
   const prompt = [
-    `You are answering a question about the AutoSoft store "${cfg.name}" (${cfg.id}) in this directory.`,
-    "Use only the autosoft CLI to look things up: `autosoft why <id|unit/field>`, `autosoft precedent <text>`, `autosoft get <id>`, `autosoft affected <id>`, `autosoft frontier`, `autosoft timeline`, `autosoft ls`.",
+    `You are answering a question about the WhiteSnake store "${cfg.name}" (${cfg.id}) in this directory.`,
+    "Use only the whitesnake CLI to look things up: `whitesnake why <id|unit/field>`, `whitesnake precedent <text>`, `whitesnake get <id>`, `whitesnake affected <id>`, `whitesnake frontier`, `whitesnake timeline`, `whitesnake ls`.",
     "Do not modify the store. Cite the ids of the records your answer rests on.",
     `Question: ${question}`,
     'Reply with JSON only: {"answer": string, "records": [ids], "confidence": 0..1}.',

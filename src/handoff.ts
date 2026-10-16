@@ -18,7 +18,7 @@ export const MANIFEST_FILE = "manifest.json";
 const HASHED_DIRS = ["knowledge", "procedures", "corpus"];
 
 export interface Manifest {
-  format: "autosoft-export/1";
+  format: "whitesnake-export/1";
   store_id: string;
   name: string;
   exported_at: string;
@@ -63,7 +63,7 @@ function toolVersion(): string {
 }
 
 function skillSha(): string {
-  const p = join(TOOL_ROOT, "skill", "autosoft", "SKILL.md");
+  const p = join(TOOL_ROOT, "skill", "whitesnake", "SKILL.md");
   return existsSync(p) ? sha256(readFileSync(p)) : "";
 }
 
@@ -84,9 +84,9 @@ export function exportStore(root: string, dest: string, opts: { history: boolean
     const args = ["clone", "-q", ...(opts.history ? [] : ["--depth", "1"]), `file://${root}`, target];
     execFileSync("git", args, { stdio: "ignore" });
   } else {
-    cpSync(root, target, { recursive: true, filter: (src) => !src.includes(`${root}/.autosoft`) });
+    cpSync(root, target, { recursive: true, filter: (src) => !src.includes(`${root}/.whitesnake`) });
   }
-  rmSync(join(target, ".autosoft"), { recursive: true, force: true });
+  rmSync(join(target, ".whitesnake"), { recursive: true, force: true });
   // Artifacts and other ignored-but-needed files travel with the export even when git ignores them.
   for (const d of ["artifacts"]) {
     const src = join(root, d);
@@ -103,7 +103,7 @@ export function exportStore(root: string, dest: string, opts: { history: boolean
     })
     .sort((a, b) => a.path.localeCompare(b.path));
   const manifest: Manifest = {
-    format: "autosoft-export/1",
+    format: "whitesnake-export/1",
     store_id: config.id,
     name: config.name,
     exported_at: nowIso(),
@@ -114,7 +114,7 @@ export function exportStore(root: string, dest: string, opts: { history: boolean
     nodes: store.nodes.size,
     files: hashTree(target),
     artifacts,
-    excluded: [...(isGitRepo(root) && !opts.history ? ["git history before the exported commit"] : []), ...artifacts.filter((a) => !a.present).map((a) => `artifact ${a.path}`), ".autosoft/ (index, hook log, transcripts)"],
+    excluded: [...(isGitRepo(root) && !opts.history ? ["git history before the exported commit"] : []), ...artifacts.filter((a) => !a.present).map((a) => `artifact ${a.path}`), ".whitesnake/ (index, hook log, transcripts)"],
     requirements: { node: ">=22.13", harnesses: ["claude", "codex"] },
   };
   writeText(join(target, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);

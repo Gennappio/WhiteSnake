@@ -55,7 +55,7 @@ export function evaluateRun(store: string, sessionId: string, agent: AgentRun, r
   const cells = Object.entries(EXPECTED).map(([cell, expected]) => ({ ...checkCell(store, cell, sessionNode, expected), soft: SOFT_VALUES.has(cell) }));
 
   const d1 = sha256(cli(store, ["index", "--dump"], false).stdout);
-  rmSync(join(store, ".autosoft", "index.sqlite"), { force: true });
+  rmSync(join(store, ".whitesnake", "index.sqlite"), { force: true });
   const d2 = sha256(cli(store, ["index", "--dump"], false).stdout);
 
   const hooks = hookEvents(store);

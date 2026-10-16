@@ -44,7 +44,7 @@ const SHELL_TOOLS = new Set(["Bash", "shell", "exec_command", "local_shell", "co
 const SHELL_WRITE_RE = /(^|[^<])>{1,2}\s*\S*knowledge\/|\b(tee|cp|mv|rm|rmdir|touch|truncate|install|mkdir)\b[^;&|]*[\s'"=\/]knowledge(\/|\b)|\b(sed|perl)\s+-[a-zA-Z]*i[^;&|]*[\s'"=\/]knowledge(\/|\b)/;
 /** Any mention of the knowledge directory as a path token, with or without a trailing slash. */
 const KNOWLEDGE_MENTION_RE = /(^|[\s'"=\/])knowledge(\/|\b)/;
-const CLI_RE = /(^|[\s;&|(])autosoft(\s|$)|cli\.js/;
+const CLI_RE = /(^|[\s;&|(])whitesnake(\s|$)|cli\.js/;
 
 function shellCommandOf(input: Record<string, unknown> | undefined): string | null {
   if (!input) return null;
@@ -62,7 +62,7 @@ function patchPathsOf(input: Record<string, unknown> | undefined): string[] {
 }
 
 function log(root: string, entry: Record<string, unknown>): void {
-  appendText(join(root, ".autosoft", "hooks.log"), `${JSON.stringify({ ts: nowIso(), ...entry })}\n`);
+  appendText(join(root, ".whitesnake", "hooks.log"), `${JSON.stringify({ ts: nowIso(), ...entry })}\n`);
 }
 
 function pathsOf(input: Record<string, unknown> | undefined): string[] {
@@ -108,9 +108,9 @@ export function runHook(event: string, input: HookInput): HookOutput {
     switch (event) {
       case "SessionStart": {
         let firstOpen = "";
-        if (existsSync(join(root, "manifest.json")) && !existsSync(join(root, ".autosoft", "checked"))) {
+        if (existsSync(join(root, "manifest.json")) && !existsSync(join(root, ".whitesnake", "checked"))) {
           const rep = checkStore(root, { runProcedures: true });
-          writeText(join(root, ".autosoft", "checked"), nowIso());
+          writeText(join(root, ".whitesnake", "checked"), nowIso());
           const procs = rep.procedures ? `${rep.procedures.checked.length} procedure(s) re-run, ${rep.procedures.suspended.length} suspended for this platform` : "procedures not checked";
           firstOpen = `First open of an imported store: ${rep.ok ? "integrity ok" : `PROBLEMS (${rep.mismatched.length} mismatched, ${rep.missing.length} missing, ${rep.validation_errors} validation errors)`}; ${procs}.`;
           log(root, { event, first_open: rep });
@@ -122,10 +122,10 @@ export function runHook(event: string, input: HookInput): HookOutput {
         const cfg = loadConfig(root);
         log(root, { event, session: input.session_id, source: input.source });
         const text = [
-          `AutoSoft store "${cfg.name}" (${cfg.id}). Mandate: ${cfg.mandate || "not stated"}.`,
+          `WhiteSnake store "${cfg.name}" (${cfg.id}). Mandate: ${cfg.mandate || "not stated"}.`,
           firstOpen,
-          "Before deciding, consult precedents with `autosoft precedent <text>`; explain results with `autosoft why <id|unit/field>`.",
-          "Record decisions and evidence only through `autosoft add` / `autosoft set` / `autosoft link`; never edit files under knowledge/ directly.",
+          "Before deciding, consult precedents with `whitesnake precedent <text>`; explain results with `whitesnake why <id|unit/field>`.",
+          "Record decisions and evidence only through `whitesnake add` / `whitesnake set` / `whitesnake link`; never edit files under knowledge/ directly.",
           "",
           renderFrontier(f),
         ]
@@ -179,7 +179,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
         writeNodeFile(root, turn, prompt);
         writeText(join(root, CURRENT_TURN_FILE), `${id}\n`);
         log(root, { event, session: input.session_id, turn: id });
-        return { exitCode: 0, stdout: `Current AutoSoft turn: ${id}. Records created during this turn carry caused_by=${id} automatically.` };
+        return { exitCode: 0, stdout: `Current WhiteSnake turn: ${id}. Records created during this turn carry caused_by=${id} automatically.` };
       }
       case "PreToolUse": {
         const tool = input.tool_name ?? "";
@@ -195,7 +195,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
                 hookEventName: "PreToolUse",
                 permissionDecision: "deny",
                 permissionDecisionReason:
-                  "Shell commands must not create or modify files under knowledge/: use `autosoft add`, `autosoft set` or `autosoft link` so the record is validated.",
+                  "Shell commands must not create or modify files under knowledge/: use `whitesnake add`, `whitesnake set` or `whitesnake link` so the record is validated.",
               },
             }),
           };
@@ -208,7 +208,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
               hookSpecificOutput: {
                 hookEventName: "PreToolUse",
                 permissionDecision: "allow",
-                additionalContext: "Reading knowledge/ files from the shell is allowed, but `autosoft get <id>`, `autosoft why <id>` and `autosoft precedent <text>` give the same information with resolved links.",
+                additionalContext: "Reading knowledge/ files from the shell is allowed, but `whitesnake get <id>`, `whitesnake why <id>` and `whitesnake precedent <text>` give the same information with resolved links.",
               },
             }),
           };
@@ -222,7 +222,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
                 hookEventName: "PreToolUse",
                 permissionDecision: "deny",
                 permissionDecisionReason:
-                  "Files under knowledge/ are written only through the CLI so they stay valid: use `autosoft add <type> --json ...`, `autosoft set <id> --json ...` or `autosoft link <id> <rel> <ids...>`.",
+                  "Files under knowledge/ are written only through the CLI so they stay valid: use `whitesnake add <type> --json ...`, `whitesnake set <id> --json ...` or `whitesnake link <id> <rel> <ids...>`.",
               },
             }),
           };
@@ -236,7 +236,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
                 hookEventName: "PreToolUse",
                 permissionDecision: "allow",
                 additionalContext:
-                  "Reading knowledge/ files directly is allowed but rarely needed: `autosoft precedent <text>`, `autosoft why <id>`, `autosoft get <id>` and `autosoft frontier` answer most questions faster and with resolved links.",
+                  "Reading knowledge/ files directly is allowed but rarely needed: `whitesnake precedent <text>`, `whitesnake why <id>`, `whitesnake get <id>` and `whitesnake frontier` answer most questions faster and with resolved links.",
               },
             }),
           };
@@ -247,7 +247,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
       case "PostToolUse": {
         const tool = input.tool_name ?? "";
         const cmd = typeof input.tool_input?.["command"] === "string" ? (input.tool_input["command"] as string) : undefined;
-        log(root, { event, tool, command: cmd?.startsWith("autosoft") || cmd?.includes("cli.js") ? truncate(cmd, 200) : undefined });
+        log(root, { event, tool, command: cmd?.startsWith("whitesnake") || cmd?.includes("cli.js") ? truncate(cmd, 200) : undefined });
         return { exitCode: 0 };
       }
       case "Stop":
@@ -267,7 +267,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
         const commit = gitCommit(root, `store: ${event.toLowerCase()} ${(input.session_id ?? "").slice(0, 8)}`.trim());
         log(root, { event, session: input.session_id, ingested, shown, validation_errors: issues.length, commit });
         if (issues.length) {
-          return { exitCode: 0, stdout: JSON.stringify({ systemMessage: `AutoSoft: ${issues.length} validation issue(s) in the store; run \`autosoft validate\`.` }) };
+          return { exitCode: 0, stdout: JSON.stringify({ systemMessage: `WhiteSnake: ${issues.length} validation issue(s) in the store; run \`whitesnake validate\`.` }) };
         }
         return { exitCode: 0 };
       }
@@ -277,6 +277,6 @@ export function runHook(event: string, input: HookInput): HookOutput {
     }
   } catch (e) {
     log(root, { event, error: (e as Error).message });
-    return { exitCode: 0, stderr: `autosoft hook ${event} failed: ${(e as Error).message}` };
+    return { exitCode: 0, stderr: `whitesnake hook ${event} failed: ${(e as Error).message}` };
   }
 }

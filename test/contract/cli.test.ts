@@ -25,7 +25,7 @@ test("the toy store validates and the index rebuild is byte-identical", () => {
     const v = runCli(["--json", "validate"], { cwd: dir });
     assert.equal(v.status, 0, v.stdout);
     const d1 = runCli(["index", "--dump"], { cwd: dir }).stdout;
-    rmSync(join(dir, ".autosoft"), { recursive: true, force: true });
+    rmSync(join(dir, ".whitesnake"), { recursive: true, force: true });
     const d2 = runCli(["index", "--dump"], { cwd: dir }).stdout;
     assert.ok(d1.length > 1000);
     assert.equal(d1, d2);

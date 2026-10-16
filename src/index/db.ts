@@ -7,7 +7,7 @@ import { CONFIG_FILE } from "../store/config.js";
 import { knowledgeDir, loadStore, type LoadedStore } from "../store/files.js";
 import { ensureDir, fileMtimeMs, walkFiles } from "../util.js";
 
-export const INDEX_REL = ".autosoft/index.sqlite";
+export const INDEX_REL = ".whitesnake/index.sqlite";
 
 export function indexPath(root: string): string {
   return join(root, INDEX_REL);
@@ -107,7 +107,7 @@ export interface BuildStats {
 export function buildIndex(root: string, loaded?: LoadedStore): BuildStats {
   const store = loaded ?? loadStore(root);
   const path = indexPath(root);
-  ensureDir(join(root, ".autosoft"));
+  ensureDir(join(root, ".whitesnake"));
   if (existsSync(path)) rmSync(path);
   const db = new DatabaseSync(path);
   db.exec(SCHEMA_SQL);

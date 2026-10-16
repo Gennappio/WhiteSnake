@@ -63,15 +63,15 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
     allowed_outputs: ["evidence", "decision", "question"],
     created: nowIso(),
   };
-  writeText(join(work, ".autosoft", "tasks", `${task.id}.json`), `${JSON.stringify(task, null, 2)}\n`);
+  writeText(join(work, ".whitesnake", "tasks", `${task.id}.json`), `${JSON.stringify(task, null, 2)}\n`);
 
   const prompt = [
-    `You are working in the AutoSoft store "${childCfg.name}" (${childCfg.id}) on behalf of the parent store "${parentCfg.id}", task ${task.id}.`,
+    `You are working in the WhiteSnake store "${childCfg.name}" (${childCfg.id}) on behalf of the parent store "${parentCfg.id}", task ${task.id}.`,
     `Task: ${task.question}`,
     task.why ? `Why it matters to the parent: ${task.why}` : "",
     task.inputs.length ? `Inputs: ${task.inputs.join(", ")}` : "",
     `Acceptance criteria: ${task.acceptance_criteria.join("; ")}`,
-    "Follow the autosoft skill: open an episode for this task, consult precedents, record evidence and decisions through the autosoft CLI, close the episode, run `autosoft validate`.",
+    "Follow the whitesnake skill: open an episode for this task, consult precedents, record evidence and decisions through the whitesnake CLI, close the episode, run `whitesnake validate`.",
     'Finish with JSON only: {"status": "completed|blocked|needs_context", "result": string, "episode_id": string, "decision_ids": [..], "evidence_ids": [..], "uncertainties": [..], "new_questions": [..], "question_for_parent": string or null (set only when needs_context)}.',
   ]
     .filter(Boolean)
@@ -79,7 +79,7 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
 
   const run = runHeadless(work, prompt, { harness: spec.harness, schema: loadSchema("child-output.json"), model: spec.model ?? null, budgetUsd: spec.budgetUsd ?? 10 });
   const output = isChildOutput(run.json) ? run.json : null;
-  writeText(join(work, ".autosoft", "tasks", `${task.id}.output.json`), `${JSON.stringify({ status: run.status, text: run.text, json: run.json }, null, 2)}\n`);
+  writeText(join(work, ".whitesnake", "tasks", `${task.id}.output.json`), `${JSON.stringify({ status: run.status, text: run.text, json: run.json }, null, 2)}\n`);
   // The child's Stop hook usually commits first; report the branch head either way.
   const childCommit = commitAll(work, `store: task ${task.id} for ${parentCfg.id}`) ?? headOf(work);
   if (run.status !== 0 && !output) throw new CliError(`child agent failed (exit ${run.status}): ${run.stderr.slice(0, 400)}`, 1);
@@ -130,18 +130,18 @@ function isChildOutput(v: unknown): v is ChildOutput {
 
 /** Resolve the path of a child store by id, from the parent config's `stores` map or an explicit directory. */
 export function childRootFor(parentRoot: string, childIdOrPath: string): string {
-  if (existsSync(join(childIdOrPath, "autosoft.yaml"))) return childIdOrPath;
+  if (existsSync(join(childIdOrPath, "whitesnake.yaml"))) return childIdOrPath;
   const cfg = loadConfig(parentRoot);
   const mapped = cfg.stores[childIdOrPath];
   if (mapped) {
     const abs = mapped.startsWith("/") ? mapped : join(parentRoot, mapped);
-    if (existsSync(join(abs, "autosoft.yaml"))) return abs;
+    if (existsSync(join(abs, "whitesnake.yaml"))) return abs;
   }
-  throw new CliError(`unknown child store ${childIdOrPath}: pass a directory or register it under stores: in autosoft.yaml`, 1);
+  throw new CliError(`unknown child store ${childIdOrPath}: pass a directory or register it under stores: in whitesnake.yaml`, 1);
 }
 
 export function readTask(work: string, taskId: string): Task | null {
-  const p = join(work, ".autosoft", "tasks", `${taskId}.json`);
+  const p = join(work, ".whitesnake", "tasks", `${taskId}.json`);
   return existsSync(p) ? (JSON.parse(readFileSync(p, "utf8")) as Task) : null;
 }
 

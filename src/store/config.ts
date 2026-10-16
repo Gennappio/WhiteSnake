@@ -4,7 +4,7 @@ import YAML from "yaml";
 import { z } from "zod";
 import { CliError, readText, writeText } from "../util.js";
 
-export const CONFIG_FILE = "autosoft.yaml";
+export const CONFIG_FILE = "whitesnake.yaml";
 
 export const FieldSchema = z.strictObject({
   name: z.string().regex(/^[a-z][a-z0-9_]*$/, "field names are snake_case"),
@@ -43,7 +43,7 @@ export const ConfigSchema = z.strictObject({
 });
 export type StoreConfig = z.infer<typeof ConfigSchema>;
 
-/** Walk up from `start` until a directory containing autosoft.yaml is found. */
+/** Walk up from `start` until a directory containing whitesnake.yaml is found. */
 export function findStoreRoot(start: string): string | null {
   let dir = resolve(start);
   for (;;) {
@@ -56,7 +56,7 @@ export function findStoreRoot(start: string): string | null {
 
 export function requireStoreRoot(start: string): string {
   const root = findStoreRoot(start);
-  if (!root) throw new CliError(`No ${CONFIG_FILE} found from ${start} upwards. Run \`autosoft init <dir>\` first.`, 1);
+  if (!root) throw new CliError(`No ${CONFIG_FILE} found from ${start} upwards. Run \`whitesnake init <dir>\` first.`, 1);
   return root;
 }
 
