@@ -5,7 +5,11 @@ import { isAuthoredType, newId, type NodeType } from "../schema/ids.js";
 import { parseNode, type Node } from "../schema/nodes.js";
 import { CliError, canonicalBody, isRecord, nowIso, readText, sha256 } from "../util.js";
 import { loadStore, nodePath, readNodeFile, writeNodeFile, type LoadedStore } from "./files.js";
-import { validateStore } from "./validate.js";
+import { errorsOf, validateStore, warningsOf } from "./validate.js";
+import type { ValidationIssue } from "./files.js";
+
+/** Warnings produced by the last createNode/updateNode call, for the CLI to print. */
+export let lastWarnings: ValidationIssue[] = [];
 
 export const CURRENT_TURN_FILE = ".autosoft/current-turn";
 
@@ -30,9 +34,11 @@ function checkAgainstStore(root: string, node: Node, body: string, loaded?: Load
   store.nodes.set(node.id, node);
   store.bodies.set(node.id, body);
   store.paths.set(node.id, nodePath(root, node.type, node.id));
-  const issues = validateStore(store).filter((i) => i.id === node.id && i.code !== "E_ARTIFACT_MISSING");
-  if (issues.length) {
-    throw new CliError(`${node.id} rejected: ${issues.map((i) => `${i.code} ${i.message}`).join("; ")}`, 2, issues);
+  const mine = validateStore(store).filter((i) => i.id === node.id && i.code !== "E_ARTIFACT_MISSING");
+  const errors = errorsOf(mine);
+  lastWarnings = warningsOf(mine);
+  if (errors.length) {
+    throw new CliError(`${node.id} rejected: ${errors.map((i) => `${i.code} ${i.message}`).join("; ")}`, 2, errors);
   }
 }
 

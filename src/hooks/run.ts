@@ -4,7 +4,7 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 import { buildIndex } from "../index/db.js";
 import { frontier, renderFrontier } from "../index/queries.js";
 import { ensureIndex } from "../index/db.js";
-import { ingestClaudeLogFile } from "../ingest/claude.js";
+import { ingestLogFile } from "../ingest/index.js";
 import { sessionIdFor, turnIdFor } from "../schema/ids.js";
 import type { Turn } from "../schema/nodes.js";
 import { findStoreRoot, loadConfig } from "../store/config.js";
@@ -191,7 +191,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
       case "SessionEnd":
       case "PreCompact": {
         let ingested: unknown = null;
-        if (input.transcript_path && harness === "claude") ingested = ingestClaudeLogFile(root, input.transcript_path);
+        if (input.transcript_path) ingested = ingestLogFile(root, input.transcript_path);
         buildIndex(root);
         const issues = validateStore(loadStore(root));
         const commit = gitCommit(root, `store: ${event.toLowerCase()} ${(input.session_id ?? "").slice(0, 8)}`.trim());

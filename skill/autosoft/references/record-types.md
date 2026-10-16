@@ -50,7 +50,7 @@ A reusable way of doing something: `resolution` (`code`, `frozen_prompt`, `skill
 
 ## episode (`knowledge/episodes/`)
 
-The unit of work. `resolution`: how it was resolved (`cached`, `code`, `frozen_prompt`, `agent`). `question`, `parent`, `uses`, `produces`, `children`, `outcome` (`open`, `success`, `failure`, `abstained`, `corrected`), `input_hash`, `started`, `ended`. Body: what was tried, in order, including dead ends.
+The unit of work. Keep a two-level shape: a parent episode per unit (paper) with `children`, and one leaf episode per decision carrying `uses` and `produces`. Decisions must be produced by leaf episodes. `resolution`: how it was resolved (`cached`, `code`, `frozen_prompt`, `agent`). `question`, `parent`, `uses`, `produces`, `children`, `outcome` (`open`, `success`, `failure`, `abstained`, `corrected`), `input_hash`, `started`, `ended`. Body: what was tried, in order, including dead ends.
 
 ## question (`knowledge/questions/`)
 

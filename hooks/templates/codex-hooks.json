@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run SessionStart --harness codex", "timeout": 30 }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run UserPromptSubmit --harness codex", "timeout": 15 }] }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit|NotebookEdit|apply_patch|read_file|write_file|edit_file",
+        "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PreToolUse --harness codex", "timeout": 15 }]
+      }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash|shell", "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PostToolUse --harness codex", "timeout": 15 }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run Stop --harness codex", "timeout": 60 }] }
+    ],
+    "PreCompact": [
+      { "hooks": [{ "type": "command", "command": "{{AUTOSOFT}} hooks run PreCompact --harness codex", "timeout": 60 }] }
+    ]
+  }
+}

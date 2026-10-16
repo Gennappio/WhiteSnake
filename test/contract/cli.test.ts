@@ -180,3 +180,28 @@ test("add, set and link write valid records and reject bad references", () => {
     cleanup();
   }
 });
+
+test("declared citations are authoritative: a coarse episode does not spread a criterion change to decisions that cite other warrants", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const ep = (runCli(["--json", "add", "episode", "--json-in", JSON.stringify({ title: "Annotate P02 (coarse)", resolution: "agent", uses: ["dec_crit0analyz1", "dec_crit0random2", "dec_crit0outcom3"] })], { cwd: dir }).json as { id: string }).id;
+    const ev = (runCli(["--json", "add", "evidence", "--json-in", JSON.stringify({ title: "P02 Table 1", kind: "excerpt", locator: { artifact: "art_p02b8n4p0r5y" }, produced_by: ep }), "--body", "| Aquatic exercise | 42 | 41 |"], { cwd: dir }).json as { id: string }).id;
+    const mk = (field: string, value: number, warrant: string[]) =>
+      runCli(["--json", "add", "decision", "--json-in", JSON.stringify({ title: `P02 ${field}`, kind: "annotation", status: "active", claim: "c", qualifier: { confidence: 0.9 }, fragility: "mechanical", target: { unit: "P02", field, value }, data: [ev], warrant, produced_by: ep })], { cwd: dir });
+    const rand = mk("n_randomized_total", 84, ["dec_crit0random2"]);
+    assert.equal(rand.status, 0, rand.stdout);
+    assert.match(rand.stderr, /W_UNCITED_CRITERION/);
+    const anal = (mk("n_analyzed_total", 80, ["dec_crit0analyz1"]).json as { id: string }).id;
+    const bare = (mk("primary_outcome", 0, []).json as { id: string }).id;
+    const aff = (runCli(["--json", "affected", "dec_crit0analyz1"], { cwd: dir }).json as { id: string }[]).map((r) => r.id);
+    assert.ok(aff.includes(anal), "the analysed decision cites the criterion");
+    assert.ok(aff.includes(bare), "a decision without declared citations inherits the episode's uses");
+    assert.ok(!aff.includes((rand.json as { id: string }).id), "a decision citing another warrant is not flagged");
+    const v = runCli(["--json", "validate"], { cwd: dir });
+    assert.equal(v.status, 0);
+    const warnings = (v.json as { warnings: { code: string }[] }).warnings.map((w) => w.code);
+    assert.ok(warnings.includes("W_UNCITED_CRITERION"));
+  } finally {
+    cleanup();
+  }
+});

@@ -9,12 +9,13 @@ import YAML from "yaml";
 import { runHook, type HookInput } from "./hooks/run.js";
 import { buildIndex, dumpIndex, ensureIndex } from "./index/db.js";
 import { affected, frontier, getNode, listNodes, precedent, renderFrontier, renderTimeline, renderWhy, resolveRef, timeline, why } from "./index/queries.js";
-import { claudeLogPath, ingestClaudeLogFile } from "./ingest/claude.js";
+import { claudeLogPath } from "./ingest/claude.js";
+import { ingestLogFile } from "./ingest/index.js";
 import { NODE_TYPES, TYPE_DIR, type NodeType } from "./schema/ids.js";
 import { CONFIG_FILE, ConfigSchema, findStoreRoot, requireStoreRoot, writeConfig } from "./store/config.js";
 import { loadStore, serializeNode } from "./store/files.js";
-import { createNode, currentTurn, linkNodes, readNode, updateNode } from "./store/ops.js";
-import { validateStore } from "./store/validate.js";
+import { createNode, currentTurn, lastWarnings, linkNodes, readNode, updateNode } from "./store/ops.js";
+import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
 import { CliError, ensureDir, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +48,9 @@ const parseJsonArg = (s: string | undefined): Record<string, unknown> => {
   } catch (e) {
     throw new CliError(`--json argument is not a JSON object: ${(e as Error).message}`, 1);
   }
+};
+const printWarnings = (): void => {
+  for (const w of lastWarnings) console.error(`note: ${w.code} ${w.message}`);
 };
 const bodyFrom = (opts: { body?: string; bodyFile?: string }): string => {
   if (opts.bodyFile) return readText(opts.bodyFile);
@@ -106,11 +110,17 @@ function installSkillAndHooks(target: string, hooks: boolean): void {
   writeText(join(target, "CLAUDE.md"), pointer);
   writeText(join(target, "AGENTS.md"), pointer);
   if (hooks) {
-    const template = readText(join(TOOL_ROOT, "hooks", "templates", "claude-settings.json"));
+    const escaped = AUTOSOFT_CMD.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+    // Claude Code: hooks live inside .claude/settings.json, merged with whatever else is there.
+    const claudeTemplate = readText(join(TOOL_ROOT, "hooks", "templates", "claude-settings.json"));
     const settingsPath = join(target, ".claude", "settings.json");
     const existing = existsSync(settingsPath) ? (JSON.parse(readText(settingsPath)) as Record<string, unknown>) : {};
-    const hookCfg = JSON.parse(template.replaceAll("{{AUTOSOFT}}", AUTOSOFT_CMD.replaceAll("\\", "\\\\").replaceAll('"', '\\"'))) as Record<string, unknown>;
+    const hookCfg = JSON.parse(claudeTemplate.replaceAll("{{AUTOSOFT}}", escaped)) as Record<string, unknown>;
     writeText(settingsPath, `${JSON.stringify({ ...existing, ...hookCfg }, null, 2)}\n`);
+    // Codex: a dedicated .codex/hooks.json with the same event/matcher/handler shape. Codex runs project hooks only once
+    // the .codex layer is trusted (or with --dangerously-bypass-hook-trust in headless automation).
+    const codexTemplate = readText(join(TOOL_ROOT, "hooks", "templates", "codex-hooks.json"));
+    writeText(join(target, ".codex", "hooks.json"), codexTemplate.replaceAll("{{AUTOSOFT}}", escaped));
   }
 }
 
@@ -156,6 +166,7 @@ program
     if (!(NODE_TYPES as readonly string[]).includes(type)) throw new CliError(`unknown type ${type}; one of ${NODE_TYPES.join(", ")}`, 1);
     const r = root();
     const node = createNode(r, type as NodeType, parseJsonArg(opts.jsonIn), bodyFrom(opts), { causedBy: opts.causedBy, actor: opts.actor });
+    printWarnings();
     print(node.id, node);
   });
 
@@ -168,6 +179,7 @@ program
   .action((id: string, opts: { jsonIn?: string; body?: string; bodyFile?: string }) => {
     const body = opts.body !== undefined || opts.bodyFile !== undefined ? bodyFrom(opts) : undefined;
     const node = updateNode(root(), id, parseJsonArg(opts.jsonIn), body);
+    printWarnings();
     print(`${node.id} updated`, node);
   });
 
@@ -176,6 +188,7 @@ program
   .description("append references to an edge field (e.g. link dec_x data ev_y ev_z)")
   .action((src: string, rel: string, dst: string[]) => {
     const node = linkNodes(root(), src, rel, dst);
+    printWarnings();
     print(`${node.id}.${rel} now ${JSON.stringify((node as unknown as Record<string, unknown>)[rel] ?? "(nested)")}`, node);
   });
 
@@ -207,14 +220,17 @@ program
 
 program
   .command("validate")
-  .description("check every record: schema, ids, edges, hashes, states. Exit 2 on errors")
+  .description("check every record: schema, ids, edges, hashes, states. Exit 2 on errors; warnings do not fail")
   .action(() => {
-    const issues = validateStore(loadStore(root()));
-    if (issues.length) {
-      print(issues.map((i) => `${i.code}\t${i.file ?? i.id ?? ""}\t${i.path ?? ""}\t${i.message}`).join("\n"), { ok: false, issues });
+    const all = validateStore(loadStore(root()));
+    const errors = errorsOf(all);
+    const warnings = warningsOf(all);
+    const line = (i: (typeof all)[number]) => `${i.code}\t${i.file ?? i.id ?? ""}\t${i.path ?? ""}\t${i.message}`;
+    if (errors.length) {
+      print([...errors.map(line), ...warnings.map(line)].join("\n"), { ok: false, issues: errors, warnings });
       process.exitCode = 2;
     } else {
-      print("ok: store is valid", { ok: true, issues: [] });
+      print([`ok: store is valid${warnings.length ? ` (${warnings.length} warning${warnings.length === 1 ? "" : "s"})` : ""}`, ...warnings.map(line)].join("\n"), { ok: true, issues: [], warnings });
     }
   });
 
@@ -301,15 +317,15 @@ program
 
 program
   .command("ingest [log]")
-  .description("import a native session log (Claude Code JSONL) as session and turn nodes")
+  .description("import a native session log (Claude Code or Codex JSONL) as session and turn nodes")
   .option("--session <id>", "Claude Code session id; the log path is derived from the store cwd")
   .action((log: string | undefined, opts: { session?: string }) => {
     const r = root();
     const path = log ?? (opts.session ? claudeLogPath(opts.session, r) : undefined);
     if (!path) throw new CliError("pass a log file or --session <id>", 1);
-    const result = ingestClaudeLogFile(r, path);
+    const result = ingestLogFile(r, path);
     if (!result) throw new CliError(`no parsable session in ${path}`, 1);
-    print(`ingested ${result.session}: ${result.turns} turns, ${result.written} files written${result.warnings.length ? `\n${result.warnings.join("\n")}` : ""}`, result);
+    print(`ingested ${result.session} (${result.format}): ${result.turns} turns, ${result.written} files written${result.warnings.length ? `\n${result.warnings.join("\n")}` : ""}`, result);
   });
 
 program

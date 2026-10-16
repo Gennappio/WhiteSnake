@@ -9,6 +9,8 @@ import { loadConfig, type StoreConfig } from "./config.js";
 export interface ValidationIssue {
   code: string;
   message: string;
+  /** Errors make the store invalid (exit 2); warnings flag recording habits that blunt `affected`. */
+  severity?: "error" | "warning";
   id?: string;
   file?: string;
   path?: string;

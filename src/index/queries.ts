@@ -186,22 +186,47 @@ export interface AffectedRow {
 }
 
 /**
- * Everything that transitively relies on `id`: decisions citing it as data or warrant, episodes that used it,
- * decisions produced by those episodes. Only edges flagged `relies` for their source type are followed.
+ * Everything that transitively relies on `id`, following only edges flagged `relies` for their source type:
+ * decisions citing it as data/warrant/backing/depends_on, episodes that used it, decisions produced by those episodes.
+ * A decision's own citations are authoritative: when the changed node is a decision (criterion or choice), a decision
+ * reached only through its producing episode is skipped if it declares warrant/backing/depends_on without naming it.
+ * Decisions that declare nothing inherit their episode's dependencies.
  */
 export function affected(db: DatabaseSync, id: string): AffectedRow[] {
-  const sql = `
-    WITH RECURSIVE aff(id, depth) AS (
-      SELECT src, 1 FROM edges WHERE dst = ? AND relies = 1
-      UNION
-      SELECT e.src, a.depth + 1 FROM edges e JOIN aff a ON e.dst = a.id
-      WHERE e.relies = 1 AND a.depth < 64
-    )
-    SELECT n.id, n.type, n.status, n.title, MIN(a.depth) AS depth
-    FROM aff a JOIN nodes n ON n.id = a.id
-    WHERE n.id <> ?
-    GROUP BY n.id ORDER BY depth, n.id`;
-  return db.prepare(sql).all(id, id) as unknown as AffectedRow[];
+  const root = getNode(db, id);
+  if (!root) return [];
+  const rootIsDecision = root.type === "decision";
+  const incoming = new Map<string, { src: string; rel: string }[]>();
+  for (const e of db.prepare("SELECT src, rel, dst FROM edges WHERE relies = 1 ORDER BY src, rel").all() as { src: string; rel: string; dst: string }[]) {
+    const list = incoming.get(e.dst) ?? [];
+    list.push({ src: e.src, rel: e.rel });
+    incoming.set(e.dst, list);
+  }
+  const depth = new Map<string, number>([[id, 0]]);
+  const queue: string[] = [id];
+  while (queue.length) {
+    const cur = queue.shift()!;
+    const d = depth.get(cur)!;
+    for (const { src, rel } of incoming.get(cur) ?? []) {
+      if (depth.has(src)) continue;
+      if (rootIsDecision && rel === "produced_by") {
+        const dec = getNode(db, src);
+        if (dec && dec.type === "decision") {
+          const declared = [...dec.warrant, ...dec.backing, ...dec.depends_on];
+          if (declared.length > 0 && !declared.includes(id)) continue;
+        }
+      }
+      depth.set(src, d + 1);
+      queue.push(src);
+    }
+  }
+  const rows: AffectedRow[] = [];
+  for (const [nid, dd] of depth) {
+    if (nid === id) continue;
+    const n = db.prepare("SELECT id, type, status, title FROM nodes WHERE id = ?").get(nid) as { id: string; type: NodeType; status: string; title: string } | undefined;
+    if (n) rows.push({ ...n, depth: dd });
+  }
+  return rows.sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id));
 }
 
 export interface PrecedentRow {

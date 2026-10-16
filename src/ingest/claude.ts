@@ -25,8 +25,16 @@ interface ClaudeRecord {
   message?: { role?: string; model?: string; content?: unknown };
 }
 
-/** Text blocks that are entirely wrapped in a tag (IDE context, system reminders) are not the user's words. */
-const TAG_WRAPPED_RE = /^\s*<([a-zA-Z_][\w-]*)\b[^>]*>[\s\S]*<\/\1>\s*$/;
+/** Text blocks that are entirely wrapped in a tag (IDE context, system reminders, environment context) are not the user's words. */
+export const TAG_WRAPPED_RE = /^\s*<([a-zA-Z_][\w-]*)\b[^>]*>[\s\S]*<\/\1>\s*$/;
+
+/** Join the user's own text blocks, dropping tag-wrapped harness context; falls back to everything if nothing else remains. */
+export function ownText(texts: string[]): string | null {
+  if (!texts.length) return null;
+  const own = texts.filter((t) => !TAG_WRAPPED_RE.test(t));
+  const joined = (own.length ? own : texts).join("\n").trim();
+  return joined || null;
+}
 
 export function promptTextOf(content: unknown): string | null {
   if (typeof content === "string") return content.trim() || null;
@@ -34,10 +42,7 @@ export function promptTextOf(content: unknown): string | null {
   const blocks = content as { type?: string; text?: string }[];
   if (blocks.some((b) => b.type === "tool_result")) return null;
   const texts = blocks.filter((b) => b.type === "text" && typeof b.text === "string").map((b) => b.text as string);
-  if (!texts.length) return null;
-  const own = texts.filter((t) => !TAG_WRAPPED_RE.test(t));
-  const joined = (own.length ? own : texts).join("\n").trim();
-  return joined || null;
+  return ownText(texts);
 }
 
 /** Claude Code stores transcripts under ~/.claude/projects/<cwd slug>/<session id>.jsonl. */

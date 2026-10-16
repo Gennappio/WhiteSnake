@@ -31,6 +31,7 @@ The one rule that matters: **write to the store only through the CLI** (`autosof
 - **Record at decision time with exact ids.** Never describe provenance in prose only.
 - **Fill and flag, never stall.** If a criterion is missing or ambiguous, create a `question`, make the best decision with `"status":"proposed"` and a lower confidence, cite the question in `qualifier.scope`, and continue. The researcher resolves it later.
 - **Mark fragility honestly.** `mechanical` when a criterion applies directly, `interpretive` when you chose among readings, `analogical` when you followed a precedent from another unit, `absence` when the value rests on something *not* being reported (weak: say so in `rebuttal.text`).
+- **One leaf episode per decision.** The episode in a decision's `produced_by` must have no children and its `uses` must list only what that decision actually relied on. The per-paper episode is a parent: it produces nothing directly and lists no criteria in `uses`. `warrant` names only the criterion that licenses *this* value; cite choices in `backing` and procedures in `depends_on`. Why: `autosoft affected` follows these edges, and a coarse episode makes a criterion change flag unrelated values. The CLI prints `W_COARSE_EPISODE` / `W_UNCITED_CRITERION` notes when this is violated.
 - **Record failures as episodes** with `"outcome":"failure"` and what you tried in the body; they stop the next agent from repeating them.
 - **Never set derived state** (`procedure.state`, `history`, `counters`) by hand; the CLI derives it from events.
 
