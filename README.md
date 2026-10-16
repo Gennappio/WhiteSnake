@@ -1,6 +1,24 @@
-![WhiteSnake](docs/images/whitesnakelogo.png)
+<p align="center">
+  <img src="docs/images/whitesnakelogo.png" alt="WhiteSnake" width="480">
+</p>
 
-# WhiteSnake
+<h3 align="center">Fractal network of agents learning from users</h3>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-d600b6?labelColor=000&amp;style=flat-square"></a>
+  <img alt="Node 22.13 or newer" src="https://img.shields.io/badge/node-%E2%89%A5%2022.13-d600b6?labelColor=000&amp;style=flat-square">
+  <img alt="Works with Claude Code and Codex" src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex-d600b6?labelColor=000&amp;style=flat-square">
+  <img alt="Status: research prototype" src="https://img.shields.io/badge/status-research%20prototype-d600b6?labelColor=000&amp;style=flat-square">
+</p>
+
+<p align="center">
+  <a href="#why">Why</a> ·
+  <a href="#how-we-see-future-systems">Future systems</a> ·
+  <a href="#procedure-promotion">Procedures</a> ·
+  <a href="#nodes-that-write-themselves">Nodes</a> ·
+  <a href="#build-and-test">Build</a> ·
+  <a href="DESIGN.md">Design (Italian)</a>
+</p>
 
 **Deliver the process, not the software.** WhiteSnake lets a coding agent learn a task from the person doing it and write the software for that task while the work is being done. What remains is everything another person or agent needs to inherit the work: every result, the evidence and the rule behind it, the prompt that caused it, and the procedures the agent built along the way.
 
@@ -56,7 +74,8 @@ Each store is a node with its own git repository, mandate, agent, records and pr
 
 ## Status
 
-Research prototype. The store, the procedure lifecycle, handoff, delegation and compaction are implemented. They pass the deterministic tests and live tests with both Claude Code and Codex on the toy store in `examples/`, but have not yet been used on a real corpus. Nodes are directories on one machine, invoked headless; there is no network transport yet.
+> [!NOTE]
+> **Research prototype.** The store, the procedure lifecycle, handoff, delegation and compaction are implemented. They pass the deterministic tests and live tests with both Claude Code and Codex on the toy store in `examples/`, but have not yet been used on a real corpus. Nodes are directories on one machine, invoked headless; there is no network transport yet.
 
 The design decisions and their rationale are in [DESIGN.md](DESIGN.md) (Italian). The original design conversation is in `docs/origine/`.
 
