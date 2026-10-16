@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { commitAll, openParentBranch } from "../branch.js";
+import { commitAll, headOf, openParentBranch } from "../branch.js";
 import { randomSuffix } from "../schema/ids.js";
 import { loadConfig } from "../store/config.js";
 import { loadStore } from "../store/files.js";
@@ -80,7 +80,8 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
   const run = runHeadless(work, prompt, { harness: spec.harness, schema: loadSchema("child-output.json"), model: spec.model ?? null, budgetUsd: spec.budgetUsd ?? 10 });
   const output = isChildOutput(run.json) ? run.json : null;
   writeText(join(work, ".autosoft", "tasks", `${task.id}.output.json`), `${JSON.stringify({ status: run.status, text: run.text, json: run.json }, null, 2)}\n`);
-  const childCommit = commitAll(work, `store: task ${task.id} for ${parentCfg.id}`);
+  // The child's Stop hook usually commits first; report the branch head either way.
+  const childCommit = commitAll(work, `store: task ${task.id} for ${parentCfg.id}`) ?? headOf(work);
   if (run.status !== 0 && !output) throw new CliError(`child agent failed (exit ${run.status}): ${run.stderr.slice(0, 400)}`, 1);
 
   // Parent side: the child's answer becomes an artifact plus execution evidence, and an episode with a remote child.

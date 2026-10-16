@@ -129,3 +129,9 @@ export function commitAll(dir: string, message: string): string | null {
   execFileSync("git", ["-C", dir, "commit", "-q", "-m", message], { stdio: "ignore" });
   return git(dir, ["rev-parse", "--short", "HEAD"]);
 }
+
+/** Short hash of HEAD in a repository or worktree, or null outside git. */
+export function headOf(dir: string): string | null {
+  const r = gitTry(dir, ["rev-parse", "--short", "HEAD"]);
+  return r.status === 0 ? r.stdout : null;
+}

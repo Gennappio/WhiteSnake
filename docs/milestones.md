@@ -65,7 +65,7 @@ Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in d
 | Codex spiega tre annotazioni tramite `autosoft ask` | **3/3**: ogni risposta cita la decisione, almeno un'evidenza e il criterio; confidenza 0,99–1 |
 | Codex registra il cambio di criterio | `autosoft correct dec_crit0analyz1` invocato; le tre annotazioni `n_analyzed_total` in `needs_review`; le altre sei intatte; nuovo criterio che sostituisce il vecchio |
 | Codex annota P04 nella copia ereditata | 3 catene complete e 3 valori corretti; procedura trusted riusata; applica la nuova regola notando che P04 non riporta la popolazione per protocollo |
-| Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile) e rieseguita |
+| Delega da uno store padre al figlio ereditato | fallita al primo tentativo: lo schema di output aveva una proprietà facoltativa e la modalità stretta di Codex richiede che ogni proprietà sia obbligatoria; corretto (campo obbligatorio e annullabile). Rieseguita dal vivo con Codex: stato `completed`, risposta che cita la decisione del figlio, due evidenze e il criterio; nel padre episodio con figlio remoto, evidenza di esecuzione e artefatto; store valido |
 | Domande rivolte al ricercatore | 0 rilevate dall'euristica; le risposte complete sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano |
 
 Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.autosoft/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
