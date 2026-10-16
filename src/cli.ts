@@ -27,6 +27,9 @@ import { branchStatus, mergeParentBranch, openParentBranch } from "./branch.js";
 import { askStore } from "./agent/ask.js";
 import { childRootFor, delegateTask } from "./agent/delegate.js";
 import type { RunnerHarness } from "./agent/runner.js";
+import { applyGc, planGc } from "./gc/gc.js";
+import { collapseEpisode } from "./gc/collapse.js";
+import { recheckProcedure } from "./gc/recheck.js";
 import { CliError, ensureDir, nowIso, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -458,6 +461,19 @@ program
       const p = retire(loadStore(r), id, opts.reason, currentTurn(r));
       print(`${p.id} is now ${p.state}`, p);
     }),
+  )
+  .addCommand(
+    new Command("recheck")
+      .argument("<id>")
+      .option("--harness <h>", "claude | codex | stub", "claude")
+      .option("--model <m>", "model to test without the procedure")
+      .option("--retire", "retire the procedure when the model alone passes every regression case")
+      .description("sublation check: can the model alone reproduce the regression cases?")
+      .action((id: string, opts: { harness: string; model?: string; retire?: boolean }) => {
+        const r = root();
+        const result = recheckProcedure(loadStore(r), id, { harness: opts.harness as RunnerHarness, model: opts.model ?? null, retireOnPass: !!opts.retire });
+        print([`${result.procedure}: ${result.cases.filter((c) => c.pass).length}/${result.cases.length} cases reproduced by ${result.model ?? opts.harness} alone${result.retired ? "; procedure retired" : ""}`, ...result.cases.map((c) => `  ${c.pass ? "pass" : "FAIL"}\t${c.file}\texpected ${JSON.stringify(c.expected)}\tgot ${JSON.stringify(c.got)}`)].join("\n"), result);
+      }),
   );
 
 program
@@ -579,6 +595,32 @@ program
         .join("\n"),
       result,
     );
+  });
+
+program
+  .command("gc")
+  .description("compact cold episode subtrees nothing live depends on into template nodes; git history keeps the raw files")
+  .option("--apply", "apply the plan (default: print it)")
+  .option("--cold-after <n>", "sessions of age after which a closed subtree is cold (default from autosoft.yaml)")
+  .action((opts: { apply?: boolean; coldAfter?: string }) => {
+    const r = root();
+    const plan = planGc(loadStore(r), { coldAfter: opts.coldAfter !== undefined ? Number(opts.coldAfter) : undefined });
+    if (!opts.apply) {
+      print([`plan: ${plan.sweep.length} record(s) in ${plan.templates.length} subtree(s) would be compacted (cold after ${plan.cold_after_sessions} sessions; ${plan.live} live records stay)`, ...plan.sweep.map((s) => `  ${s.type}\t${s.id}\t${s.title}\t${s.reason}`)].join("\n"), plan);
+      return;
+    }
+    const result = applyGc(r, plan);
+    print(result.swept ? `compacted ${result.swept} record(s) into ${result.templates.join(", ")}${result.commit ? ` (commit ${result.commit.slice(0, 8)})` : ""}` : "nothing to compact", { plan, result });
+  });
+
+program
+  .command("collapse <episode>")
+  .description("collapse a parent episode whose children were all resolved deterministically into one composed procedure")
+  .action((episode: string) => {
+    const r = root();
+    const result = collapseEpisode(loadStore(r), episode);
+    printWarnings();
+    print(`${result.procedure} composed from ${result.steps} step(s): ${result.entrypoint}`, result);
   });
 
 program

@@ -48,6 +48,7 @@ writeConfig(target, {
   model: null,
   corpus: ["corpus"],
   stores: {},
+  gc: { cold_after_sessions: 5 },
   promotion: { shown_uses_to_trust: 3 },
   output: {
     unit: "paper",

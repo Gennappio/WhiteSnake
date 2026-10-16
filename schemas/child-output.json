@@ -3,15 +3,63 @@
   "title": "AutoSoft delegated task output",
   "type": "object",
   "additionalProperties": false,
-  "required": ["status", "result", "episode_id", "decision_ids", "evidence_ids", "uncertainties", "new_questions"],
+  "required": [
+    "status",
+    "result",
+    "episode_id",
+    "decision_ids",
+    "evidence_ids",
+    "uncertainties",
+    "new_questions",
+    "question_for_parent"
+  ],
   "properties": {
-    "status": { "type": "string", "enum": ["completed", "blocked", "needs_context"] },
-    "result": { "type": "string", "description": "The answer or outcome in one or two sentences" },
-    "episode_id": { "type": "string", "description": "The episode opened for this task in the child store" },
-    "decision_ids": { "type": "array", "items": { "type": "string" } },
-    "evidence_ids": { "type": "array", "items": { "type": "string" } },
-    "uncertainties": { "type": "array", "items": { "type": "string" } },
-    "new_questions": { "type": "array", "items": { "type": "string" } },
-    "question_for_parent": { "type": "string", "description": "When status is needs_context: what the child needs to know and why" }
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "blocked",
+        "needs_context"
+      ]
+    },
+    "result": {
+      "type": "string",
+      "description": "The answer or outcome in one or two sentences"
+    },
+    "episode_id": {
+      "type": "string",
+      "description": "The episode opened for this task in the child store"
+    },
+    "decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "new_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "question_for_parent": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "When status is needs_context: what the child needs to know and why; otherwise null"
+    }
   }
 }

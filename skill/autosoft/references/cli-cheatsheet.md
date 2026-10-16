@@ -23,6 +23,9 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `autosoft ask "<question>"` | ask an agent about the store; answer cites record ids |
 | `autosoft delegate --child <dir> --question "..."` | hand a question to a child store; its answer comes back as evidence |
 | `autosoft export <dir>` / `autosoft check` | hand the store over, verify an imported copy |
+| `autosoft gc [--apply]` | compact cold subtrees nothing live needs; reversible via git |
+| `autosoft collapse <episode>` | one composed procedure from a deterministic subtree |
+| `autosoft procedure recheck <id> --harness h [--retire]` | can the model alone reproduce the regression cases? |
 | `autosoft validate` | check the whole store (exit 2 on errors; warnings do not fail) |
 | `autosoft index [--dump]` | rebuild the SQLite index |
 | `autosoft timeline [--session id]` | prompts and the records each one caused |

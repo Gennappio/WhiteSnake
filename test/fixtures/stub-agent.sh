@@ -4,6 +4,13 @@
 set -e
 PROMPT=$(cat)
 case "$PROMPT" in
+  *'{"value": <the result>}'*)
+    # Model-alone recheck: trivially reproduces the P01 Randomised sum, fails anything else.
+    case "$PROMPT" in
+      *P01.md*Randomised*|*Randomised*P01.md*) printf '{"value":120}\n' ;;
+      *) printf '{"value":0}\n' ;;
+    esac
+    ;;
   *'"answer": string'*)
     printf '{"answer":"P01 counts 115 analysed participants because Table 1 reports the ITT column per arm.","records":["dec_p01nanal0000","ev_p01table1000","dec_crit0analyz1"],"confidence":0.9}\n'
     ;;

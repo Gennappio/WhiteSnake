@@ -28,6 +28,12 @@ export const ConfigSchema = z.strictObject({
     .default({ unit: "unit", fields: [] }),
   /** Child stores this store delegates to: id -> path (absolute or relative to the store). */
   stores: z.record(z.string(), z.string()).default({}),
+  gc: z
+    .strictObject({
+      /** A closed subtree is cold when its session is at least this many sessions before the latest one. */
+      cold_after_sessions: z.number().int().min(0).default(5),
+    })
+    .default({ cold_after_sessions: 5 }),
   promotion: z
     .strictObject({
       /** Shown uses without a correction after which a provisional procedure becomes trusted. */

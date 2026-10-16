@@ -60,6 +60,13 @@
     "options": []
   },
   {
+    "name": "collapse",
+    "args": [
+      "<episode>"
+    ],
+    "options": []
+  },
+  {
     "name": "config",
     "args": [],
     "options": []
@@ -147,6 +154,14 @@
     "options": [
       "--against",
       "--snapshot"
+    ]
+  },
+  {
+    "name": "gc",
+    "args": [],
+    "options": [
+      "--apply",
+      "--cold-after"
     ]
   },
   {
@@ -245,6 +260,17 @@
     "name": "procedure",
     "args": [],
     "options": []
+  },
+  {
+    "name": "procedure recheck",
+    "args": [
+      "<id>"
+    ],
+    "options": [
+      "--harness",
+      "--model",
+      "--retire"
+    ]
   },
   {
     "name": "procedure reinstate",

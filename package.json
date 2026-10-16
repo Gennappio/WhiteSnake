@@ -24,7 +24,8 @@
     "test:only": "node --disable-warning=ExperimentalWarning --test --test-reporter=spec \"dist/test/**/*.test.js\"",
     "make-toy": "npm run build && node --disable-warning=ExperimentalWarning dist/src/tools/make-toy.js",
     "e2e:m2": "npm run build && node --disable-warning=ExperimentalWarning dist/src/e2e/m2.js",
-    "e2e:m3": "npm run build && node --disable-warning=ExperimentalWarning dist/src/e2e/m3.js"
+    "e2e:m3": "npm run build && node --disable-warning=ExperimentalWarning dist/src/e2e/m3.js",
+    "e2e:m4": "npm run build && node --disable-warning=ExperimentalWarning dist/src/e2e/m4.js"
   },
   "dependencies": {
     "commander": "^14.0.0",

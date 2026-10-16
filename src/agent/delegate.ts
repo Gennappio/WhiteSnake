@@ -72,7 +72,7 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
     task.inputs.length ? `Inputs: ${task.inputs.join(", ")}` : "",
     `Acceptance criteria: ${task.acceptance_criteria.join("; ")}`,
     "Follow the autosoft skill: open an episode for this task, consult precedents, record evidence and decisions through the autosoft CLI, close the episode, run `autosoft validate`.",
-    'Finish with JSON only: {"status": "completed|blocked|needs_context", "result": string, "episode_id": string, "decision_ids": [..], "evidence_ids": [..], "uncertainties": [..], "new_questions": [..], "question_for_parent": string (only when needs_context)}.',
+    'Finish with JSON only: {"status": "completed|blocked|needs_context", "result": string, "episode_id": string, "decision_ids": [..], "evidence_ids": [..], "uncertainties": [..], "new_questions": [..], "question_for_parent": string or null (set only when needs_context)}.',
   ]
     .filter(Boolean)
     .join("\n");

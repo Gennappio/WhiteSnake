@@ -90,16 +90,19 @@ export function runHeadless(cwd: string, prompt: string, opts: HeadlessOptions):
   cmd.push(prompt);
   const r = spawnSync("codex", cmd, { cwd, encoding: "utf8", env: env(), stdio: ["ignore", "pipe", "pipe"], timeout, maxBuffer: 256 * 1024 * 1024 });
   let threadId: string | null = null;
+  const failures: string[] = [];
   for (const line of r.stdout.split("\n")) {
     try {
-      const ev = JSON.parse(line) as { type?: string; thread_id?: string };
+      const ev = JSON.parse(line) as { type?: string; thread_id?: string; message?: string; error?: { message?: string } };
       if (ev.type === "thread.started" && ev.thread_id) threadId = ev.thread_id;
+      if (ev.type === "turn.failed") failures.push(`turn.failed: ${ev.error?.message ?? ""}`.slice(0, 600));
+      else if (ev.type === "error") failures.push(`error: ${ev.message ?? ""}`.slice(0, 600));
     } catch {
       // not an event
     }
   }
   const text = existsSync(last) ? readFileSync(last, "utf8") : "";
-  return { status: r.status ?? -1, sessionId: threadId, text, json: parseJsonLoose(text), stdout: r.stdout, stderr: r.stderr };
+  return { status: r.status ?? -1, sessionId: threadId, text, json: parseJsonLoose(text), stdout: r.stdout, stderr: failures.length ? `${r.stderr}\n${failures.join("\n")}`.trim() : r.stderr };
 }
 
 export function loadSchema(name: string): Record<string, unknown> {

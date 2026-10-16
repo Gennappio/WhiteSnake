@@ -98,7 +98,7 @@ function main(): void {
   console.error(`[m3] correction ${inheritor} exited ${corr.status} after ${corr.seconds}s`);
   answers.push(`# Criterion change (${inheritor}) final message\n\n${String(corr.result?.["result"] ?? corr.stdout).slice(0, 4000)}`);
   const tC = transcriptFor(exportDir, inheritor, sessionC);
-  const commands = tC ? cliCommands(tC) : hookEvents(exportDir).commands;
+  const commands = [...(tC ? cliCommands(tC) : []), ...hookEvents(exportDir).commands];
   const after = loadStore(exportDir).nodes;
   const flagged = analysedBefore.map((id) => ({ id, status: (after.get(id) as { status?: string } | undefined)?.status ?? "missing" }));
   const untouched = othersBefore.every(([id, status]) => (after.get(id) as { status?: string } | undefined)?.status === status);
