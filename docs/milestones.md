@@ -69,3 +69,11 @@ Prova di passaggio (`npm run e2e:m3`, Claude Code produce → Codex eredita in d
 | Domande rivolte al ricercatore | 0 rilevate dall'euristica; le risposte complete sono in `docs/handoff-answers-2026-10-16.md` per il giudizio umano |
 
 Nota sul rilevamento: nei rollout di Codex i comandi sono annidati in programmi JavaScript; il log degli hook (`.autosoft/hooks.log`) è la fonte autorevole dei comandi eseguiti ed è ora usato dai test insieme alla trascrizione.
+
+## M4 — Compattazione, collasso, sublation
+
+**Implementata e provata dal vivo il 2026-10-16 sullo store giocattolo; la prova sullo store reale attende il corpus.**
+
+Test deterministici (3 nuovi, suite a 44 verdi): `gc` lascia intatto uno store in cui tutto è vivo, compatta un sottoalbero freddo e fallito in un nodo `template` con esempi negativi, localizzatori, elenco degli id sostituiti e commit di origine, lascia la provenienza viva byte-identica, è idempotente alla seconda applicazione e reversibile dalla storia git; `collapse` rifiuta un sottoalbero che richiede ancora l'agente e compone una procedura a passi da due episodi risolti con codice; `recheck` ritira una procedura che il modello riproduce e conserva quella che non riproduce.
+
+Prova dal vivo (`npm run e2e:m4`, Claude Code): **superata**. Il modello da solo riproduce il caso di regressione della procedura `table_counts` (somma 120 su P01) e la procedura viene ritirata per sublation; non riesce a produrre lo sha256 di un file (risposta nulla) e quella procedura resta provvisoria; `why` su P01 risolve ancora alla procedura ritirata; stati finali `provisional=1, retired=1`; store valido.
