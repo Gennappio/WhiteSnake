@@ -30,6 +30,8 @@ import type { RunnerHarness } from "./agent/runner.js";
 import { applyGc, planGc } from "./gc/gc.js";
 import { collapseEpisode } from "./gc/collapse.js";
 import { recheckProcedure } from "./gc/recheck.js";
+import { proposeFromEvidence } from "./lifecycle/propose.js";
+import { runAndRecord } from "./lifecycle/run.js";
 import { CliError, ensureDir, nowIso, readText, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -463,6 +465,20 @@ program
     }),
   )
   .addCommand(
+    new Command("propose")
+      .requiredOption("--from-evidence <ids...>", "execution evidence recorded with autosoft run")
+      .option("--name <name>", "directory name under procedures/")
+      .option("--title <text>")
+      .option("--applicability <text...>")
+      .description("distil recorded executions into a procedure skeleton with regression cases")
+      .action((opts: { fromEvidence: string[]; name?: string; title?: string; applicability?: string[] }) => {
+        const r = root();
+        const result = proposeFromEvidence(loadStore(r), opts.fromEvidence, { name: opts.name, title: opts.title, applicability: opts.applicability });
+        printWarnings();
+        print(`${result.procedure.id} proposed: ${result.entrypoint} with ${result.parameters} parameter(s) and ${result.cases.length} regression case(s)\ntemplate: ${result.template}`, result);
+      }),
+  )
+  .addCommand(
     new Command("recheck")
       .argument("<id>")
       .option("--harness <h>", "claude | codex | stub", "claude")
@@ -520,14 +536,16 @@ program
 
 program
   .command("check")
-  .description("first-open check of a store: manifest integrity, artifacts, validation, index")
-  .action(() => {
-    const r = checkStore(root());
+  .description("first-open check of a store: manifest integrity, artifacts, validation, index, regression cases of code procedures")
+  .option("--no-run", "do not re-run procedure regression cases")
+  .action((opts: { run: boolean }) => {
+    const r = checkStore(root(), { runProcedures: opts.run });
     print(
       [
         `${r.ok ? "ok" : "PROBLEMS"}: ${r.nodes} nodes, ${r.validation_errors} validation errors, ${r.validation_warnings} warnings`,
         r.manifest_found ? `manifest from ${r.exported_at} (history ${r.history_included ? "included" : "excluded"}): ${r.mismatched.length} mismatched, ${r.missing.length} missing, ${r.extra.length} new files` : "no manifest (not an export)",
         r.artifacts_missing.length ? `artifacts missing: ${r.artifacts_missing.join(", ")}` : "all artifacts present",
+        r.procedures ? `procedures re-run: ${r.procedures.checked.length}, passed ${r.procedures.passed.length}, suspended ${r.procedures.suspended.length}${r.procedures.suspended.length ? `: ${r.procedures.suspended.map((s) => s.id).join(", ")}` : ""}` : "procedures not re-run",
         ...r.mismatched.map((f) => `  mismatched ${f}`),
         ...r.missing.map((f) => `  missing ${f}`),
       ].join("\n"),
@@ -621,6 +639,28 @@ program
     const result = collapseEpisode(loadStore(r), episode);
     printWarnings();
     print(`${result.procedure} composed from ${result.steps} step(s): ${result.entrypoint}`, result);
+  });
+
+program
+  .command("run <command...>")
+  .description("run a shell command in the store and record it as execution evidence: command, exit code, platform, input hashes, output")
+  .option("--episode <id>", "episode this execution belongs to")
+  .option("--title <text>", "evidence title")
+  .option("--artifact <id>", "artifact the command reads")
+  .option("--path <p>", "locator path (default: the first input file the command names)")
+  .option("--input <paths...>", "extra input files to hash")
+  .action((command: string[], opts: { episode?: string; title?: string; artifact?: string; path?: string; input?: string[] }) => {
+    const r = root();
+    const result = runAndRecord(loadStore(r), command.join(" "), { episode: opts.episode ?? null, title: opts.title, artifact: opts.artifact ?? null, path: opts.path ?? null, inputs: opts.input ?? [] });
+    printWarnings();
+    if (globals().json) {
+      console.log(JSON.stringify({ evidence: result.evidence.id, exit_code: result.exit_code, duration_ms: result.duration_ms, stdout: result.stdout.slice(0, 20000), stderr: result.stderr.slice(0, 4000) }, null, 2));
+    } else {
+      if (result.stdout) process.stdout.write(result.stdout.endsWith("\n") ? result.stdout : `${result.stdout}\n`);
+      if (result.stderr.trim()) process.stderr.write(`${result.stderr.trim()}\n`);
+      console.log(`evidence: ${result.evidence.id} (exit ${result.exit_code}, ${result.duration_ms} ms)`);
+    }
+    if (result.exit_code !== 0) process.exitCode = result.exit_code;
   });
 
 program

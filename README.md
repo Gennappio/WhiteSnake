@@ -52,6 +52,10 @@ States are never edited by hand; the CLI derives them from recorded events and t
 - `autosoft resolve --unit U --field F` applies the resolution ladder: an accepted decision, a trusted procedure, or agent work.
 - `autosoft kpi` and `autosoft render` (writes `review.html`) show how the store is doing: episodes resolved without an agent, decisions by status and whether they were shown, procedure transitions per session, items to review, the timeline by prompt, and recording warnings.
 
+## Commands versus code
+
+An agent that solves a step with a terminal command is not forced to write software. `autosoft run "<command>" --episode <id>` executes the command and records it as execution evidence (command, exit code, platform, hashes of the input files, output). When the same command recurs across episodes, `autosoft procedure propose --from-evidence <ids>` distils the recorded executions into a procedure skeleton with one regression case per execution; shown uses then promote it like any procedure. On another machine, `autosoft check` (also run automatically at the first open of an imported store) re-runs the regression cases of code procedures and suspends those that no longer reproduce, with the platform in the reason: the agent falls back to doing the step itself and may supersede them with an adapted version. Past outputs always stand.
+
 ## Handoff, branches and delegation
 
 - `autosoft export <dir> [--no-history]` clones the store for handoff with a `manifest.json` (integrity hashes of every record, artifacts present or excluded, whether git history is included), the rendered review page and the derived output. `autosoft check` on the imported copy verifies the manifest, the artifacts, the records and rebuilds the index.

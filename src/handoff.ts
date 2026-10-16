@@ -7,6 +7,7 @@ import { renderReview } from "./render/html.js";
 import { CONFIG_FILE, loadConfig } from "./store/config.js";
 import { loadStore } from "./store/files.js";
 import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
+import { checkProcedures, type ProcedureCheck } from "./lifecycle/regression.js";
 import { CliError, ensureDir, nowIso, sha256, walkFiles, writeText } from "./util.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -133,13 +134,17 @@ export interface CheckReport {
   validation_errors: number;
   validation_warnings: number;
   nodes: number;
+  procedures: ProcedureCheck | null;
   ok: boolean;
 }
 
-/** First-open check of an imported store: manifest integrity, artifacts, validation, index. */
-export function checkStore(root: string): CheckReport {
+/**
+ * First-open check of an imported store: manifest integrity, artifacts, validation, index, and (unless disabled)
+ * the regression cases of every usable code procedure on this machine; procedures that break here are suspended.
+ */
+export function checkStore(root: string, opts: { runProcedures?: boolean } = {}): CheckReport {
   const manifestPath = join(root, MANIFEST_FILE);
-  const report: CheckReport = { manifest_found: false, exported_at: null, history_included: null, mismatched: [], missing: [], extra: [], artifacts_missing: [], validation_errors: 0, validation_warnings: 0, nodes: 0, ok: false };
+  const report: CheckReport = { manifest_found: false, exported_at: null, history_included: null, mismatched: [], missing: [], extra: [], artifacts_missing: [], validation_errors: 0, validation_warnings: 0, nodes: 0, procedures: null, ok: false };
   if (existsSync(manifestPath)) {
     const m = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
     report.manifest_found = true;
@@ -161,7 +166,12 @@ export function checkStore(root: string): CheckReport {
   // Missing artifacts are reported separately: an export may legitimately exclude bulky files.
   report.validation_errors = errorsOf(issues).filter((i) => i.code !== "E_ARTIFACT_MISSING").length;
   report.validation_warnings = warningsOf(issues).length;
-  buildIndex(root, store);
+  if (opts.runProcedures !== false && report.validation_errors === 0) {
+    report.procedures = checkProcedures(store, { suspend: true });
+    buildIndex(root, loadStore(root));
+  } else {
+    buildIndex(root, store);
+  }
   report.ok = report.mismatched.length === 0 && report.missing.length === 0 && report.validation_errors === 0;
   return report;
 }

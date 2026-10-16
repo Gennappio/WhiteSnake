@@ -79,6 +79,19 @@ export const EvidenceSchema = z
       span: z.string().nullable().default(null),
     }),
     hash: Sha256,
+    /** For kind "execution": what exactly ran, where, with which inputs, and how it ended. */
+    execution: z
+      .strictObject({
+        command: z.string(),
+        cwd: z.string().default("."),
+        exit_code: z.number().int(),
+        duration_ms: z.number().int().nullable().default(null),
+        platform: z.string().nullable().default(null),
+        input_hashes: z.record(z.string(), Sha256).default({}),
+        truncated: z.boolean().default(false),
+      })
+      .nullable()
+      .default(null),
     produced_by: Id.nullable().default(null),
     caused_by: Id.nullable().default(null),
   })

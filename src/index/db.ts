@@ -77,6 +77,9 @@ function indexedText(node: Node, body: string): string {
     case "turn":
       parts.push(node.prompt_excerpt);
       break;
+    case "evidence":
+      if (node.execution) parts.push(node.execution.command);
+      break;
     case "template":
       parts.push(node.summary, ...node.negative_examples);
       break;

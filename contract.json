@@ -57,7 +57,9 @@
   {
     "name": "check",
     "args": [],
-    "options": []
+    "options": [
+      "--no-run"
+    ]
   },
   {
     "name": "collapse",
@@ -262,6 +264,16 @@
     "options": []
   },
   {
+    "name": "procedure propose",
+    "args": [],
+    "options": [
+      "--applicability",
+      "--from-evidence",
+      "--name",
+      "--title"
+    ]
+  },
+  {
     "name": "procedure recheck",
     "args": [
       "<id>"
@@ -305,6 +317,19 @@
     "options": [
       "--field",
       "--unit"
+    ]
+  },
+  {
+    "name": "run",
+    "args": [
+      "<command...>"
+    ],
+    "options": [
+      "--artifact",
+      "--episode",
+      "--input",
+      "--path",
+      "--title"
     ]
   },
   {

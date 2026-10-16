@@ -38,7 +38,7 @@ autosoft add decision --json-in '{
 
 ## evidence (`knowledge/evidence/`)
 
-`kind`: `excerpt` (verbatim from a source), `observation` (something you measured), `execution` (output of a script). `locator`: `{artifact, path, page, table, section, span}` with at least `artifact` or `path`. `hash` is the sha256 of the body and is computed by the CLI. Body: the verbatim excerpt or the raw output. Keep excerpts short and exact.
+`kind`: `excerpt` (verbatim from a source), `observation` (something you measured), `execution` (output of a command or script). `locator`: `{artifact, path, page, table, section, span}` with at least `artifact` or `path`. `hash` is the sha256 of the body and is computed by the CLI. Body: the verbatim excerpt or the raw output. Keep excerpts short and exact. For `execution`, `autosoft run` fills `execution: {command, cwd, exit_code, duration_ms, platform, input_hashes, truncated}` so the run can be reproduced and compared across machines.
 
 ## artifact (`knowledge/artifacts/`)
 

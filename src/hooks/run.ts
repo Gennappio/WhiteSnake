@@ -13,6 +13,7 @@ import { loadStore, writeNodeFile } from "../store/files.js";
 import { CURRENT_TURN_FILE, currentTurn } from "../store/ops.js";
 import { validateStore } from "../store/validate.js";
 import { appendText, collapseWs, nowIso, sha256, truncate, writeText } from "../util.js";
+import { checkStore } from "../handoff.js";
 
 /** Hook payload shared by Claude Code and Codex (field names follow the Claude Code contract). */
 export interface HookInput {
@@ -106,6 +107,14 @@ export function runHook(event: string, input: HookInput): HookOutput {
   try {
     switch (event) {
       case "SessionStart": {
+        let firstOpen = "";
+        if (existsSync(join(root, "manifest.json")) && !existsSync(join(root, ".autosoft", "checked"))) {
+          const rep = checkStore(root, { runProcedures: true });
+          writeText(join(root, ".autosoft", "checked"), nowIso());
+          const procs = rep.procedures ? `${rep.procedures.checked.length} procedure(s) re-run, ${rep.procedures.suspended.length} suspended for this platform` : "procedures not checked";
+          firstOpen = `First open of an imported store: ${rep.ok ? "integrity ok" : `PROBLEMS (${rep.mismatched.length} mismatched, ${rep.missing.length} missing, ${rep.validation_errors} validation errors)`}; ${procs}.`;
+          log(root, { event, first_open: rep });
+        }
         buildIndex(root);
         const db = ensureIndex(root);
         const f = frontier(db);
@@ -114,11 +123,14 @@ export function runHook(event: string, input: HookInput): HookOutput {
         log(root, { event, session: input.session_id, source: input.source });
         const text = [
           `AutoSoft store "${cfg.name}" (${cfg.id}). Mandate: ${cfg.mandate || "not stated"}.`,
+          firstOpen,
           "Before deciding, consult precedents with `autosoft precedent <text>`; explain results with `autosoft why <id|unit/field>`.",
           "Record decisions and evidence only through `autosoft add` / `autosoft set` / `autosoft link`; never edit files under knowledge/ directly.",
           "",
           renderFrontier(f),
-        ].join("\n");
+        ]
+          .filter(Boolean)
+          .join("\n");
         return { exitCode: 0, stdout: text };
       }
       case "UserPromptSubmit": {

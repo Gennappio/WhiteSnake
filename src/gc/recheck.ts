@@ -4,6 +4,7 @@ import { runHeadless, type RunnerHarness } from "../agent/runner.js";
 import { retire } from "../lifecycle/procedures.js";
 import type { LoadedStore } from "../store/files.js";
 import { CliError, truncate } from "../util.js";
+import { sameValue } from "../lifecycle/regression.js";
 
 export interface RecheckCase {
   file: string;
@@ -21,11 +22,6 @@ export interface RecheckResult {
 }
 
 const VALUE_SCHEMA = { type: "object", additionalProperties: false, required: ["value"], properties: { value: { type: ["string", "number", "boolean", "null"] } } } as Record<string, unknown>;
-
-function sameValue(a: unknown, b: unknown): boolean {
-  if (typeof a === "number" || typeof b === "number") return Number(a) === Number(b);
-  return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
-}
 
 /**
  * Sublation check: can the model alone, without the procedure's code, reproduce every regression case?

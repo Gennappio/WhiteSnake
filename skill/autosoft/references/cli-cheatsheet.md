@@ -12,6 +12,8 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `autosoft get <id \| unit/field>` | print one record |
 | `autosoft ls [type] [--status s] [--kind k]` | list records |
 | `autosoft add <type> --json-in '<json>' [--body "<text>" \| --body-file <path>]` | create a record (id, created, caused_by filled in) |
+| `autosoft run "<command>" --episode <id>` | run a command and record it as execution evidence in one step |
+| `autosoft procedure propose --from-evidence <ids...> [--name n]` | distil recorded executions into a procedure skeleton with regression cases |
 | `autosoft set <id> --json-in '<patch>' [--body ...]` | update a record |
 | `autosoft link <id> <field> <ids...>` | append references to an edge field |
 | `autosoft episode open <title> [--parent id] [--uses ids...]` / `autosoft episode close <id> [--outcome o] [--produces ids...]` | bracket a unit of work |
