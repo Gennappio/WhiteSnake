@@ -1,6 +1,62 @@
+![WhiteSnake](docs/images/whitesnakelogo.png)
+
 # WhiteSnake
 
-WhiteSnake turns research and automation work done with a coding agent into something another person or agent can inherit: a **knowledge store** where every produced value is a decision that cites verbatim evidence with an exact locator, the criterion that licenses it, the episode that produced it and the prompt that caused it. Procedures the agent writes along the way are registered, reused, and promoted or demoted from use. The store is plain Markdown files in git, validated and indexed by the `whitesnake` CLI, and driven through Claude Code or Codex with a shared skill and a shared set of hooks.
+**Deliver the process, not the software.** WhiteSnake lets a coding agent learn a task from the person doing it and write the software for that task while the work is being done. What remains is everything another person or agent needs to inherit the work: every result, the evidence and the rule behind it, the prompt that caused it, and the procedures the agent built along the way.
+
+Under the hood a project is a **store**: plain Markdown files in git, validated and indexed by the `whitesnake` CLI, and driven through Claude Code or Codex with a shared skill and a shared set of hooks.
+
+## Why
+
+Coding agents such as Claude Code and Codex have become the entry point for research and automation work. The habit, though, is still to end a project by wrapping it in traditional software: a deterministic part, a few LLM calls for the interpretive steps, and a GUI, CLI or MCP server on top. That freezes assumptions that were still provisional, and it throws away most of what was learned on the way: the criteria agreed with the researcher, the attempts that failed, the exceptions found, the small scripts written to settle a doubt.
+
+The agent can already do most of that work by writing code on the fly. What it lacks is memory: why each decision was taken, from which evidence, under which rule. WhiteSnake supplies that memory as a versioned store, so what you hand over is a process: the knowledge, the decisions, the procedures, and an agent that knows how to use them. A handoff succeeds when someone in a clean environment, without the original conversation, can explain a result picked at random, re-run an analysis, change a criterion and see exactly which results it affects, and complete a new case.
+
+## How we see future systems
+
+- **The interface is a coding agent.** You reach a system by talking to its agent. CLIs and APIs are still there, but their user is the agent. Instead of an orchestrator calling tools over MCP, a harness calls other harnesses, each able to pursue a goal, choose its tools and deal with exceptions.
+- **Every system has learned from someone.** The agent of a project carries what it learned from the people who worked with it, and when it meets a gap it writes the missing code itself.
+- **Reasoning turns into procedure.** Where the agent can do a task, the system calls the agent. Once its way of doing something has proved right, that way becomes a procedure, so reasoning is spent only where uncertainty remains.
+- **Systems grow fractally.** Nodes delegate to nodes, and at every level the gaps are covered a little at a time, without anyone designing the whole system up front.
+
+## Software written while doing the work
+
+You don't build the tool first and use it afterwards. You work on the actual task with the agent, and the software accumulates as a by-product:
+
+- The agent records each step through the CLI as it works: the evidence it read (verbatim, with an exact locator), the decision it took and the criterion that licenses it, the episode it belonged to and the prompt that caused it.
+- A command that solved a step runs through `whitesnake run`, which records it with its inputs and output. When the same step recurs, `whitesnake procedure propose` turns the recorded executions into a procedure with one regression case per execution. Code the agent writes to fill a gap is saved under `procedures/` and registered as a provisional procedure.
+- The researcher teaches by working normally. A rule they state becomes a criterion that later values cite as their warrant. A correction (`whitesnake correct`) marks the wrong value, suspends the procedures behind it and flags everything that relied on it. Results they saw without objecting count as accepted.
+
+What the agent learns from the user about a task therefore lives in files under git, not in a session or in a model. It survives the end of the session, a change of model and a change of person.
+
+## Procedure promotion
+
+A procedure is a reusable way of doing one step: a script, a frozen prompt (prompt, pinned model and output schema) or a skill. It starts provisional and earns trust from use. Nobody sets its state by hand; the CLI derives it from recorded events.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> provisional: written while working
+    provisional --> trusted: 3 results shown, none corrected
+    provisional --> suspended: researcher correction
+    trusted --> suspended: researcher correction
+    suspended --> provisional: fixed and reinstated
+    trusted --> retired: the model alone passes its cases
+```
+
+Before working on a value, the agent checks a ladder (`whitesnake resolve`): an accepted result for the same question, then a trusted procedure, and only then its own reasoning. When every child of an episode has been resolved without the agent, `whitesnake collapse` merges them into one composed procedure and the agent call moves one level up. The share of work resolved without an agent is the store's main indicator.
+
+Procedures are perishable; knowledge is durable. When a new model can reproduce a procedure's regression cases on its own, the procedure is retired (sublation) and its past outputs stand. The reason to converge on deterministic procedures is reproducibility, auditability and a stable interface, not making up for what the model cannot do yet.
+
+## Nodes that write themselves
+
+The unit of work has the same shape at every scale. Inside a store it is an episode: a question, the prompt that caused it, how it was resolved, what it used, what it produced and its child episodes. Between stores it is the store itself: seen from its parent, a child store is one more episode whose children are remote.
+
+Each store is a node with its own git repository, mandate, agent, records and procedures, and each node writes itself: its agent fills its own gaps with code, registers its own procedures and promotes or retires them from its own history. A parent delegates a question together with the reason it matters (`whitesnake delegate`). The child works on a branch reserved for that parent, where it may modify itself, and answers with its result, the ids of the decisions and evidence behind it, its uncertainties and any new questions, rather than a bare summary. Evidence merges by itself; conflicting decisions, criteria or procedures are listed for explicit reconciliation.
+
+## Status
+
+Research prototype. The store, the procedure lifecycle, handoff, delegation and compaction are implemented. They pass the deterministic tests and live tests with both Claude Code and Codex on the toy store in `examples/`, but have not yet been used on a real corpus. Nodes are directories on one machine, invoked headless; there is no network transport yet.
 
 The design decisions and their rationale are in [DESIGN.md](DESIGN.md) (Italian). The original design conversation is in `docs/origine/`.
 
