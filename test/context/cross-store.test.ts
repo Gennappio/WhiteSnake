@@ -7,7 +7,7 @@ import { runCli, tempToy } from "../helpers.js";
 
 const git = (dir: string, ...args: string[]) => execFileSync("git", ["-C", dir, "-c", "user.name=t", "-c", "user.email=t@example.com", ...args], { encoding: "utf8" }).trim();
 const SESSION = "77777777-8888-9999-aaaa-bbbbbbbbbbbb";
-const TURN = "turn_claude_777777778888999aaaabbbbbbbbbbbb_0001";
+const TURN = "turn_claude_7777777788889999aaaabbbbbbbbbbbb_0001";
 
 test("from inside a store, a write to another store lands on the caller's branch of that store with the caller's turn mirrored", () => {
   const parent = tempToy();
