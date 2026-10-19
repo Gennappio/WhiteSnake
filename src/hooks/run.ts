@@ -10,6 +10,7 @@ import { sessionIdFor, turnIdFor } from "../schema/ids.js";
 import type { Turn } from "../schema/nodes.js";
 import { findStoreRoot, loadConfig } from "../store/config.js";
 import { loadStore, writeNodeFile } from "../store/files.js";
+import { checkJournal, ensureSnapshot } from "../store/journal.js";
 import { CURRENT_TURN_FILE, currentTurn } from "../store/ops.js";
 import { validateStore } from "../store/validate.js";
 import { appendText, collapseWs, nowIso, sha256, truncate, writeText } from "../util.js";
@@ -42,9 +43,61 @@ const SHELL_TOOLS = new Set(["Bash", "shell", "exec_command", "local_shell", "co
 
 /** Commands that create, modify or delete files under knowledge/ without going through the CLI. */
 const SHELL_WRITE_RE = /(^|[^<])>{1,2}\s*\S*knowledge\/|\b(tee|cp|mv|rm|rmdir|touch|truncate|install|mkdir)\b[^;&|]*[\s'"=\/]knowledge(\/|\b)|\b(sed|perl)\s+-[a-zA-Z]*i[^;&|]*[\s'"=\/]knowledge(\/|\b)/;
+/** A redirection of standard output into knowledge/: a hand-written file even when the program is the CLI. */
+const REDIRECT_INTO_KNOWLEDGE_RE = /(^|[^<])>{1,2}\s*\S*knowledge\//;
 /** Any mention of the knowledge directory as a path token, with or without a trailing slash. */
 const KNOWLEDGE_MENTION_RE = /(^|[\s'"=\/])knowledge(\/|\b)/;
-const CLI_RE = /(^|[\s;&|(])whitesnake(\s|$)|cli\.js/;
+/** Brackets, subshell openers and variable assignments that may precede the program name of a simple command. */
+const SEGMENT_PREFIX_RE = /^(?:[\s({]+|\$\(\s*|[A-Za-z_][A-Za-z0-9_]*=\$\(\s*|[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\$[A-Za-z_{]\S*|[^\s$]\S*|)\s+)+/;
+
+/**
+ * Split a command line into simple commands at `;`, `|`, `||`, `&&`, `&` and newlines, outside quotes.
+ * Each simple command is judged on its own: a CLI call in one segment does not excuse a hand write in the next,
+ * and text quoted inside an argument is never read as shell syntax.
+ */
+export function shellSegments(command: string): string[] {
+  const out: string[] = [];
+  let current = "";
+  let quote: "'" | '"' | null = null;
+  for (let i = 0; i < command.length; i++) {
+    const ch = command[i]!;
+    if (quote) {
+      current += ch;
+      if (ch === "\\" && quote === '"' && i + 1 < command.length) current += command[++i];
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      current += ch;
+    } else if (ch === "\\" && i + 1 < command.length) {
+      current += ch + command[++i];
+    } else if (ch === ";" || ch === "|" || ch === "&" || ch === "\n") {
+      if (current.trim()) out.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) out.push(current);
+  return out;
+}
+
+/** True when the program of a simple command is the whitesnake CLI: `whitesnake …`, `path/to/whitesnake …` or `node … cli.js …`. */
+export function isCliSegment(segment: string): boolean {
+  const s = segment.replace(SEGMENT_PREFIX_RE, "");
+  return /^(?:\S*\/)?whitesnake(?:\s|$)/.test(s) || /^(?:\S*\/)?node(?:js)?\s+(?:--?[\w-]+(?:=\S*)?\s+)*\S*cli\.js(?:\s|$)/.test(s);
+}
+
+/** Quoted strings removed, so text passed as an argument is not mistaken for shell syntax. */
+function withoutQuoted(segment: string): string {
+  return segment.replace(/'[^']*'|"(?:\\.|[^"\\])*"/g, "");
+}
+
+/** The simple commands of a command line that write under knowledge/ by hand. */
+export function handWriteSegments(command: string): string[] {
+  return shellSegments(command).filter((seg) => (isCliSegment(seg) ? REDIRECT_INTO_KNOWLEDGE_RE.test(withoutQuoted(seg)) : SHELL_WRITE_RE.test(seg)));
+}
 
 function shellCommandOf(input: Record<string, unknown> | undefined): string | null {
   if (!input) return null;
@@ -120,7 +173,8 @@ export function runHook(event: string, input: HookInput): HookOutput {
         const f = frontier(db);
         db.close();
         const cfg = loadConfig(root);
-        log(root, { event, session: input.session_id, source: input.source });
+        const baseline = ensureSnapshot(root);
+        log(root, { event, session: input.session_id, source: input.source, journal: baseline ? "baseline taken" : "baseline kept" });
         const text = [
           `WhiteSnake store "${cfg.name}" (${cfg.id}). Mandate: ${cfg.mandate || "not stated"}.`,
           firstOpen,
@@ -186,8 +240,9 @@ export function runHook(event: string, input: HookInput): HookOutput {
         const paths = [...pathsOf(input.tool_input), ...patchPathsOf(input.tool_input)];
         const inKnowledge = touchesKnowledge(root, cwd, paths);
         const command = SHELL_TOOLS.has(tool) ? shellCommandOf(input.tool_input) : null;
-        if (command && !CLI_RE.test(command) && SHELL_WRITE_RE.test(command)) {
-          log(root, { event, tool, decision: "deny", command: truncate(command, 200) });
+        const handWrites = command ? handWriteSegments(command) : [];
+        if (command && handWrites.length) {
+          log(root, { event, tool, decision: "deny", command: truncate(command, 200), segment: truncate(handWrites[0]!.trim(), 120) });
           return {
             exitCode: 0,
             stdout: JSON.stringify({
@@ -200,7 +255,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
             }),
           };
         }
-        if (command && KNOWLEDGE_MENTION_RE.test(command) && !CLI_RE.test(command)) {
+        if (command && shellSegments(command).some((seg) => !isCliSegment(seg) && KNOWLEDGE_MENTION_RE.test(seg))) {
           log(root, { event, tool, decision: "allow+nudge", command: truncate(command, 200) });
           return {
             exitCode: 0,
@@ -263,12 +318,19 @@ export function runHook(event: string, input: HookInput): HookOutput {
           if (ids.length) shown = markShown(loadStore(root), ids, currentTurn(root));
         }
         buildIndex(root);
+        // By result, not by command: files under knowledge/ that changed since the last check without a CLI receipt.
+        const journal = checkJournal(root);
+        const directWrites = journal.direct.map((d) => `${d.path} ${d.change}`);
         const issues = validateStore(loadStore(root)).filter((i) => i.severity !== "warning");
         const commit = gitCommit(root, `store: ${event.toLowerCase()} ${(input.session_id ?? "").slice(0, 8)}`.trim());
-        log(root, { event, session: input.session_id, ingested, shown, validation_errors: issues.length, commit });
-        if (issues.length) {
-          return { exitCode: 0, stdout: JSON.stringify({ systemMessage: `WhiteSnake: ${issues.length} validation issue(s) in the store; run \`whitesnake validate\`.` }) };
+        log(root, { event, session: input.session_id, ingested, shown, validation_errors: issues.length, direct_writes: directWrites, journal_baseline: journal.baseline, commit });
+        const notes: string[] = [];
+        if (directWrites.length) {
+          const listed = directWrites.slice(0, 5).join(", ") + (directWrites.length > 5 ? `, and ${directWrites.length - 5} more` : "");
+          notes.push(`${directWrites.length} file(s) under knowledge/ changed outside the CLI since the last check (${listed}); they skipped validation at write time. Redo them with \`whitesnake add\` or \`whitesnake set\`, then run \`whitesnake validate\`.`);
         }
+        if (issues.length) notes.push(`${issues.length} validation issue(s) in the store; run \`whitesnake validate\`.`);
+        if (notes.length) return { exitCode: 0, stdout: JSON.stringify({ systemMessage: `WhiteSnake: ${notes.join(" ")}` }) };
         return { exitCode: 0 };
       }
       default:

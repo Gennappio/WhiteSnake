@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { newId } from "../schema/ids.js";
 import type { Episode, Evidence, Node, Template } from "../schema/nodes.js";
 import { loadStore, nodePath, writeNodeFile, type LoadedStore } from "../store/files.js";
+import { recordDelete } from "../store/journal.js";
 import { errorsOf, validateStore } from "../store/validate.js";
 import { CliError, collapseWs, nowIso, truncate } from "../util.js";
 
@@ -148,7 +149,9 @@ export function applyGc(root: string, plan: GcPlan): GcResult {
   for (const item of plan.sweep) {
     const n = store.nodes.get(item.id);
     if (!n) continue;
-    rmSync(nodePath(root, n.type, n.id), { force: true });
+    const swept = nodePath(root, n.type, n.id);
+    rmSync(swept, { force: true });
+    recordDelete(root, swept);
   }
   const after = loadStore(root);
   const errors = errorsOf(validateStore(after));
@@ -156,7 +159,10 @@ export function applyGc(root: string, plan: GcPlan): GcResult {
     // Never leave an invalid store: restore from git when possible.
     if (commit) {
       execFileSync("git", ["-C", root, "checkout", "--", "knowledge"], { stdio: "ignore" });
-      for (const id of created) rmSync(nodePath(root, "template", id), { force: true });
+      for (const id of created) {
+        rmSync(nodePath(root, "template", id), { force: true });
+        recordDelete(root, nodePath(root, "template", id));
+      }
     }
     throw new CliError(`gc would leave the store invalid (${errors.map((e) => e.code).join(", ")}); nothing was changed`, 2, errors);
   }

@@ -5,6 +5,7 @@ import { DIR_TYPE, TYPE_DIR, isValidId, type NodeType } from "../schema/ids.js";
 import { parseNode, type Node } from "../schema/nodes.js";
 import { CliError, canonicalBody, listFiles, readText, writeText } from "../util.js";
 import { loadConfig, type StoreConfig } from "./config.js";
+import { recordWrite } from "./journal.js";
 
 export interface ValidationIssue {
   code: string;
@@ -60,7 +61,9 @@ export function serializeNode(node: Node, body: string): string {
 
 export function writeNodeFile(root: string, node: Node, body: string): string {
   const path = nodePath(root, node.type, node.id);
-  writeText(path, serializeNode(node, body));
+  const text = serializeNode(node, body);
+  writeText(path, text);
+  recordWrite(root, path, text);
   return path;
 }
 

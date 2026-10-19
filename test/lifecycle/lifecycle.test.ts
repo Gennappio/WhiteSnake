@@ -135,3 +135,43 @@ test("render writes a self-contained review page that names every decision and t
     cleanup();
   }
 });
+
+test("shown uses are not counted for suspended or retired procedures", () => {
+  const retiredCase = tempToy();
+  const suspendedCase = tempToy();
+  try {
+    // Retired: promote through three shown results, retire, then show a fourth result produced with it.
+    let dir = retiredCase.dir;
+    startTurn(dir, "Annotate P02, P03 and P04");
+    const a = annotate(dir, "P02", "n_randomized_total", 84, "dec_crit0random2");
+    const b = annotate(dir, "P03", "n_randomized_total", 150, "dec_crit0random2");
+    const c = annotate(dir, "P04", "n_randomized_total", 150, "dec_crit0random2");
+    runCli(["shown", a.dec, b.dec], { cwd: dir });
+    assert.equal((runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string }).state, "trusted");
+    const retired = runCli(["--json", "procedure", "retire", "proc_tablecount01", "--reason", "the model does it alone"], { cwd: dir });
+    assert.equal(retired.status, 0, retired.stdout);
+    const shown = runCli(["--json", "shown", c.dec], { cwd: dir });
+    assert.deepEqual((shown.json as { shown: string[] }).shown, [c.dec]);
+    const afterRetired = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
+    assert.equal(afterRetired.state, "retired");
+    assert.equal(afterRetired.counters.shown_uses, 3);
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+
+    // Suspended: a correction suspends the procedure; a result shown afterwards adds nothing.
+    dir = suspendedCase.dir;
+    startTurn(dir, "Annotate P02 and P03");
+    const d = annotate(dir, "P02", "n_randomized_total", 84, "dec_crit0random2");
+    const e = annotate(dir, "P03", "n_randomized_total", 150, "dec_crit0random2");
+    const corr = runCli(["--json", "correct", d.dec, "--reason", "wrong arm counted"], { cwd: dir });
+    assert.equal(corr.status, 0, corr.stdout);
+    assert.deepEqual((corr.json as { suspended: string[] }).suspended, ["proc_tablecount01"]);
+    runCli(["shown", e.dec], { cwd: dir });
+    const afterSuspended = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
+    assert.equal(afterSuspended.state, "suspended");
+    assert.equal(afterSuspended.counters.shown_uses, 1);
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    retiredCase.cleanup();
+    suspendedCase.cleanup();
+  }
+});

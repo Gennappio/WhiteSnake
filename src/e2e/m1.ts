@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { sessionIdFor } from "../schema/ids.js";
 import { loadStore } from "../store/files.js";
 import { sha256 } from "../util.js";
-import { TASK_PROMPT, chainComplete, checkCell, classify, cleanup, cli, hookEvents, parseCommonArgs, prepareStore, runAgent, toolUses, transcriptFor, type AgentRun, type CellReport, type CommonArgs } from "./common.js";
+import { TASK_PROMPT, chainComplete, checkCell, classify, cleanup, cli, directWrites, hookEvents, parseCommonArgs, prepareStore, runAgent, toolUses, transcriptFor, type AgentRun, type CellReport, type CommonArgs } from "./common.js";
 
 export const EXPECTED: Record<string, number | RegExp> = {
   "P02/n_randomized_total": 84,
@@ -43,7 +43,10 @@ interface RunReport {
   first_store_access: string | null;
   first_access_via_cli: boolean;
   knowledge_reads: number;
+  /** Writes recognised in the transcript by command shape; indicative only. */
   knowledge_writes: number;
+  /** Files under knowledge/ changed without a CLI receipt, from the journal check at Stop; authoritative. */
+  direct_writes: string[];
   transcript: string | null;
   hard_pass: boolean;
   soft_notes: string[];
@@ -87,6 +90,7 @@ export function evaluateRun(store: string, sessionId: string, agent: AgentRun, r
 
   const required = args.harness === "codex" ? ["SessionStart", "UserPromptSubmit", "Stop"] : ["SessionStart", "UserPromptSubmit", "Stop"];
   const hooksOk = required.every((e) => (hooks.events[e] ?? 0) >= 1) && hooks.errors.length === 0;
+  const direct = directWrites(store);
   const hardCells = cells.every((c) => chainComplete(c) && (c.soft || c.value_ok));
   const firstViaCli = firstAccess?.startsWith("cli:") ?? false;
   const softNotes: string[] = [];
@@ -115,8 +119,9 @@ export function evaluateRun(store: string, sessionId: string, agent: AgentRun, r
     first_access_via_cli: firstViaCli,
     knowledge_reads: reads,
     knowledge_writes: writes,
+    direct_writes: direct,
     transcript,
-    hard_pass: agent.status === 0 && validate.status === 0 && hardCells && d1 === d2 && affectedExact && hooksOk && firstViaCli,
+    hard_pass: agent.status === 0 && validate.status === 0 && hardCells && d1 === d2 && affectedExact && hooksOk && firstViaCli && direct.length === 0,
     soft_notes: softNotes,
   };
 }
@@ -158,7 +163,7 @@ function main(): void {
   for (const r of reports) {
     const chains = r.cells.filter(chainComplete).length;
     const values = r.cells.filter((c) => c.value_ok).length;
-    console.log(`  run ${r.run}: ${r.hard_pass ? "PASS" : "FAIL"} ${r.seconds}s validate=${r.validate_ok} chains=${chains}/6 values=${values}/6 idempotent=${r.index_idempotent} affected=${r.affected_exact} hooks=${r.hooks_ok} firstViaCli=${r.first_access_via_cli} reads=${r.knowledge_reads} denies=${r.hooks.denies} cost=${String(r.cost_usd)}`);
+    console.log(`  run ${r.run}: ${r.hard_pass ? "PASS" : "FAIL"} ${r.seconds}s validate=${r.validate_ok} chains=${chains}/6 values=${values}/6 idempotent=${r.index_idempotent} affected=${r.affected_exact} hooks=${r.hooks_ok} firstViaCli=${r.first_access_via_cli} reads=${r.knowledge_reads} denies=${r.hooks.denies} directWrites=${r.direct_writes.length} cost=${String(r.cost_usd)}`);
     for (const n of r.soft_notes) console.log(`      note: ${n}`);
   }
   process.exitCode = passed === reports.length ? 0 : 1;

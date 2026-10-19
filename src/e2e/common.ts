@@ -157,21 +157,32 @@ export interface HookSummary {
   denies: number;
   nudges: number;
   commands: string[];
+  /** Files under knowledge/ that the Stop hook found changed without a CLI receipt ("path change"). */
+  direct_writes: string[];
 }
 
 export function hookEvents(store: string): HookSummary {
   const p = join(store, ".whitesnake", "hooks.log");
-  const out: HookSummary = { events: {}, errors: [], denies: 0, nudges: 0, commands: [] };
+  const out: HookSummary = { events: {}, errors: [], denies: 0, nudges: 0, commands: [], direct_writes: [] };
   if (!existsSync(p)) return out;
   for (const line of readFileSync(p, "utf8").split("\n")) {
     if (!line.trim()) continue;
-    const e = JSON.parse(line) as { event?: string; error?: string; decision?: string; command?: string };
+    const e = JSON.parse(line) as { event?: string; error?: string; decision?: string; command?: string; direct_writes?: string[] };
     if (e.event) out.events[e.event] = (out.events[e.event] ?? 0) + 1;
     if (e.error) out.errors.push(`${e.event}: ${e.error}`);
     if (e.decision === "deny") out.denies++;
     if (e.decision === "allow+nudge") out.nudges++;
     if (e.command) out.commands.push(e.command);
+    if (Array.isArray(e.direct_writes)) out.direct_writes.push(...e.direct_writes);
   }
+  return out;
+}
+
+/** Direct writes reported in a store and in every parent worktree under it (where delegated children work). */
+export function directWrites(store: string): string[] {
+  const out = [...hookEvents(store).direct_writes];
+  const worktrees = join(store, ".whitesnake", "worktrees");
+  if (existsSync(worktrees)) for (const w of readdirSync(worktrees)) out.push(...hookEvents(join(worktrees, w)).direct_writes.map((d) => `${w}: ${d}`));
   return out;
 }
 

@@ -20,7 +20,7 @@ import { askStore } from "../agent/ask.js";
 import { delegateTask } from "../agent/delegate.js";
 import { sanitizeNative, sessionIdFor } from "../schema/ids.js";
 import { loadStore } from "../store/files.js";
-import { TASK_PROMPT, TOY_EXTRA, chainComplete, checkCell, cleanup, cli, cliCommands, hookEvents, prepareStore, runAgent, transcriptFor, type CommonArgs, type Harness } from "./common.js";
+import { TASK_PROMPT, TOY_EXTRA, chainComplete, checkCell, cleanup, cli, cliCommands, directWrites, hookEvents, prepareStore, runAgent, transcriptFor, type CommonArgs, type Harness } from "./common.js";
 
 function arg(a: string[], flag: string): string | null {
   const i = a.indexOf(flag);
@@ -144,6 +144,7 @@ function main(): void {
   // Avoidable questions: lines in the inheritor's final messages that ask the user something (heuristic; the researcher judges).
   const asked = answers.filter((x) => x.includes(`(${inheritor})`)).flatMap((x) => x.split("\n").filter((l) => /\?\s*$/.test(l) && /\b(you|your|should I|do you|could you|would you)\b/i.test(l)));
 
+  const direct = [...directWrites(source), ...directWrites(exportDir), ...directWrites(parent)];
   const report = {
     producer,
     inheritor,
@@ -162,13 +163,14 @@ function main(): void {
     delegation,
     delegation_ok: delegationOk,
     questions_to_user: asked,
-    pass: producedOk && exportOk && checkOk && whyResults.every((w) => w.ok) && correctionOk && p04Ok && delegationOk,
+    direct_writes: direct,
+    pass: producedOk && exportOk && checkOk && whyResults.every((w) => w.ok) && correctionOk && p04Ok && delegationOk && direct.length === 0,
   };
   writeFileSync(`${reportPath}.json`, `${JSON.stringify(report, null, 2)}\n`);
   writeFileSync(`${reportPath}.answers.md`, `${answers.join("\n\n---\n\n")}\n`);
   console.log(JSON.stringify(report, null, 2));
   console.log(`\nM3 handoff test (${producer} -> ${inheritor}): ${report.pass ? "PASS" : "FAIL"}`);
-  console.log(`  produced=${producedOk} export=${exportOk} check=${checkOk} why=${whyResults.filter((w) => w.ok).length}/${whyResults.length} correction=${correctionOk} p04=${p04Ok} delegation=${delegationOk} questions_to_user=${asked.length}`);
+  console.log(`  produced=${producedOk} export=${exportOk} check=${checkOk} why=${whyResults.filter((w) => w.ok).length}/${whyResults.length} correction=${correctionOk} p04=${p04Ok} delegation=${delegationOk} questions_to_user=${asked.length} directWrites=${direct.length}`);
   console.log(`  answers for the researcher: ${reportPath}.answers.md`);
   if (!keep) {
     cleanup(source, false);

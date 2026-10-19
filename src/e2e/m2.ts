@@ -14,7 +14,7 @@ import { cpSync } from "node:fs";
 import { join } from "node:path";
 import { sanitizeNative, sessionIdFor } from "../schema/ids.js";
 import { loadStore } from "../store/files.js";
-import { TASK_PROMPT, TOY_EXTRA, chainComplete, checkCell, cleanup, cli, cliCommands, hookEvents, parseCommonArgs, prepareStore, runAgent, transcriptFor, type CellReport, type CommonArgs } from "./common.js";
+import { TASK_PROMPT, TOY_EXTRA, chainComplete, checkCell, cleanup, cli, cliCommands, directWrites, hookEvents, parseCommonArgs, prepareStore, runAgent, transcriptFor, type CellReport, type CommonArgs } from "./common.js";
 
 const CORRECTION_PROMPT = [
   "The researcher reviewed the annotations and changed a rule: from now on n_analyzed_total must count the per-protocol population",
@@ -158,9 +158,10 @@ function main(): void {
   c.pass = runC.status === 0 && c.chains === 3 && c.values_ok >= 2 && c.reused_procedure && c.procedure_count_after === c.procedure_count_before && c.validate_ok;
 
   const kpiJson = cli(store, ["kpi"]).json;
-  const report = { store, harness: args.harness, model: args.model, sessions: { A: sessionIdFor(args.harness, sessionA), B: sessionIdFor(args.harness, sessionB), C: sessionIdFor(args.harness, sessionC) }, A: a, B: b, C: c, hooks: hookEvents(store).events, kpi: kpiJson, pass: a.pass && b.pass && c.pass };
+  const direct = directWrites(store);
+  const report = { store, harness: args.harness, model: args.model, sessions: { A: sessionIdFor(args.harness, sessionA), B: sessionIdFor(args.harness, sessionB), C: sessionIdFor(args.harness, sessionC) }, A: a, B: b, C: c, hooks: hookEvents(store).events, direct_writes: direct, kpi: kpiJson, pass: a.pass && b.pass && c.pass && direct.length === 0 };
   console.log(JSON.stringify(report, null, 2));
-  console.log(`\nM2 live test (${args.harness}): ${report.pass ? "PASS" : "FAIL"}`);
+  console.log(`\nM2 live test (${args.harness}): ${report.pass ? "PASS" : "FAIL"}  directWrites=${direct.length}`);
   console.log(`  A: ${a.pass ? "PASS" : "FAIL"} ${a.seconds}s validate=${a.validate_ok} chains=${a.chains}/6 procedure=${a.procedure_state} shown_uses=${a.procedure_shown_uses} nonAgent=${a.non_agent_share}`);
   console.log(`  B: ${b.pass ? "PASS" : "FAIL"} ${b.seconds}s correct=${b.correct_invoked} flagged=${b.analysed_flagged.map((d) => `${d.id}:${d.status}`).join(",")} untouched=${b.untouched_ok} newCriterion=${b.new_criterion}`);
   console.log(`  C: ${c.pass ? "PASS" : "FAIL"} ${c.seconds}s chains=${c.chains}/3 values=${c.values_ok}/3 reused=${c.reused_procedure} procedures=${c.procedure_count_before}->${c.procedure_count_after} nonAgent=${c.non_agent_share}`);

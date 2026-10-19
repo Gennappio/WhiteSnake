@@ -17,10 +17,14 @@ export function transition(store: LoadedStore, procId: string, to: ProcedureStat
   return updateNode(store.root, procId, { state: to, history }, undefined, { store }) as Procedure;
 }
 
-/** A decision produced with this procedure was shown to the researcher and not corrected so far. */
+/**
+ * A decision produced with this procedure was shown to the researcher and not corrected so far. Only a live
+ * procedure (provisional or trusted) accumulates uses: a suspended or retired one is no longer under evaluation.
+ */
 export function recordShownUse(store: LoadedStore, procId: string, causedBy: string | null): { procedure: Procedure; promoted: boolean } {
   const proc = store.nodes.get(procId);
   if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
+  if (proc.state === "suspended" || proc.state === "retired") return { procedure: proc, promoted: false };
   const counters = { ...proc.counters, shown_uses: proc.counters.shown_uses + 1 };
   let updated = updateNode(store.root, procId, { counters }, undefined, { store }) as Procedure;
   const threshold = store.config.promotion.shown_uses_to_trust;

@@ -111,7 +111,7 @@ npm run e2e:m1 -- --smoke          # checks that hooks fire in a headless Claude
 npm run e2e:m1 -- --runs 3         # a real session annotates P02 and P03 in a fresh copy of the toy store
 ```
 
-A run passes when the store validates, every annotated cell has a complete provenance chain (evidence with resolvable locator, criterion as warrant, prompt of this session as `caused_by`), the index rebuild is byte-identical, changing the ITT criterion marks exactly the `n_analyzed_total` annotations as affected, every hook fired without errors, and the agent's first access to the store went through the CLI rather than reading `knowledge/` files.
+A run passes when the store validates, every annotated cell has a complete provenance chain (evidence with resolvable locator, criterion as warrant, prompt of this session as `caused_by`), the index rebuild is byte-identical, changing the ITT criterion marks exactly the `n_analyzed_total` annotations as affected, every hook fired without errors, the agent's first access to the store went through the CLI rather than reading `knowledge/` files, and no file under `knowledge/` changed outside the CLI. The last point is checked by result, not by inspecting commands: the CLI journals every file it writes under `knowledge/`, and at every Stop the hook compares the tree with the snapshot of the previous check.
 
 ## Codex
 

@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { REMOTE_SUFFIX, edgeSpec, extractEdges } from "../schema/edges.js";
+import type { NodeType } from "../schema/ids.js";
 import { canonicalBody, sha256 } from "../util.js";
 import type { LoadedStore, ValidationIssue } from "./files.js";
 
@@ -90,6 +91,85 @@ export function validateStore(store: LoadedStore): ValidationIssue[] {
     }
   }
 
+  issues.push(...cycleIssues(store));
+
   for (const i of issues) if (!i.severity) i.severity = "error";
   return issues.sort((a, b) => (a.file ?? "").localeCompare(b.file ?? "") || a.code.localeCompare(b.code) || (a.path ?? "").localeCompare(b.path ?? ""));
+}
+
+/**
+ * Relations along which a node rests on, replaces or nests inside another node of the same type. The knowledge
+ * graph is a DAG by design (DESIGN.md B.7): a cycle here is circular reasoning, and `affected`, `why`, `gc` and
+ * `collapse` would follow it. Inverse pairs such as parent/children are checked one direction at a time.
+ */
+const ACYCLIC_FAMILIES: readonly { type: NodeType; rels: readonly string[] }[] = [
+  { type: "decision", rels: ["depends_on", "warrant", "backing", "supersedes"] },
+  { type: "procedure", rels: ["uses"] },
+  { type: "episode", rels: ["parent"] },
+  { type: "episode", rels: ["children"] },
+];
+
+function cycleIssues(store: LoadedStore): ValidationIssue[] {
+  const out: ValidationIssue[] = [];
+  const reported = new Set<string>();
+  for (const family of ACYCLIC_FAMILIES) {
+    const adjacency = new Map<string, { dst: string; rel: string }[]>();
+    for (const [id, node] of store.nodes) {
+      if (node.type !== family.type) continue;
+      adjacency.set(
+        id,
+        extractEdges(node)
+          .filter((e) => family.rels.includes(e.rel) && store.nodes.get(e.dst)?.type === family.type)
+          .map((e) => ({ dst: e.dst, rel: e.rel })),
+      );
+    }
+    for (const cycle of findCycles(adjacency)) {
+      const key = `${family.rels.join("/")}:${cycle.path.join(">")}`;
+      if (reported.has(key)) continue;
+      reported.add(key);
+      const chain = cycle.path.join(" -> ");
+      for (const id of new Set(cycle.path)) {
+        out.push({
+          code: "E_CYCLE",
+          id,
+          file: store.paths.get(id),
+          path: cycle.rel,
+          message: `${family.rels.join("/")} edges between ${family.type} nodes form a cycle (${chain}); a record cannot rest on, replace or contain itself`,
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/** Iterative depth-first search; every back edge yields the cycle it closes, from the revisited node round to itself. */
+function findCycles(adjacency: Map<string, { dst: string; rel: string }[]>): { path: string[]; rel: string }[] {
+  const found: { path: string[]; rel: string }[] = [];
+  const state = new Map<string, "open" | "done">();
+  for (const root of [...adjacency.keys()].sort()) {
+    if (state.has(root)) continue;
+    const path: string[] = [root];
+    const frames: { id: string; next: number }[] = [{ id: root, next: 0 }];
+    state.set(root, "open");
+    while (frames.length) {
+      const frame = frames[frames.length - 1]!;
+      const edges = adjacency.get(frame.id) ?? [];
+      if (frame.next >= edges.length) {
+        frames.pop();
+        path.pop();
+        state.set(frame.id, "done");
+        continue;
+      }
+      const edge = edges[frame.next++]!;
+      const s = state.get(edge.dst);
+      if (s === undefined) {
+        state.set(edge.dst, "open");
+        path.push(edge.dst);
+        frames.push({ id: edge.dst, next: 0 });
+      } else if (s === "open") {
+        found.push({ path: [...path.slice(path.indexOf(edge.dst)), edge.dst], rel: edge.rel });
+      }
+    }
+  }
+  return found;
 }

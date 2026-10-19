@@ -7,7 +7,7 @@ description: Work inside an WhiteSnake knowledge store (a directory containing w
 
 An WhiteSnake store turns research work into something another person or agent can inherit: every value you produce is a **decision** that cites **evidence** (verbatim excerpts with exact locators) and a **criterion** (the rule that licenses it), and records which **prompt** caused it. The store is plain files under `knowledge/`, validated and indexed by the `whitesnake` CLI. Read `whitesnake.yaml` for the mandate and the output fields.
 
-The one rule that matters: **write to the store only through the CLI** (`whitesnake add`, `whitesnake set`, `whitesnake link`). Direct edits of `knowledge/**` are refused by a hook because they bypass validation.
+The one rule that matters: **write to the store only through the CLI** (`whitesnake add`, `whitesnake set`, `whitesnake link`). A hook refuses the direct edits of `knowledge/**` it can recognise, and at the end of every turn the store compares the files under `knowledge/` with the CLI's write journal: anything written another way is reported as unvalidated and has to be redone through the CLI.
 
 ## Workflow for a task
 

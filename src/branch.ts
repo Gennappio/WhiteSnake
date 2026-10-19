@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { CliError, ensureDir } from "./util.js";
+import { writeSnapshot } from "./store/journal.js";
 
 /**
  * Per-parent branches. Every use of a child store by a parent happens on `parent/<parent-store-id>` in its own
@@ -64,6 +65,8 @@ export function openParentBranch(root: string, parentId: string): OpenResult {
       throw new CliError(`rebasing ${branch} on main conflicts (${r.stderr.split("\n")[0] ?? ""}); nothing was changed. Reconcile main and the branch explicitly.`, 3);
     }
     rebased = true;
+    // git rewrote files in the worktree: they are not hand writes, so the journal baseline moves with them.
+    writeSnapshot(dir);
   }
   return { branch, worktree: dir, created, rebased, behind_before: behind };
 }
@@ -120,6 +123,7 @@ export function mergeParentBranch(root: string, parentId: string): MergeResult {
     const conflicts = files.map((f) => ({ file: f, kind: conflictKind(f) }));
     throw new CliError(`merge of ${branch} conflicts on ${files.length} file(s): ${files.join(", ")}; nothing was changed`, 4, conflicts);
   }
+  writeSnapshot(root);
   return { branch, merged: true, commits, conflicts: [] };
 }
 

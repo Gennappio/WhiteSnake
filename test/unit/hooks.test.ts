@@ -75,6 +75,15 @@ test("PreToolUse denies shell commands that write under knowledge/ but allows th
     assert.equal(decision("cat knowledge/decisions/dec_p01nanal0000.md"), "allow");
     assert.equal(decision("ls -R corpus knowledge | head"), "allow");
     assert.equal(decision("python3 procedures/table_counts/run.py corpus/P02.md Randomised"), "silent");
+    // Each simple command is judged on its own: the word whitesnake elsewhere on the line excuses nothing.
+    assert.equal(decision("echo whitesnake > knowledge/decisions/dec_aaaaaaaaaaaa.md"), "deny");
+    assert.equal(decision("whitesnake validate; rm -rf knowledge/decisions"), "deny");
+    assert.equal(decision("node dist/src/cli.js --store . validate && rm -rf knowledge/episodes"), "deny");
+    assert.equal(decision("whitesnake why dec_p01nanal0000 > knowledge/notes.md"), "deny");
+    // Text quoted inside a CLI argument is not shell syntax, and a CLI call inside $( ) is still a CLI call.
+    assert.equal(decision("whitesnake add episode --json-in '{\"title\":\"x\"}' --body 'we tried rm -rf knowledge/episodes; it failed'"), "silent");
+    assert.equal(decision("EP=$(whitesnake episode open 'P02' --resolution agent); whitesnake add evidence --json-in '{\"title\":\"t\",\"produced_by\":\"'$EP'\"}' --body 'see > knowledge/'"), "silent");
+    assert.equal(decision("cat corpus/P02.md | whitesnake add evidence --json-in '{\"title\":\"t\"}' --body-file /dev/stdin"), "silent");
     const patch = hook(dir, "PreToolUse", { tool_name: "apply_patch", tool_input: { patch: "*** Begin Patch\n*** Add File: knowledge/decisions/dec_bbbbbbbbbbbb.md\n+---\n*** End Patch" } });
     assert.equal((JSON.parse(patch.stdout) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision, "deny");
   } finally {

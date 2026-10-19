@@ -131,6 +131,24 @@ const corruptions: { name: string; code: string; apply: (dir: string) => void }[
       writeFileSync(p, readFileSync(p, "utf8").replace("| 60 | 58 |", "| 60 | 59 |"));
     },
   },
+  {
+    name: "dependency cycle between two decisions",
+    code: "E_CYCLE",
+    apply: (dir) => {
+      const a = join(dir, "knowledge", "decisions", "dec_p01nanal0000.md");
+      const b = join(dir, "knowledge", "decisions", "dec_p01nrand0000.md");
+      writeFileSync(a, readFileSync(a, "utf8").replace("depends_on: []", "depends_on:\n  - dec_p01nrand0000"));
+      writeFileSync(b, readFileSync(b, "utf8").replace("depends_on: []", "depends_on:\n  - dec_p01nanal0000"));
+    },
+  },
+  {
+    name: "root episode nested under its own child",
+    code: "E_CYCLE",
+    apply: (dir) => {
+      const p = join(dir, "knowledge", "episodes", "ep_p01root00000.md");
+      writeFileSync(p, readFileSync(p, "utf8").replace("parent: null", "parent: ep_p01nanal0000"));
+    },
+  },
 ];
 
 for (const c of corruptions) {
