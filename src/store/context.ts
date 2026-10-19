@@ -63,12 +63,12 @@ export function resolveWorkingStore(storeOpt: string | undefined, cwd: string, o
   if (!existsSync(join(target, ".git"))) {
     // Without git there is no branch to isolate the caller's writes; still write in the target, never in the caller.
     const mirrored = mirrorTurn(caller, target);
-    process.env["AUTOSOFT_ACTOR"] ??= `agent:${loadConfig(caller).id}`;
+    process.env["WHITESNAKE_ACTOR"] ??= `agent:${loadConfig(caller).id}`;
     return { root: target, caller, cross: true, branch: null, mirrored_turn: mirrored };
   }
   const callerId = loadConfig(caller).id;
   const open = openParentBranch(target, callerId);
   const mirrored = mirrorTurn(caller, open.worktree);
-  process.env["AUTOSOFT_ACTOR"] ??= `agent:${callerId}`;
+  process.env["WHITESNAKE_ACTOR"] ??= `agent:${callerId}`;
   return { root: open.worktree, caller, cross: true, branch: open.branch, mirrored_turn: mirrored };
 }
