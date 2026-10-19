@@ -12,7 +12,8 @@ import { affected, frontier, getNode, listNodes, precedent, renderFrontier, rend
 import { claudeLogPath } from "./ingest/claude.js";
 import { ingestLogFile } from "./ingest/index.js";
 import { NODE_TYPES, TYPE_DIR, type NodeType } from "./schema/ids.js";
-import { CONFIG_FILE, ConfigSchema, findStoreRoot, requireStoreRoot, writeConfig } from "./store/config.js";
+import { CONFIG_FILE, ConfigSchema, findStoreRoot, writeConfig } from "./store/config.js";
+import { resolveWorkingStore, type WorkingStore } from "./store/context.js";
 import { loadStore, serializeNode } from "./store/files.js";
 import { createNode, currentTurn, lastWarnings, linkNodes, readNode, updateNode } from "./store/ops.js";
 import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
@@ -46,12 +47,21 @@ program
   .name("whitesnake")
   .description("Knowledge store with provenance for agentic research processes")
   .version(JSON.parse(readFileSync(join(TOOL_ROOT, "package.json"), "utf8")).version as string)
-  .option("--store <dir>", "store directory (default: nearest whitesnake.yaml upwards from cwd)")
+  .option("--store <dir>", "store directory (default: nearest whitesnake.yaml upwards from cwd). From inside another store, writes go to the target's parent/<caller> branch")
+  .option("--on-main", "with --store from inside another store: work on the target's main instead of the caller's branch (reconciliation, tooling)")
   .option("--json", "machine-readable output");
 
-type GlobalOpts = { store?: string; json?: boolean };
+type GlobalOpts = { store?: string; onMain?: boolean; json?: boolean };
 const globals = (): GlobalOpts => program.opts<GlobalOpts>();
-const root = (): string => requireStoreRoot(resolve(globals().store ?? process.cwd()));
+let working: WorkingStore | null = null;
+/** The directory this command works on; resolved once, because a cross-store call opens a worktree and mirrors the turn. */
+const root = (): string => {
+  if (!working) {
+    working = resolveWorkingStore(globals().store, process.cwd(), { onMain: globals().onMain });
+    if (working.cross) console.error(`note: cross-store call from ${working.caller}: working in ${working.root}${working.branch ? ` on ${working.branch}` : ""}; memory is imprinted in the target store, not in the caller`);
+  }
+  return working.root;
+};
 const print = (human: string, data: unknown): void => {
   console.log(globals().json ? JSON.stringify(data, null, 2) : human);
 };

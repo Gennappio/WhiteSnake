@@ -1,6 +1,6 @@
 # whitesnake CLI cheat sheet
 
-All commands accept `--json` for machine-readable output and `--store <dir>` to point at a store; by default the nearest `whitesnake.yaml` upwards from the working directory is used.
+All commands accept `--json` for machine-readable output and `--store <dir>` to point at a store; by default the nearest `whitesnake.yaml` upwards from the working directory is used. From inside a store, `--store <other>` writes into the other store on your `parent/<your-id>` branch with your turn mirrored there (`--on-main` bypasses this for reconciliation).
 
 | command | purpose |
 |---|---|
