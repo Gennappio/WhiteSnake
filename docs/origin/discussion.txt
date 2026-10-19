@@ -1,12 +1,14 @@
-Voglio ragionare con te su questo nuovo paradigma di sviluppo (soprattutto per la ricerca ma anche per qualsiasi automazione):
-Oramai codex/claudecode sono il punto di ingresso di lavoro dei ricercatori/programmatori. Però la tendenza delle persone è ancora quella di racchiudere la propria ricerca/automazione in un software tradizionale. Immagina io stia facendo un'attività di annotazione di un database sulla base di dati ricercati in alcuni paper. Con la tecnologia attuale la  conclusione naturale del ricercatore sarebbe quella di creare un sistema che ha una parte deterministica e una che ha chiamate a LLM o Jev per la parte decisionale e interpretazione. Alla fine del lavoro il ricercatore distribuirà o fornirà ai suoi collaboratori un software con ingresso GUI o cli o mcp.
-secondo me questo è un modo arcaico e limitato.
-La verità è che codex è spesso capace di svolgere i task di annotazione scrivendo codice al volo, per prendere decisioni, loggare, ecc... In pratica a colpi di prompt anche lo stesso collaboratore o boss potrebbe avere lo stesso risultato del software del ricercatore usando codex. Solo che dovrà ancora una volta promptare, prendere alcune decision, analizzare delle conclusioni e annotarle, consumare ulteriori token ecc.
-Se il ricercatore avesse mantenuto in qualche modo una memoria della sessione di ricerca con codex in modo da tener traccia delle decisioni, del codice generato al volo per alcune analisi che solo codex ha usato per valutazioni interne ecc. se per esempio tutto il processo di ricerca fosse organizzato in un database di tesi-ipotesi-verifica-falsificazione-conclusione che sia accessibile dal codex del boss per capire il perchè delle decisioni prese, ALLORA si potrebbe consegnare non un software ma un "processo di automazione/ricerca".
-Per me i sistemi moderni non dovrebbero avere un accesso con cli o mcp ma dovrebbero sempre avere un accesso con coding agent. per come la vedo io non si crea sistema dove un orchestratore chiama mcp ma dove un harness chiama altri harness. Codex è maturo abbastanza. A questo punto ogni sessione di ricerca automaticamente ha una conoscenza appresa dal ricercatore che ha lavorato su quella sessione ed è capace autonomamente di scrivere ancora codice al volo dove ci sia un "buco".
-una sorta di sistema frattale dove a poco a poco è possibile coprire autonomamente i buchi.
-per fare qualcosa del genere c'è bisogno secondo me di creare un sistema osservabile in cui il sistema figlio possa comunicare al sistema padre che cosa vuole sapere e perchè ma soprattuto in cui i vari tentativi vengano registrati e siano accessibili velocemente e facilmente e in cui le procedure possano essere "promosse" e diventare skill/tool/hook.  perchè scrivere un software che sa leggere paper quando codex ne è perfettamente capace? laddove codex è capace il sistema chiamerà direttamente codex. e se la procedura sarà andata a buon fine, chiamata codex con prompt usato diventeranno una procedura semi deterministica.
-Capito che intendo? che ne pensi? in pratica l'idea è di sostituire tutte le componenti di ragionamento che solito sono delegate a llm ai coding agent e fare in modo che tutti i ragionamenti considerati corretti diventino una procedura.
+[English translation of the original Italian design conversation of 2026-10-15. The Italian text is in the git history up to commit 82404d6, at docs/origine/discussion.txt.]
+
+I want to think through this new development paradigm with you (mainly for research but also for any kind of automation):
+By now codex/claudecode are the entry point for the work of researchers/programmers. But people still tend to wrap their research/automation in traditional software. Imagine I'm doing an annotation task on a database based on data looked up in some papers. With current technology the  natural conclusion for the researcher would be to build a system that has a deterministic part and a part that makes calls to an LLM or Jev for the decision-making and interpretation. At the end of the work the researcher will distribute or give their collaborators a piece of software with a GUI or cli or mcp entry point.
+in my view this is an archaic and limited approach.
+The truth is that codex is often able to carry out the annotation tasks by writing code on the fly, to make decisions, log, etc... Basically, prompt after prompt, even the collaborator or the boss could get the same result as the researcher's software by using codex. Except they'll have to prompt all over again, make some decisions, analyse some conclusions and annotate them, consume more tokens etc.
+If the researcher had somehow kept a memory of the research session with codex so as to keep track of the decisions, of the code generated on the fly for some analyses that only codex used for internal evaluations etc. if for example the whole research process were organised in a thesis-hypothesis-verification-falsification-conclusion database that the boss's codex could access to understand the why behind the decisions taken, THEN you could hand over not a piece of software but an "automation/research process".
+For me modern systems shouldn't have cli or mcp access but should always have coding agent access. the way I see it you don't build a system where an orchestrator calls mcp but one where a harness calls other harnesses. Codex is mature enough. At that point every research session automatically has knowledge learned from the researcher who worked on that session and is able to autonomously write more code on the fly wherever there's a "gap".
+a sort of fractal system where little by little the gaps can be filled autonomously.
+to do something like this, in my opinion, you need to build an observable system in which the child system can tell the parent system what it wants to know and why but above all in which the various attempts get recorded and are quickly and easily accessible and in which procedures can be "promoted" and become a skill/tool/hook.  why write software that can read papers when codex is perfectly capable of it? wherever codex is capable the system will call codex directly. and if the procedure has succeeded, the codex call with the prompt used will become a semi-deterministic procedure.
+Get what I mean? what do you think? basically the idea is to replace all the reasoning components that are usually delegated to an llm with coding agents and make it so that all the reasoning considered correct becomes a procedure.
 
 
 
@@ -25,40 +27,40 @@ Worked for 6m 24s
 
 
 
-Sì, ti seguo. Stai proponendo che l’oggetto da consegnare sia una capacità di lavoro trasferibile: un agente, il contesto che ha costruito, le prove che giustificano le sue decisioni e le procedure che ha imparato a riutilizzare. Chi riceve questo insieme può continuare il lavoro, interrogarlo e modificarne le premesse.
-Penso che questa idea abbia valore soprattutto nella ricerca, dove una parte essenziale del lavoro consiste proprio nello scoprire quale procedura abbia senso applicare. Trasformare troppo presto quella ricerca in un’applicazione può cristallizzare assunzioni ancora provvisorie e perdere molto del sapere sviluppato lungo il percorso.
-La tua osservazione più forte, secondo me, riguarda il lavoro intellettuale che oggi si disperde tra una sessione e l’altra: criteri chiariti con il ricercatore, tentativi falliti, eccezioni scoperte, piccoli programmi scritti per controllare un dubbio. Tutto questo dovrebbe diventare patrimonio operativo del progetto.
-Ci sono però alcune distinzioni che renderebbero il paradigma molto più solido.
-La memoria deve conservare conoscenza utilizzabile e contestabile. Salvare tutta la conversazione è utile come archivio, ma obbligare il Codex del collaboratore a rileggerla significherebbe fargli ripetere parte del lavoro interpretativo. Io distinguerei almeno questi livelli:
-Livello	Che cosa conserva
-Esperienza	Tentativi, chiamate agli strumenti, codice eseguito, risultati ed errori
-Conoscenza	Affermazioni, evidenze, assunzioni, contraddizioni e questioni aperte
-Decisioni	Scelte adottate, motivazioni, ambito di validità e alternative scartate
-Procedure	Modi di lavorare riutilizzabili, con esempi e criteri di verifica
+Yes, I follow you. You are proposing that the thing to be handed over is a transferable working capability: an agent, the context it has built, the evidence that justifies its decisions and the procedures it has learned to reuse. Whoever receives this bundle can continue the work, question it and change its premises.
+I think this idea is valuable above all in research, where an essential part of the work consists precisely in discovering which procedure makes sense to apply. Turning that research into an application too early can crystallise assumptions that are still provisional and lose much of the know-how developed along the way.
+Your strongest observation, in my view, concerns the intellectual work that today gets dispersed between one session and the next: criteria clarified with the researcher, failed attempts, exceptions discovered, small programs written to check a doubt. All of this should become an operational asset of the project.
+There are, however, a few distinctions that would make the paradigm much more solid.
+The memory must preserve knowledge that is usable and contestable. Saving the whole conversation is useful as an archive, but forcing the collaborator’s Codex to reread it would mean making it repeat part of the interpretive work. I would distinguish at least these levels:
+Level	What it preserves
+Experience	Attempts, tool calls, executed code, results and errors
+Knowledge	Claims, evidence, assumptions, contradictions and open questions
+Decisions	Choices adopted, rationales, scope of validity and discarded alternatives
+Procedures	Reusable ways of working, with examples and verification criteria
 
 
-Il tuo database tesi–ipotesi–verifica–falsificazione–conclusione è vicino al secondo livello. Lo estenderei con relazioni di dipendenza.
-Nel tuo esempio: un’annotazione dipende da un passaggio del paper, da una certa interpretazione e da una regola di inclusione decisa dal ricercatore. Se il boss cambia quella regola, il sistema dovrebbe individuare le annotazioni da riesaminare. Questo renderebbe la memoria utile anche per correggere il lavoro.
-Conserverei inoltre separatamente «il paper afferma X», «abbiamo osservato Y» e «abbiamo deciso di trattare X come Z». Sono oggetti diversi: mescolarli trasforma facilmente una convenzione del progetto in un presunto fatto scientifico.
-Per il codice usato nelle valutazioni interne, sì: andrebbero registrati script, input, ambiente e risultati. Le motivazioni rilevanti andrebbero esplicitate quando si prende una decisione. Un resoconto scritto alla fine può ricostruire una spiegazione plausibile senza rappresentare fedelmente ciò che ha determinato la scelta.
-L’idea frattale funziona se ogni delega porta con sé un contratto comprensibile. Un agente figlio dovrebbe ricevere una domanda, il motivo per cui conta, le evidenze già disponibili e le condizioni per considerare sufficiente una risposta. Dovrebbe restituire risultato, prove, incertezze e nuove domande.
-Per esempio:
-«Devo capire se queste due pubblicazioni descrivono la stessa coorte, perché contarle separatamente potrebbe duplicare le osservazioni. Ho già confrontato autori e date; manca il confronto sui criteri di reclutamento.»
+Your thesis–hypothesis–verification–falsification–conclusion database is close to the second level. I would extend it with dependency relations.
+In your example: an annotation depends on a passage in the paper, on a certain interpretation and on an inclusion rule decided by the researcher. If the boss changes that rule, the system should identify the annotations to re-examine. This would make the memory useful for correcting the work as well.
+I would also keep “the paper states X”, “we observed Y” and “we decided to treat X as Z” separate. They are different objects: mixing them easily turns a project convention into a supposed scientific fact.
+For the code used in internal evaluations, yes: scripts, inputs, environment and results should be recorded. The relevant rationales should be made explicit when a decision is taken. An account written at the end can reconstruct a plausible explanation without faithfully representing what determined the choice.
+The fractal idea works if every delegation carries an understandable contract with it. A child agent should receive a question, the reason it matters, the evidence already available and the conditions for considering an answer sufficient. It should return a result, evidence, uncertainties and new questions.
+For example:
+“I need to understand whether these two publications describe the same cohort, because counting them separately could duplicate the observations. I have already compared authors and dates; the comparison of recruitment criteria is still missing.”
 
-Questo permette al padre di valutare il contributo e al figlio di chiedere chiarimenti pertinenti. La ricorsione, da sola, non offre questa qualità.
-E distinguerei due strutture: le deleghe possono formare un albero; la conoscenza dovrebbe formare un grafo condiviso. Due rami possono dipendere dalla stessa evidenza. Se ognuno conserva una copia isolata delle proprie conclusioni, rischi duplicazioni e contraddizioni difficili da vedere.
-Su «ogni sessione ha imparato», farei una precisazione: in questa architettura l’apprendimento risiede soprattutto nella memoria esterna e nelle procedure aggiornate. Deve poter sopravvivere alla chiusura della sessione e al cambiamento del modello. Per questo consegnerei un patrimonio versionato, dal quale una nuova sessione possa ripartire.
-Sul passaggio da successo a procedura semideterministica sarei più esigente. Un prompt riuscito una volta è un buon candidato da conservare. Per promuoverlo servono anche condizioni di applicabilità, esempi verificati, casi difficili e un criterio per riconoscere quando fallisce. Ripetere lo stesso prompt non garantisce la stessa decisione.
-La promozione potrebbe poi assumere forme diverse:
-- Una skill, quando resta necessario interpretare il caso.
-- Uno strumento eseguibile, quando una trasformazione è sufficientemente definita.
-- Un hook, quando un controllo deve avvenire in corrispondenza di un evento.
-Sono destinazioni diverse, non necessariamente gradini di un’unica scala. E prevederei anche la retrocessione: una procedura precedentemente affidabile può diventare sperimentale quando cambiano dati, criteri o modello.
-Qui vedo un principio progettuale importante: il sistema dovrebbe spendere ragionamento soprattutto dove esiste ancora incertezza. Riutilizzare un risultato valido, eseguire codice già verificato o applicare una procedura consolidata dovrebbe evitare di riaprire ogni volta l’intero problema. Il risparmio di token va comunque misurato: recuperare e interpretare una memoria troppo grande può costare quanto rifare il lavoro.
-Sul «sempre accesso con coding agent» concordo come possibile punto d’ingresso per il collaboratore, ma non eliminerei CLI, API o MCP. Sono interfacce che l’agente stesso può usare. La scelta architetturale decisiva è quanta responsabilità deleghi al componente chiamato: eseguire un’operazione oppure perseguire un obiettivo, scegliere strumenti e gestire eccezioni. Un harness può offrire quest’ultima capacità e continuare a servirsi delle prime.
-I componenti di base esistono già: la documentazione attuale descrive un harness Codex con esecuzione di codice, ripresa delle sessioni, delega a sottoagenti e uso di skill; le skill possono contenere istruzioni, riferimenti e script. Questo rende plausibile costruire un prototipo del tuo sistema. Non dimostra ancora che memoria scientifica, validazione e promozione funzionino automaticamente. Harness Codex, skill.
-Il primo esperimento che farei sarebbe molto concreto: un ricercatore annota un piccolo insieme di paper; un collaboratore, in una sessione nuova, riceve il processo e affronta paper nuovi, poi cambia un criterio di annotazione. Misurerei quante spiegazioni deve richiedere al ricercatore, quali decisioni riesce a giustificare, quali risultati riesce a correggere e quanto lavoro ripete.
-Il punto decisivo della tua proposta è rendere trasferibile il giudizio sviluppato durante il lavoro. La capacità di scrivere altro codice completa il sistema: gli permette di proseguire quando le procedure ereditate non bastano, lasciando a sua volta evidenze e competenze che il prossimo utilizzatore possa riusare.
+This lets the parent evaluate the contribution and the child ask for relevant clarifications. Recursion, on its own, does not provide this quality.
+And I would distinguish two structures: delegations can form a tree; knowledge should form a shared graph. Two branches can depend on the same piece of evidence. If each one keeps an isolated copy of its own conclusions, you risk duplications and contradictions that are hard to see.
+On “every session has learned”, I would make one clarification: in this architecture the learning resides mainly in the external memory and in the updated procedures. It must be able to survive the closing of the session and a change of model. That is why I would hand over a versioned asset base from which a new session can start again.
+On the step from success to semi-deterministic procedure I would be more demanding. A prompt that succeeded once is a good candidate to keep. To promote it you also need conditions of applicability, verified examples, hard cases and a criterion for recognising when it fails. Repeating the same prompt does not guarantee the same decision.
+Promotion could then take different forms:
+- A skill, when interpreting the case is still necessary.
+- An executable tool, when a transformation is sufficiently well defined.
+- A hook, when a check has to happen in response to an event.
+They are different destinations, not necessarily rungs of a single ladder. And I would also provide for demotion: a previously reliable procedure can become experimental when data, criteria or model change.
+Here I see an important design principle: the system should spend reasoning mainly where uncertainty still exists. Reusing a valid result, running already verified code or applying a consolidated procedure should avoid reopening the whole problem every time. The token saving must still be measured: retrieving and interpreting a memory that is too large can cost as much as redoing the work.
+On “always coding agent access” I agree, as a possible entry point for the collaborator, but I would not eliminate CLI, API or MCP. They are interfaces the agent itself can use. The decisive architectural choice is how much responsibility you delegate to the component being called: executing an operation, or pursuing a goal, choosing tools and handling exceptions. A harness can offer the latter capability and keep making use of the former.
+The basic components already exist: the current documentation describes a Codex harness with code execution, session resumption, delegation to subagents and use of skills; skills can contain instructions, references and scripts. This makes it plausible to build a prototype of your system. It does not yet show that scientific memory, validation and promotion work automatically. Codex harness, skills.
+The first experiment I would run would be very concrete: a researcher annotates a small set of papers; a collaborator, in a new session, receives the process and tackles new papers, then changes an annotation criterion. I would measure how many explanations they have to ask the researcher for, which decisions they manage to justify, which results they manage to correct and how much work they repeat.
+The decisive point of your proposal is making the judgement developed during the work transferable. The ability to write more code completes the system: it allows it to keep going when the inherited procedures are not enough, leaving in turn evidence and expertise that the next user can reuse.
 
 
 12:48
@@ -69,7 +71,7 @@ Il punto decisivo della tua proposta è rendere trasferibile il giudizio svilupp
 
 
 
-ok ma mi conviene fare un coding agent apposito? o faccio un set di regole? o creo un software apposito per forzare il coding agent a comportarsi come desiderato? il database di conoscenza dovrebbe essere già pronto e ogni entry collegata ad una commit git. do una struttura rigida? esiste qualcosa del genere da cui ispirarsi?
+ok but is it better for me to build a dedicated coding agent? or do I write a set of rules? or do I build dedicated software to force the coding agent to behave as desired? the knowledge database should already be set up and every entry linked to a git commit. do I give it a rigid structure? is there anything like this out there to draw inspiration from?
 
 
 
@@ -88,58 +90,58 @@ Worked for 1m 59s
 
 
 
-Nel tuo caso partirei da Codex o Claude Code esistenti, aggiungendo skill e un piccolo software che gestisca memoria, provenienza e validazione. È la combinazione che ti permette di sperimentare il paradigma senza dover ricostruire anche il coding agent.
-Le tre opzioni hanno ruoli diversi:
-Opzione	Come la userei
-Regole e skill	Per insegnare il metodo: cercare precedenti, esplicitare assunzioni, registrare decisioni, verificare risultati
-Software dedicato	Per registrare esecuzioni, controllare collegamenti e versioni, validare record e gestire la promozione delle procedure
-Coding agent costruito da zero	Solo se emergono limiti concreti dell’harness esistente che non riesci a risolvere attraverso le sue interfacce
+In your case I would start from the existing Codex or Claude Code, adding skills and a small piece of software that handles memory, provenance and validation. It is the combination that lets you experiment with the paradigm without also having to rebuild the coding agent.
+The three options have different roles:
+Option	How I would use it
+Rules and skills	To teach the method: look for precedents, make assumptions explicit, record decisions, verify results
+Dedicated software	To record executions, check links and versions, validate records and manage the promotion of procedures
+Coding agent built from scratch	Only if concrete limitations of the existing harness emerge that you cannot resolve through its interfaces
 
 
-Il punto è questo: puoi rendere obbligatorie le condizioni di accettazione di un risultato; la qualità del ragionamento richiede comunque valutazioni sostanziali. Uno schema può verificare che una conclusione abbia una fonte. Per sapere se quella fonte sostenga davvero la conclusione serve un controllo ulteriore.
-Ti proporrei questa architettura.
-Le regole descrivono pochi obblighi generali: consultare la conoscenza esistente, distinguere osservazioni e interpretazioni, conservare i tentativi falliti rilevanti, dichiarare ciò che rimane incerto. Le skill spiegano come svolgere attività specifiche, come annotare un paper o valutare una procedura candidata.
-Il software offre operazioni piccole e stabili: aprire un tentativo, registrare evidenze, collegare una decisione, interrogare le dipendenze, verificare un risultato e creare una versione consolidata. Codex continua a scegliere come leggere, analizzare e scrivere codice.
-Per esempio, l’agente può esplorare liberamente un paper. Quando vuole consolidare un’annotazione, il sistema richiede:
-- Passaggio o tabella di origine, con riferimento preciso.
-- Criterio di annotazione applicato e relativa versione.
-- Eventuale trasformazione effettuata.
-- Esecuzione o decisione da cui deriva.
-- Stato della verifica ed eventuali dubbi.
-Se manca qualcosa, l’annotazione resta una bozza e il sistema restituisce un errore comprensibile.
-Per automatizzare l’avvio e la ripresa del lavoro puoi usare il Codex SDK. Gli hook di Codex possono aiutare con registrazione e controlli, ma la documentazione precisa che non coprono tutte le operazioni e non costituiscono un confine completo di enforcement. Per una garanzia effettiva, la scrittura nell’archivio consolidato deve passare dal validatore, con permessi separati dall’area in cui l’agente sperimenta.
-Darei una struttura rigida alla provenienza, lasciando flessibile il percorso di ricerca.
-Preparerei subito un database vuoto con uno schema minimo, versionato. Eviterei di definire in anticipo un’ontologia enorme o di obbligare ogni attività a seguire una sequenza tesi–ipotesi–falsificazione: esistono anche esplorazioni, pulizia dei dati e osservazioni inattese.
-Partirei con sei oggetti:
-Oggetto	Contenuto essenziale
-Domanda	Cosa vogliamo sapere e perché
-Affermazione/ipotesi	Cosa sosteniamo, con quale ambito di validità
-Evidenza	Fonte o risultato osservato, con posizione e identificativo del contenuto
-Tentativo/esecuzione	Input, codice, configurazione, output, esito
-Decisione	Scelta, motivazione, alternative e dipendenze
-Procedura	Istruzioni riutilizzabili, condizioni di applicabilità e verifiche
+The point is this: you can make the acceptance conditions for a result mandatory; the quality of the reasoning still requires substantive evaluation. A schema can verify that a conclusion has a source. To know whether that source really supports the conclusion you need a further check.
+I would propose this architecture.
+The rules describe a few general obligations: consult existing knowledge, distinguish observations from interpretations, keep the relevant failed attempts, state what remains uncertain. The skills explain how to carry out specific activities, such as annotating a paper or evaluating a candidate procedure.
+The software offers small, stable operations: open an attempt, record evidence, link a decision, query dependencies, verify a result and create a consolidated version. Codex keeps choosing how to read, analyse and write code.
+For example, the agent can explore a paper freely. When it wants to consolidate an annotation, the system requires:
+- Source passage or table, with a precise reference.
+- Annotation criterion applied and its version.
+- Any transformation performed.
+- Execution or decision it derives from.
+- Verification status and any doubts.
+If something is missing, the annotation remains a draft and the system returns an understandable error.
+To automate starting and resuming work you can use the Codex SDK. Codex hooks can help with recording and checks, but the documentation specifies that they do not cover all operations and do not constitute a complete enforcement boundary. For an actual guarantee, writing to the consolidated store must go through the validator, with permissions separate from the area where the agent experiments.
+I would give provenance a rigid structure, leaving the research path flexible.
+I would prepare an empty database right away, with a minimal, versioned schema. I would avoid defining a huge ontology in advance or forcing every activity to follow a thesis–hypothesis–falsification sequence: there are also explorations, data cleaning and unexpected observations.
+I would start with six objects:
+Object	Essential content
+Question	What we want to know and why
+Claim/hypothesis	What we assert, with what scope of validity
+Evidence	Source or observed result, with location and content identifier
+Attempt/execution	Input, code, configuration, output, outcome
+Decision	Choice, rationale, alternatives and dependencies
+Procedure	Reusable instructions, conditions of applicability and checks
 
 
-Le relazioni iniziali potrebbero essere supporta, contraddice, dipende_da, prodotto_da, sostituisce.
-Ogni oggetto avrebbe identità stabile, autore umano o agente, data, versione dello schema e collegamenti pertinenti. I campi obbligatori dipenderebbero dal tipo: un’ipotesi ancora aperta può non avere evidenze; una conclusione accettata deve averle. Le estensioni del dominio possono arrivare dopo.
-Il collegamento con Git è giusto, ma distinguerei tre cose che un unico campo “commit” confonderebbe.
-1. Versione del codice eseguito. Quale codice ha prodotto un risultato? Il solo HEAD non basta se Codex ha eseguito uno script appena scritto e non ancora committato: occorre conservarne lo snapshot effettivo.
-2. Versione della conoscenza. In quale revisione è stata introdotta o modificata una decisione?
-3. Versione di dati e fonti. Quale PDF, dataset o risposta esterna è stata usata? Servono identificativi del contenuto e, quando possibile, copie conservate.
-Non imporrei una commit per ogni entry. Una commit può rappresentare un avanzamento coerente: un esperimento e le sue osservazioni, oppure una revisione del criterio di annotazione.
-Inoltre eviterei di mettere dentro un file l’hash della stessa commit che deve contenerlo: creerebbe un’autoreferenza. Il record può contenere il riferimento alla commit del codice eseguito; la commit che registra quel record si ricava dalla storia Git o da un indice esterno.
-Per un primo prototipo sceglierei record testuali strutturati versionati in Git e un indice SQLite ricostruibile per interrogazioni veloci. I record sarebbero la fonte autorevole; SQLite una vista interrogabile. Così eviti due archivi indipendenti da mantenere sincronizzati. Se poi diventano centrali scritture concorrenti e collaborazione distribuita, valuti un database versionato come Dolt.
-Ho trovato quattro riferimenti molto pertinenti, ciascuno per un pezzo del sistema:
-Progetto	Cosa riprenderei	Limite rispetto alla tua idea
-Letta / MemFS	Memoria in un repository Git, consultazione progressiva, skill versionate insieme alla memoria	Devi aggiungere la struttura scientifica di evidenze, ipotesi e verifiche
-Deciduous	Grafo di obiettivi, alternative, decisioni, azioni, osservazioni e risultati; ricerca e collegamenti alla storia Git	Nasce per decisioni di sviluppo: richiede adattamento al tuo dominio
-Beads	Memoria operativa strutturata, dipendenze tra attività, integrazioni con coding agent e database Dolt	Il suo centro è la gestione del lavoro; il modello delle evidenze scientifiche resta da progettare
-DataLad	Registrazione di comandi, input e output collegata alla storia del dataset; riesecuzione delle analisi	Copre la provenienza computazionale, mentre interpretazioni e decisioni richiedono un altro livello
+The initial relations could be supports, contradicts, depends_on, produced_by, supersedes.
+Each object would have a stable identity, a human or agent author, a date, a schema version and relevant links. The mandatory fields would depend on the type: a hypothesis that is still open may have no evidence; an accepted conclusion must have it. Domain extensions can come later.
+The link with Git is right, but I would distinguish three things that a single “commit” field would conflate.
+1. Version of the executed code. Which code produced a result? HEAD alone is not enough if Codex ran a script that was just written and not yet committed: you need to keep its actual snapshot.
+2. Version of the knowledge. In which revision was a decision introduced or modified?
+3. Version of data and sources. Which PDF, dataset or external response was used? You need content identifiers and, when possible, preserved copies.
+I would not require a commit for every entry. A commit can represent a coherent step forward: an experiment and its observations, or a revision of the annotation criterion.
+I would also avoid putting inside a file the hash of the very commit that is supposed to contain it: it would create a self-reference. The record can contain the reference to the commit of the executed code; the commit that stores that record is derived from the Git history or from an external index.
+For a first prototype I would choose structured text records versioned in Git and a rebuildable SQLite index for fast queries. The records would be the authoritative source; SQLite a queryable view. That way you avoid two independent stores to keep in sync. If concurrent writes and distributed collaboration later become central, consider a versioned database such as Dolt.
+I found four very relevant references, each for one piece of the system:
+Project	What I would borrow	Limit relative to your idea
+Letta / MemFS	Memory in a Git repository, progressive lookup, skills versioned together with the memory	You have to add the scientific structure of evidence, hypotheses and verifications
+Deciduous	Graph of goals, alternatives, decisions, actions, observations and outcomes; search and links to the Git history	Built for development decisions: it needs adapting to your domain
+Beads	Structured operational memory, dependencies between tasks, integrations with coding agents and a Dolt database	Its focus is work management; the model of scientific evidence remains to be designed
+DataLad	Recording of commands, inputs and outputs linked to the dataset history; re-running of analyses	Covers computational provenance, while interpretations and decisions require another layer
 
 
-Guarderei per primi Deciduous e Letta. Deciduous è vicino alla tua richiesta di rendere interrogabili le ragioni delle scelte; Letta è vicino all’idea di una competenza persistente che accompagna l’agente. Sono riferimenti verificati nella documentazione, non sistemi che ho collaudato sul tuo caso.
-C’è anche una lezione concreta in Deciduous: il progetto racconta di avere rimosso hook che impedivano all’agente di continuare finché non registrava una decisione, perché potevano bloccare completamente la sessione. Questo rafforza la scelta di concentrare i vincoli nei passaggi di consolidamento, mantenendo agevole l’esplorazione. Motivazione della modifica.
-Il primo componente che costruirei sarebbe quindi un registro verificabile del lavoro, con una skill che insegna a usarlo. Lo proverei su un’attività reale di annotazione e su una seconda sessione che eredita il progetto. Solo dopo introdurrei promozione automatica delle procedure e deleghe ricorsive: a quel punto avresti già il modo di osservare se migliorano il lavoro o aggiungono complessità.
+I would look at Deciduous and Letta first. Deciduous is close to your request to make the reasons behind choices queryable; Letta is close to the idea of a persistent competence that accompanies the agent. They are references verified in their documentation, not systems I have tested on your case.
+There is also a concrete lesson in Deciduous: the project reports having removed hooks that prevented the agent from continuing until it recorded a decision, because they could block the session completely. This reinforces the choice of concentrating constraints at the consolidation steps, while keeping exploration easy. Rationale for the change.
+The first component I would build would therefore be a verifiable record of the work, with a skill that teaches how to use it. I would test it on a real annotation task and on a second session that inherits the project. Only afterwards would I introduce automatic promotion of procedures and recursive delegations: at that point you would already have a way to observe whether they improve the work or add complexity.
 
 
 12:59
@@ -150,7 +152,7 @@ Il primo componente che costruirei sarebbe quindi un registro verificabile del l
 
 
 
-ok ma come faresti il sistema di promozione automatica delle procedure e deleghe ricorsive? sia dal punto di vista logico che implementativo
+ok but how would you build the system for automatic promotion of procedures and recursive delegations? both from the logical and from the implementation point of view
 
 
 
@@ -169,39 +171,39 @@ Worked for 2m 10s
 
 
 
-Lo farei con un motore di esecuzione e un motore di apprendimento, entrambi sopra Codex. Condividono il registro della conoscenza, ma hanno responsabilità diverse:
-- Il motore di esecuzione sceglie procedure, avvia sessioni, gestisce deleghe e verifica i risultati.
-- Il motore di apprendimento analizza le esperienze registrate, propone procedure riutilizzabili e le sottopone a valutazione.
-L’agente può proporre una procedura o una delega. Il software gestisce le transizioni di stato, i budget e le condizioni di accettazione. Quella che segue è un’architettura proposta, da implementare.
-La promozione partirebbe da episodi di lavoro verificati.
-Un episodio sarebbe un’unità abbastanza piccola da poter essere riutilizzata: per esempio, «estrarre il numero di partecipanti per braccio di trattamento». “Annotare un paper” potrebbe contenere molti episodi.
-Per ogni episodio registrerei domanda, input, tentativi, codice eseguito, output, verifiche, correzioni del ricercatore e costo. Registrerei anche gli insuccessi: servono per riconoscere quando una procedura non è applicabile.
-Il ciclo di promozione sarebbe questo:
+I would do it with an execution engine and a learning engine, both on top of Codex. They share the knowledge record, but have different responsibilities:
+- The execution engine chooses procedures, starts sessions, manages delegations and verifies results.
+- The learning engine analyses recorded experiences, proposes reusable procedures and submits them for evaluation.
+The agent can propose a procedure or a delegation. The software manages state transitions, budgets and acceptance conditions. What follows is a proposed architecture, still to be implemented.
+Promotion would start from verified work episodes.
+An episode would be a unit small enough to be reused: for example, “extract the number of participants per treatment arm”. “Annotating a paper” could contain many episodes.
+For each episode I would record question, inputs, attempts, executed code, outputs, checks, the researcher’s corrections and cost. I would also record failures: they are needed to recognise when a procedure is not applicable.
+The promotion cycle would be this:
 ```mermaid
 flowchart LR
-    E[Esperienze registrate] --> C[Procedura candidata]
-    C --> V[Valutazione separata]
-    V -->|Superata| S[Uso in affiancamento]
-    V -->|Insufficiente| R[Revisione o archiviazione]
-    S -->|Confermata| A[Versione attiva]
-    A -->|Errori o cambiamenti| Q[Sospesa]
+    E[Recorded experiences] --> C[Candidate procedure]
+    C --> V[Separate evaluation]
+    V -->|Passed| S[Shadow use]
+    V -->|Insufficient| R[Revision or archiving]
+    S -->|Confirmed| A[Active version]
+    A -->|Errors or changes| Q[Suspended]
     Q --> V
 ```
-Lo implementerei attraverso cinque passaggi.
-1. Riconoscere un’opportunità di riuso.
-   Un processo cerca episodi con obiettivo, input e criteri di successo simili. La ripetizione, il costo elevato o una correzione importante del ricercatore possono far scattare una candidatura. Tre casi simili potrebbero bastare per proporre una procedura; non per dichiararla affidabile.
-2. Estrarre una procedura esplicita.
-   Una sessione dedicata legge gli episodi e produce un pacchetto: istruzioni, eventuali script, condizioni di applicabilità, output atteso, verifiche e casi in cui deve astenersi. Deve generalizzare le operazioni mantenendo i riferimenti alle esperienze originarie.
-3. Valutarla su casi separati.
-   Congelo la versione candidata e la confronto con la procedura attiva, oppure con l’esecuzione ordinaria di Codex. Uso casi rappresentativi, casi difficili e casi fuori ambito. Misuro correttezza, errori gravi, capacità di astenersi, costo e tempo. I casi usati per costruirla non bastano come valutazione.
-4. Usarla inizialmente in affiancamento.
-   La candidata produce risultati senza aggiornare direttamente il database finale. Li confronto con risultati verificati. Per operazioni con effetti esterni, questa fase deve lavorare su copie o simulazioni.
-5. Attivare una versione precisa.
-   Il software applica una politica di promozione definita prima della valutazione. Se passa, aggiorna il registro delle procedure attive. Conserva versione precedente e motivazione della promozione.
-La politica non sarebbe «l’agente valutatore dice che va bene». Comprenderebbe soglie di qualità, copertura dei casi, errori inaccettabili e convenienza economica. Un giudice LLM può contribuire, ma due agenti che concordano non costituiscono una verifica indipendente. Dove mancano risposte di riferimento o controlli attendibili, la procedura può restare sperimentale.
-Questo approccio segue anche il principio delle valutazioni specifiche per il compito e ripetute quando cambia il sistema. Documentazione sulle valutazioni.
-La procedura promossa avrebbe un contratto versionato.
-Un manifest potrebbe assomigliare a questo; i campi sono parte del sistema che costruirei:
+I would implement it in five steps.
+1. Recognise an opportunity for reuse.
+   A process looks for episodes with similar goals, inputs and success criteria. Repetition, high cost or a major correction by the researcher can trigger a candidacy. Three similar cases might be enough to propose a procedure; not to declare it reliable.
+2. Extract an explicit procedure.
+   A dedicated session reads the episodes and produces a package: instructions, any scripts, conditions of applicability, expected output, checks and cases in which it must abstain. It must generalise the operations while keeping the references to the original experiences.
+3. Evaluate it on separate cases.
+   I freeze the candidate version and compare it with the active procedure, or with ordinary Codex execution. I use representative cases, hard cases and out-of-scope cases. I measure correctness, serious errors, ability to abstain, cost and time. The cases used to build it are not enough as an evaluation.
+4. Use it in shadow mode at first.
+   The candidate produces results without directly updating the final database. I compare them with verified results. For operations with external effects, this phase must work on copies or simulations.
+5. Activate a specific version.
+   The software applies a promotion policy defined before the evaluation. If it passes, it updates the registry of active procedures. It keeps the previous version and the rationale for the promotion.
+The policy would not be “the evaluator agent says it’s fine”. It would include quality thresholds, case coverage, unacceptable errors and cost-effectiveness. An LLM judge can contribute, but two agents that agree do not constitute an independent verification. Where reference answers or reliable checks are missing, the procedure can remain experimental.
+This approach also follows the principle of evaluations that are specific to the task and repeated when the system changes. Documentation on evaluations.
+The promoted procedure would have a versioned contract.
+A manifest might look like this; the fields are part of the system I would build:
 id: extract_trial_arm_sizes
 version: 3
 
@@ -212,12 +214,12 @@ input_schema: schemas/paper.json
 output_schema: schemas/arm_sizes.json
 
 applicability:
-  - paper con testo estraibile
-  - tabella dei partecipanti identificabile
+  - paper with extractable text
+  - identifiable participant table
 
 abstain_when:
-  - denominatori incompatibili non risolti
-  - disponibile soltanto una figura illeggibile
+  - unresolved incompatible denominators
+  - only an illegible figure available
 
 source_episodes:
   - episode_018
@@ -228,70 +230,70 @@ dependencies:
   table_extractor: "1"
 
 evaluation_report: eval_027
-La qualificazione riguarderebbe procedura + modello/harness + dipendenze + ambito d’uso. Cambiare una componente rilevante richiede una nuova verifica.
-Separerei inoltre due decisioni:
-- Quanta fiducia operativa abbiamo nella procedura?
-- Come conviene eseguirla: skill, script o combinazione?
-Una skill può essere molto affidabile pur mantenendo una parte interpretativa. Convertirla in codice è un’ottimizzazione ulteriore, da verificare attraverso confronti sugli stessi casi.
-Una procedura può anche imparare a delegare. Per esempio: «se il denominatore non è risolvibile dal testo principale, apri una verifica sul supplemento». Anche questa regola di delega entra nel pacchetto e nella sua valutazione.
-La ricorsione userebbe sempre lo stesso contratto di lavoro.
-Ogni sessione riceverebbe un oggetto Task con:
+The qualification would cover procedure + model/harness + dependencies + scope of use. Changing a relevant component requires a new verification.
+I would also separate two decisions:
+- How much operational trust do we have in the procedure?
+- How is it best executed: skill, script or a combination?
+A skill can be very reliable while still retaining an interpretive part. Converting it into code is a further optimisation, to be verified through comparisons on the same cases.
+A procedure can also learn to delegate. For example: “if the denominator cannot be resolved from the main text, open a check on the supplement”. This delegation rule also goes into the package and into its evaluation.
+Recursion would always use the same work contract.
+Each session would receive a Task object with:
 {
   "id": "task_042",
   "parent_id": "task_010",
-  "question": "Quale denominatore usare per il gruppo A?",
-  "why": "Determina il valore dell'annotazione finale",
+  "question": "Which denominator should be used for group A?",
+  "why": "Determines the value of the final annotation",
   "inputs": ["paper_17", "table_3"],
   "knowledge_snapshot": "snapshot_008",
   "acceptance_criteria": [
-    "Indicare la fonte precisa",
-    "Distinguere arruolati, randomizzati e analizzati"
+    "State the precise source",
+    "Distinguish enrolled, randomised and analysed"
   ],
   "allowed_outputs": ["evidence", "decision_proposal"],
   "budget_ref": "allocation_042"
 }
-Il figlio può rispondere con un risultato, chiedere informazioni oppure proporre altri sottocompiti. Il padre e il figlio usano lo stesso protocollo, ed è questo che rende il sistema ricorsivo.
-Prima di avviare lavoro nuovo, il motore prova nell’ordine:
-1. Recuperare un risultato già verificato, se input e condizioni coincidono.
-2. Applicare una procedura attiva compatibile.
-3. Adattare una procedura esistente, creando una versione candidata.
-4. Avviare esplorazione e possibili deleghe.
-La somiglianza semantica aiuta a trovare candidati. Il riuso effettivo richiede anche compatibilità di dati, criteri e versioni.
-Quando propone una delega, l’agente deve spiegare quale incertezza vuole risolvere e come la risposta influenzerà il lavoro del padre. Il software controlla poi:
-- Budget residuo e limite di profondità.
-- Presenza di un compito equivalente già aperto.
-- Dipendenze circolari.
-- Chiarezza dell’output atteso.
-- Permessi e risorse disponibili.
-Come configurazione iniziale proverei profondità massima 2 e 3 sessioni attive contemporaneamente, con un limite complessivo di tentativi. Sono parametri da misurare, non proprietà del paradigma.
-Il budget deve appartenere all’intero albero. Un figlio riceve una quota del budget del padre; crearne altri non genera nuove risorse. Terrei anche una quota riservata alla verifica e alla sintesi finale. La precisione del limite di spesa dipende dalla granularità con cui il backend comunica i consumi; timeout e numero di esecuzioni possono essere controllati direttamente.
-La comunicazione figlio–padre sarebbe persistente e strutturata.
-Una richiesta di chiarimento includerebbe:
+The child can respond with a result, ask for information or propose further subtasks. The parent and the child use the same protocol, and that is what makes the system recursive.
+Before starting new work, the engine tries, in order:
+1. Retrieving an already verified result, if inputs and conditions match.
+2. Applying a compatible active procedure.
+3. Adapting an existing procedure, creating a candidate version.
+4. Starting exploration and possible delegations.
+Semantic similarity helps find candidates. Actual reuse also requires compatibility of data, criteria and versions.
+When it proposes a delegation, the agent must explain which uncertainty it wants to resolve and how the answer will affect the parent’s work. The software then checks:
+- Remaining budget and depth limit.
+- Whether an equivalent task is already open.
+- Circular dependencies.
+- Clarity of the expected output.
+- Available permissions and resources.
+As an initial configuration I would try a maximum depth of 2 and 3 concurrently active sessions, with an overall limit on attempts. These are parameters to be measured, not properties of the paradigm.
+The budget must belong to the whole tree. A child receives a share of the parent’s budget; creating more of them does not generate new resources. I would also keep a share reserved for verification and the final synthesis. The precision of the spending limit depends on the granularity with which the backend reports consumption; timeouts and number of runs can be controlled directly.
+Child–parent communication would be persistent and structured.
+A request for clarification would include:
 {
   "type": "needs_context",
-  "question": "Il protocollo richiede randomizzati o analizzati?",
-  "reason": "Il paper riporta entrambi i valori",
+  "question": "Does the protocol require randomised or analysed participants?",
+  "reason": "The paper reports both values",
   "affected_output": "participant_count",
   "evidence_refs": ["evidence_091"]
 }
-Il padre cerca la risposta nella conoscenza del progetto. Se la trova, invia il riferimento; se manca, può chiedere al ricercatore. Nel frattempo il figlio resta in attesa e altri lavori possono procedere.
-Una sessione in attesa non occupa uno slot di esecuzione. Questo evita un problema pratico: tutti i posti occupati da genitori che aspettano figli impossibilitati a partire.
-Il risultato del figlio viene verificato prima dell’integrazione. Il padre conserva i collegamenti alle evidenze originali: non dovrebbe ricevere soltanto un riassunto che elimina dubbi e condizioni.
-Implementativamente partirei da un servizio piccolo, con una coda persistente e un adattatore per Codex.
-Il servizio potrebbe essere scritto in TypeScript e avere questi componenti:
-Componente	Responsabilità
-Scheduler	Avvio, attesa, ripresa, timeout, budget e cancellazioni
-Adattatore Codex	Sessioni, eventi, risultati strutturati e interruzione
-Archivio delle esecuzioni	Input, output, codice effettivo, eventi e consumi
-Registro delle procedure	Versioni, ambiti, dipendenze e stato di attivazione
-Valutatore	Controlli deterministici e verifiche del contenuto
-Processo di promozione	Creazione candidati, valutazioni e aggiornamento del registro
+The parent looks for the answer in the project’s knowledge. If it finds it, it sends the reference; if it is missing, it can ask the researcher. Meanwhile the child waits and other work can proceed.
+A waiting session does not occupy an execution slot. This avoids a practical problem: all the slots taken up by parents waiting for children that are unable to start.
+The child’s result is verified before integration. The parent keeps the links to the original evidence: it should not receive only a summary that strips out doubts and conditions.
+On the implementation side I would start from a small service, with a persistent queue and an adapter for Codex.
+The service could be written in TypeScript and have these components:
+Component	Responsibility
+Scheduler	Starting, waiting, resuming, timeouts, budgets and cancellations
+Codex adapter	Sessions, events, structured results and interruption
+Execution archive	Inputs, outputs, actual code, events and consumption
+Procedure registry	Versions, scopes, dependencies and activation status
+Evaluator	Deterministic checks and content verification
+Promotion process	Candidate creation, evaluations and registry update
 
 
-Il Codex SDK permette di avviare e riprendere sessioni. Per un controllo più dettagliato, l’App Server espone avvio dei turni, eventi e interruzione. È inoltre disponibile l’output vincolato da JSON Schema, utile per il protocollo tra agente e servizio. Output strutturati.
-Per il primo prototipo userei sessioni distinte gestite dal servizio. Questo rende espliciti contratti, budget e spazi di lavoro. La delega nativa resta un’opzione, ma non va confusa con l’isolamento: nell’Agents API i sottoagenti condividono il filesystem dell’ambiente. Delegazione nativa.
-Ogni worker avrebbe una propria directory o worktree. Il worktree separa le modifiche; sandbox e permessi stabiliscono cosa può effettivamente toccare. Un componente centrale integra i risultati e aggiorna la conoscenza consolidata.
-Il ciclo centrale, in pseudocodice, sarebbe:
+The Codex SDK lets you start and resume sessions. For more detailed control, the App Server exposes turn start, events and interruption. Output constrained by a JSON Schema is also available, which is useful for the protocol between agent and service. Structured outputs.
+For the first prototype I would use separate sessions managed by the service. This makes contracts, budgets and workspaces explicit. Native delegation remains an option, but it should not be confused with isolation: in the Agents API subagents share the environment’s filesystem. Native delegation.
+Each worker would have its own directory or worktree. The worktree separates the changes; sandbox and permissions determine what it can actually touch. A central component integrates the results and updates the consolidated knowledge.
+The central loop, in pseudocode, would be:
 async def advance(task):
     context = retrieve_relevant_knowledge(task)
     procedure = select_qualified_procedure(task, context)
@@ -319,19 +321,19 @@ async def advance(task):
 
     elif outcome.kind == "blocked":
         record_blocker_and_notify_parent(task, outcome)
-Gli eventi e gli artefatti vanno registrati anche durante l’esecuzione, così un crash lascia un tentativo incompleto ma ispezionabile. Il risultato diventa accettato solo dopo la validazione.
-Ogni richiesta avrebbe un identificativo univoco per evitare doppie deleghe o doppie integrazioni dopo un riavvio. La cancellazione del padre si propaga ai discendenti. I retry sono limitati e gli effetti esterni richiedono operazioni idempotenti o una riconciliazione prima di riprovare.
-Userei SQLite per lo stato operativo della coda; i record di conoscenza e le procedure resterebbero versionati in Git. Sono responsabilità distinte. Ogni promozione registrerebbe commit del pacchetto, rapporto di valutazione, versione della politica e versione precedente. Il registro attivo sarebbe aggiornato in un’unica operazione, senza modificare le versioni già usate dalle esecuzioni in corso.
-I due motori si incontrano quando una delega risolve un problema ricorrente.
-Nel tuo esempio:
-1. Il padre incontra un denominatore ambiguo.
-2. Un figlio trova nel supplemento una distinzione decisiva.
-3. La risposta viene verificata e collegata all’annotazione.
-4. Altri episodi mostrano che quella verifica ricorre.
-5. Il processo di apprendimento propone una procedura specifica.
-6. La procedura supera le valutazioni e diventa disponibile.
-7. Alla prossima occorrenza il sistema la applica direttamente, ricorrendo all’esplorazione solo quando le condizioni non corrispondono.
-La prima versione dovrebbe dimostrare proprio questo ciclo completo su una sola famiglia di problemi: un’esperienza diventa una procedura verificata, viene riusata da una sessione nuova e viene sospesa quando incontra un controesempio rilevante. Da lì puoi estendere la ricorsione avendo già gli strumenti per capire se produce conoscenza utile.
+Events and artefacts should also be recorded during execution, so that a crash leaves an incomplete but inspectable attempt. The result becomes accepted only after validation.
+Each request would have a unique identifier to avoid duplicate delegations or duplicate integrations after a restart. Cancelling the parent propagates to its descendants. Retries are limited, and external effects require idempotent operations or a reconciliation before retrying.
+I would use SQLite for the operational state of the queue; knowledge records and procedures would remain versioned in Git. They are distinct responsibilities. Each promotion would record the package commit, the evaluation report, the policy version and the previous version. The active registry would be updated in a single operation, without modifying the versions already used by executions in progress.
+The two engines meet when a delegation solves a recurring problem.
+In your example:
+1. The parent encounters an ambiguous denominator.
+2. A child finds a decisive distinction in the supplement.
+3. The answer is verified and linked to the annotation.
+4. Other episodes show that this check recurs.
+5. The learning process proposes a specific procedure.
+6. The procedure passes the evaluations and becomes available.
+7. At the next occurrence the system applies it directly, falling back on exploration only when the conditions do not match.
+The first version should demonstrate exactly this complete cycle on a single family of problems: an experience becomes a verified procedure, is reused by a new session and is suspended when it meets a relevant counterexample. From there you can extend the recursion, already having the tools to understand whether it produces useful knowledge.
 
 
 13:21
@@ -342,8 +344,8 @@ La prima versione dovrebbe dimostrare proprio questo ciclo completo su una sola 
 
 
 
-e cosa mancherebbe alla conclusione del progetto? secondo me il tema dell'osservabilità del processo non è stato del tutto toccato
-e poi se volessi consegnare il mio progetto a qualcun altro?
+and what would still be missing to complete the project? in my view the topic of the observability of the process hasn't been fully addressed
+and then what if I wanted to hand my project over to someone else?
 
 
 
@@ -362,92 +364,92 @@ Worked for 1m 23s
 
 
 
-Sì: nell’architettura delineata manca ancora l’interfaccia attraverso cui il ricercatore comprende, controlla e trasferisce il processo. Abbiamo descritto esecuzione, memoria e apprendimento, ma registrare eventi è soltanto il primo passo dell’osservabilità.
-Considererei il progetto completo quando un’altra persona può aprirlo, capire perché sono stati prodotti certi risultati, contestare una decisione e continuare il lavoro senza dover ricostruire il contesto con te.
-L’osservabilità deve rispondere a quattro domande diverse.
-Domanda	Cosa deve mostrare il sistema
-Cosa sta succedendo?	Attività, deleghe, attese, errori, risorse consumate
-Perché si sta facendo questo?	Domanda originaria, motivazione della delega, assunzioni e alternative
-Perché dovrei accettare il risultato?	Fonti, trasformazioni, verifiche effettuate, limiti e contraddizioni
-Cosa succede se cambio una premessa?	Risultati e procedure da riesaminare, lavoro da ripetere
+Yes: the architecture outlined still lacks the interface through which the researcher understands, controls and transfers the process. We have described execution, memory and learning, but recording events is only the first step of observability.
+I would consider the project complete when another person can open it, understand why certain results were produced, challenge a decision and continue the work without having to reconstruct the context with you.
+Observability has to answer four different questions.
+Question	What the system must show
+What is happening?	Activities, delegations, waits, errors, resources consumed
+Why is this being done?	Original question, rationale for the delegation, assumptions and alternatives
+Why should I accept the result?	Sources, transformations, checks performed, limits and contradictions
+What happens if I change a premise?	Results and procedures to re-examine, work to redo
 
 
-La quarta è particolarmente importante. Una dashboard che mostra agenti, chiamate e token copre soprattutto la prima.
-Nel tuo esempio, cliccando su una cella del database vorrei poter attraversare questa catena:
+The fourth is particularly important. A dashboard showing agents, calls and tokens mostly covers the first.
+In your example, by clicking on a cell of the database I would like to be able to traverse this chain:
 ```mermaid
 flowchart LR
-    A[Annotazione] --> D[Decisione]
-    D --> C[Criterio applicato]
-    D --> E[Evidenze]
-    E --> P[Passaggio del paper]
-    E --> R[Esecuzione e codice]
-    D --> V[Verifica]
-    D --> X[Alternative scartate]
+    A[Annotation] --> D[Decision]
+    D --> C[Applied criterion]
+    D --> E[Evidence]
+    E --> P[Paper passage]
+    E --> R[Execution and code]
+    D --> V[Verification]
+    D --> X[Discarded alternatives]
 ```
-Dovrei poter chiedere: «Perché questa cella contiene 84?», «Chi ha stabilito che contiamo gli analizzati?» e «Quali altre celle dipendono da questa scelta?».
-Per ottenere questo risultato servono tre rappresentazioni collegate.
-La cronologia delle esecuzioni racconta cosa è successo: avvio, strumenti, file prodotti, errori, deleghe e riprese.
-Il grafo della conoscenza rappresenta domande, affermazioni, evidenze, decisioni e dipendenze. Attraversa più esecuzioni e più sessioni.
-Il registro delle procedure mostra cosa il sistema sa riutilizzare, entro quali condizioni, con quali valutazioni e da quali esperienze ha appreso.
-Gli stessi identificativi collegano le tre rappresentazioni. Da una procedura posso arrivare agli episodi che l’hanno generata; da un episodio alle annotazioni prodotte; da un’annotazione al paper.
-Per la parte tecnica userei OpenTelemetry, che offre tracce, operazioni e collegamenti causali tra processi. Per modellare la provenienza prenderei spunto da W3C PROV, che distingue entità, attività e soggetti responsabili. Il significato scientifico delle relazioni rimarrebbe parte del nostro modello. OpenTelemetry, W3C PROV.
-La raccolta dovrebbe distinguere ciò che il sistema osserva da ciò che l’agente dichiara.
-Il runtime registra automaticamente:
-- Quale codice è stato effettivamente eseguito e su quali input.
-- Quali strumenti sono stati chiamati e quali risultati hanno restituito.
-- Quale versione di modello, procedura e criteri era attiva.
-- Quali verifiche sono state eseguite e con quale esito.
-L’agente aggiunge esplicitamente la domanda affrontata, la motivazione di una scelta, le alternative e i dubbi. Queste informazioni sono dichiarazioni attribuite all’agente, da collegare alle evidenze.
-Nell’interfaccia distinguerei quindi «proposto», «eseguito», «verificato automaticamente» e «validato dal ricercatore». Un comando terminato correttamente non basta a rendere scientificamente valida la conclusione.
-Conserverei le motivazioni esplicitate durante il lavoro, senza presentarle come una registrazione completa del ragionamento interno del modello. Eventuali ricostruzioni successive sarebbero riconoscibili come tali.
-Anche i vuoti devono essere visibili: un artefatto mancante o un’esecuzione interrotta non possono diventare una storia apparentemente completa grazie a un riassunto.
-L’interfaccia principale avrebbe quattro viste, tutte interrogabili anche dal coding agent.
-1. Stato del progetto. Obiettivo, risultati verificati, questioni aperte, decisioni richieste e lavoro in corso. L’avanzamento si misura su risultati controllati, quando il totale è noto.
-2. Ispettore del risultato. Seleziono un’annotazione e vedo fonti, criterio, codice, verifiche e incertezze.
-3. Cronologia delle decisioni. Vedo cosa si riteneva valido in un certo momento e cosa è cambiato successivamente.
-4. Confronto tra versioni. Vedo quali annotazioni, assunzioni e procedure sono cambiate, con le rispettive motivazioni.
-Da queste viste devo poter intervenire: correggere una premessa, contestare un’evidenza, sospendere una procedura o riaprire una domanda. Ogni intervento genera un evento attribuito e una nuova versione.
-Se cambio un criterio, il sistema individua i risultati dipendenti e li marca da riesaminare. Non li dichiara automaticamente falsi.
-Questo rende l’osservabilità anche un’interfaccia di controllo: il ricercatore può correggere il progetto agendo sugli oggetti che ne determinano il comportamento.
-Per consegnarlo a qualcun altro, definirei un formato di progetto portabile.
-La sessione originale resterebbe un riferimento utile. Il progetto dovrebbe contenere tutto ciò che serve per avviare una sessione nuova.
-Una possibile organizzazione sarebbe:
+I should be able to ask: “Why does this cell contain 84?”, “Who decided that we count the analysed participants?” and “Which other cells depend on this choice?”.
+To achieve this you need three linked representations.
+The execution timeline tells what happened: start, tools, files produced, errors, delegations and resumptions.
+The knowledge graph represents questions, claims, evidence, decisions and dependencies. It spans multiple executions and multiple sessions.
+The procedure registry shows what the system knows how to reuse, under which conditions, with which evaluations and from which experiences it learned.
+The same identifiers link the three representations. From a procedure I can get to the episodes that generated it; from an episode to the annotations produced; from an annotation to the paper.
+For the technical part I would use OpenTelemetry, which provides traces, operations and causal links between processes. To model provenance I would take inspiration from W3C PROV, which distinguishes entities, activities and responsible parties. The scientific meaning of the relations would remain part of our model. OpenTelemetry, W3C PROV.
+Collection should distinguish what the system observes from what the agent declares.
+The runtime automatically records:
+- Which code was actually executed and on which inputs.
+- Which tools were called and what results they returned.
+- Which version of model, procedure and criteria was active.
+- Which checks were run and with what outcome.
+The agent explicitly adds the question addressed, the rationale for a choice, the alternatives and the doubts. This information consists of statements attributed to the agent, to be linked to the evidence.
+In the interface I would therefore distinguish “proposed”, “executed”, “automatically verified” and “validated by the researcher”. A command that completed successfully is not enough to make the conclusion scientifically valid.
+I would keep the rationales made explicit during the work, without presenting them as a complete record of the model’s internal reasoning. Any later reconstructions would be recognisable as such.
+Gaps must be visible too: a missing artefact or an interrupted execution cannot become an apparently complete story thanks to a summary.
+The main interface would have four views, all of which can also be queried by the coding agent.
+1. Project status. Goal, verified results, open questions, decisions needed and work in progress. Progress is measured on checked results, when the total is known.
+2. Result inspector. I select an annotation and see sources, criterion, code, checks and uncertainties.
+3. Decision timeline. I see what was considered valid at a given moment and what changed afterwards.
+4. Version comparison. I see which annotations, assumptions and procedures changed, with their respective rationales.
+From these views I must be able to intervene: correct a premise, challenge a piece of evidence, suspend a procedure or reopen a question. Each intervention generates an attributed event and a new version.
+If I change a criterion, the system identifies the dependent results and marks them for re-examination. It does not automatically declare them false.
+This makes observability a control interface as well: the researcher can correct the project by acting on the objects that determine its behaviour.
+To hand it over to someone else, I would define a portable project format.
+The original session would remain a useful reference. The project should contain everything needed to start a new session.
+A possible layout would be:
 project/
-  manifest.json           Identità, versione e requisiti
-  overview.md             Obiettivo, risultati e questioni aperte
-  knowledge/              Evidenze, decisioni e dipendenze
-  procedures/             Skill e strumenti versionati
-  evaluations/            Casi, criteri e rapporti di valutazione
-  runs/                   Manifest delle esecuzioni rilevanti
-  artifacts/              Dati, fonti, script e risultati
-  environment/            Dipendenze e istruzioni di avvio
-  handoff/                Stato del lavoro e prove di accettazione
-Il manifest descriverebbe anche cosa è incluso e cosa richiede un accesso esterno. Le credenziali personali restano fuori dal pacchetto; il destinatario collega le proprie. Per dati o paper non trasferibili conserverei riferimenti precisi e indicazioni per recuperarli, rendendo esplicito ciò che manca.
-Per il formato di scambio guarderei RO-Crate, in particolare Workflow Run RO-Crate: nasce per descrivere e raggruppare esecuzioni, input, output e codice. Lo estenderei con decisioni e procedure agentiche. Workflow Run RO-Crate.
-La consegna dovrebbe offrire tre operazioni distinte.
-Operazione	Cosa può fare il destinatario
-Ispezionare	Consultare risultati, motivazioni e prove senza nuove chiamate al modello
-Rieseguire	Ripetere analisi con input e ambiente identificati
-Proseguire	Aprire nuove domande, usare le procedure e sviluppare una nuova versione
+  manifest.json           Identity, version and requirements
+  overview.md             Goal, results and open questions
+  knowledge/              Evidence, decisions and dependencies
+  procedures/             Versioned skills and tools
+  evaluations/            Cases, criteria and evaluation reports
+  runs/                   Manifests of the relevant runs
+  artifacts/              Data, sources, scripts and results
+  environment/            Dependencies and startup instructions
+  handoff/                Work status and acceptance tests
+The manifest would also describe what is included and what requires external access. Personal credentials stay out of the package; the recipient connects their own. For data or papers that cannot be transferred I would keep precise references and instructions for retrieving them, making explicit what is missing.
+For the exchange format I would look at RO-Crate, in particular Workflow Run RO-Crate: it was created to describe and bundle runs, inputs, outputs and code. I would extend it with decisions and agentic procedures. Workflow Run RO-Crate.
+The handoff should offer three distinct operations.
+Operation	What the recipient can do
+Inspect	Consult results, rationales and evidence without new calls to the model
+Re-run	Repeat analyses with identified inputs and environment
+Continue	Open new questions, use the procedures and develop a new version
 
 
-La riesecuzione del codice e una nuova esecuzione agentica hanno garanzie diverse. Conservare prompt, modello e contesto permette di documentare e confrontare una nuova esecuzione; non garantisce un output LLM identico. I risultati originali devono quindi restare disponibili.
-Alla prima apertura, il sistema controllerebbe integrità degli artefatti, dipendenze disponibili e accessi necessari. Caricherebbe un indice compatto della conoscenza e lo stato del lavoro; i dettagli verrebbero recuperati quando servono.
-Un thread ID del tuo account non sarebbe un requisito per continuare.
-Se il destinatario modifica il progetto, deve poter creare una propria linea di lavoro.
-Il boss potrebbe aprire la versione ricevuta e dire: «Ora includiamo anche gli studi osservazionali».
-Il sistema dovrebbe:
-1. Registrare il nuovo criterio.
-2. Individuare procedure e risultati interessati.
-3. Mantenere consultabile la versione precedente.
-4. Eseguire il lavoro necessario.
-5. Mostrare le differenze nei risultati.
-Se poi vi scambiate le modifiche, il merge deve controllare anche i conflitti di significato. Due modifiche possono essere compatibili per Git e applicare criteri scientifici incompatibili.
-Puoi anche offrire il progetto come servizio remoto, al quale il coding agent del collaboratore delega attività. Ma distinguerei chiaramente accesso a un servizio e consegna di un progetto autonomo: nel secondo caso il destinatario deve poter conservare e usare gli elementi necessari anche senza la tua infrastruttura.
-Per chiudere il progetto, aggiungerei quindi quattro deliverable verificabili:
-- Un’interfaccia per ispezionare risultati, decisioni, deleghe e verifiche.
-- Un meccanismo di correzione che individua le conseguenze sulle dipendenze.
-- Un formato di esportazione e importazione con controllo di integrità e completezza.
-- Una prova di passaggio a un nuovo utilizzatore.
-Quest’ultima sarebbe il test decisivo: una persona, in un ambiente pulito e senza la tua conversazione, deve riuscire a spiegare un’annotazione scelta a campione, rieseguire un’analisi, modificare un criterio e completare un caso nuovo.
-Il sistema sarebbe completo quando riesce a trasferire anche il lavoro ancora aperto, insieme alle ragioni per cui è aperto e alle condizioni necessarie per proseguirlo.
+Re-running code and a new agentic execution have different guarantees. Keeping prompt, model and context makes it possible to document and compare a new execution; it does not guarantee an identical LLM output. The original results must therefore remain available.
+On first opening, the system would check the integrity of the artefacts, the available dependencies and the required access. It would load a compact index of the knowledge and the status of the work; details would be retrieved when needed.
+A thread ID from your account would not be a requirement for continuing.
+If the recipient modifies the project, they must be able to create their own line of work.
+The boss could open the version received and say: “Now let’s include observational studies too”.
+The system should:
+1. Record the new criterion.
+2. Identify the procedures and results affected.
+3. Keep the previous version accessible.
+4. Carry out the necessary work.
+5. Show the differences in the results.
+If you then exchange changes, the merge must also check for conflicts of meaning. Two changes can be compatible for Git and apply incompatible scientific criteria.
+You can also offer the project as a remote service, to which the collaborator’s coding agent delegates tasks. But I would clearly distinguish access to a service from the handoff of a self-contained project: in the second case the recipient must be able to keep and use the necessary elements even without your infrastructure.
+To close the project, I would therefore add four verifiable deliverables:
+- An interface for inspecting results, decisions, delegations and checks.
+- A correction mechanism that identifies the consequences for dependencies.
+- An export and import format with integrity and completeness checks.
+- A handoff test to a new user.
+The latter would be the decisive test: a person, in a clean environment and without your conversation, must be able to explain a randomly sampled annotation, re-run an analysis, change a criterion and complete a new case.
+The system would be complete when it can also transfer the work that is still open, together with the reasons why it is open and the conditions needed to continue it.

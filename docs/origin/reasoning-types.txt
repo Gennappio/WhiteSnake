@@ -1,512 +1,514 @@
-Bella domanda! In effetti, gli esseri umani non hanno un solo tipo di ragionamento: il cervello usa diverse “famiglie” di processi logici (alcuni più lenti e riflessivi, altri più rapidi e intuitivi). Ti faccio una mappa dettagliata:
+[English translation of an original Italian working note on types of reasoning and the RPL sketch. The Italian text is in the git history up to commit 82404d6, at docs/origine/ragionamentipossibili.txt.]
+
+Good question! In fact, human beings do not have just one type of reasoning: the brain uses several “families” of logical processes (some slower and more reflective, others faster and more intuitive). Here is a detailed map:
  
-🧠 1) Ragionamenti logici e deduttivi
-•	Deduzione classica:
-Parti da regole generali → arrivi a una conclusione specifica.
-Es.: “Tutti gli esseri umani sono mortali. Socrate è un uomo. → Socrate è mortale.”
-•	Dimostrazioni formali:
-Usano simboli, logica matematica, sillogismi.
-•	Caratteristica: Se le premesse sono vere, la conclusione è certa.
+🧠 1) Logical and deductive reasoning
+•	Classical deduction:
+You start from general rules → you arrive at a specific conclusion.
+E.g.: “All human beings are mortal. Socrates is a man. → Socrates is mortal.”
+•	Formal proofs:
+They use symbols, mathematical logic, syllogisms.
+•	Characteristic: If the premises are true, the conclusion is certain.
  
-🧠 2) Ragionamenti induttivi
-•	Osservi casi particolari → generalizzi a una regola.
-Es.: “Ho visto molti cigni bianchi → tutti i cigni sono bianchi” (che può essere falsificato).
-•	Tipico del metodo scientifico: accumulo di evidenze, estrazione di pattern.
+🧠 2) Inductive reasoning
+•	You observe particular cases → you generalise to a rule.
+E.g.: “I have seen many white swans → all swans are white” (which can be falsified).
+•	Typical of the scientific method: accumulation of evidence, extraction of patterns.
  
-🧠 3) Ragionamenti abduittivi (inference to the best explanation)
-•	Parti da un fatto sorprendente → ipotizzi la spiegazione più plausibile.
-Es.: “Il prato è bagnato → probabilmente ha piovuto.”
-•	È il cuore del pensiero diagnostico (medicina, investigazioni, ecc.).
+🧠 3) Abductive reasoning (inference to the best explanation)
+•	You start from a surprising fact → you hypothesise the most plausible explanation.
+E.g.: “The lawn is wet → it probably rained.”
+•	It is the heart of diagnostic thinking (medicine, investigations, etc.).
  
-🧠 4) Ragionamenti causali
-•	Analizzi relazioni di causa-effetto, spesso con controfattuali:
-Se tolgo X, succede ancora Y?
-•	Serve per capire direzione causale (come nel tuo esempio: “D→L o L→D?”).
+🧠 4) Causal reasoning
+•	You analyse cause-effect relationships, often with counterfactuals:
+If I remove X, does Y still happen?
+•	It is used to understand causal direction (as in your example: “D→L or L→D?”).
  
-🧠 5) Ragionamenti condizionali (“if… then…”)
-•	Analisi di scenari alternativi: “Se faccio X, accade Y?”
-•	Fondamentali per pianificazione e decision making.
-•	Cervello simula scenari con modelli mentali (piccole “simulazioni mentali”).
+🧠 5) Conditional reasoning (“if… then…”)
+•	Analysis of alternative scenarios: “If I do X, does Y happen?”
+•	Fundamental for planning and decision making.
+•	The brain simulates scenarios with mental models (small “mental simulations”).
  
-🧠 6) Ragionamenti analogici e per metafora
-•	Trasferisci conoscenza da un dominio noto a uno nuovo.
-Es.: “Il cervello funziona come un computer.”
-•	Potente per creatività e problem solving.
+🧠 6) Analogical and metaphorical reasoning
+•	You transfer knowledge from a known domain to a new one.
+E.g.: “The brain works like a computer.”
+•	Powerful for creativity and problem solving.
  
-🧠 7) Ragionamenti per similarità o associazione
-•	Più veloci, basati su pattern:
-“Questa situazione sembra quella volta che… → probabilmente succederà lo stesso.”
+🧠 7) Reasoning by similarity or association
+•	Faster, based on patterns:
+“This situation looks like that time when… → the same thing will probably happen.”
  
-🧠 8) Ragionamenti bayesiani/probabilistici
-•	Stimano probabilità invece di certezze.
-•	Molti processi cognitivi sono inconsciamente bayesiani: aggiorniamo credenze con nuove prove.
+🧠 8) Bayesian/probabilistic reasoning
+•	They estimate probabilities instead of certainties.
+•	Many cognitive processes are unconsciously Bayesian: we update beliefs with new evidence.
  
-🧠 9) Ragionamenti euristici
-•	Scorciatoie mentali: utili ma fallibili.
-Esempi: disponibilità (giudichi la probabilità di un evento in base a quanto facilmente ti viene in mente), rappresentatività, ecc.
+🧠 9) Heuristic reasoning
+•	Mental shortcuts: useful but fallible.
+Examples: availability (you judge the probability of an event by how easily it comes to mind), representativeness, etc.
  
-🧠 10) Ragionamenti pragmatici e retorici
-•	Basati sul contesto e sull’effetto comunicativo, non solo sulla logica.
-•	Qui entra il framing: una frase può cambiare percezione pur dicendo lo stesso.
+🧠 10) Pragmatic and rhetorical reasoning
+•	Based on context and on communicative effect, not only on logic.
+•	This is where framing comes in: a sentence can change perception while saying the same thing.
  
-🧠 11) Ragionamenti morali e valoriali
-•	Mescolano emozioni e principi astratti.
-•	Coinvolgono aree limbiche + corteccia prefrontale.
-•	Non sono puramente logici, ma guidano scelte profonde.
+🧠 11) Moral and value-based reasoning
+•	They mix emotions and abstract principles.
+•	They involve limbic areas + the prefrontal cortex.
+•	They are not purely logical, but they guide deep choices.
  
-🧠 12) Ragionamenti metacognitivi
-•	Ragioni sul tuo stesso ragionamento:
-“Perché penso così? Sto confondendo causa ed effetto?”
-•	Essenziali per il pensiero critico.
+🧠 12) Metacognitive reasoning
+•	You reason about your own reasoning:
+“Why do I think this way? Am I confusing cause and effect?”
+•	Essential for critical thinking.
  
-🔑 Sintesi
-Tipo	Caratteristica principale	Esempio breve
-Deduttivo	Da generale a particolare, conclusione certa	Matematica
-Induttivo	Da casi a regola generale, probabile	Scienza
-Abduittivo	Ipotesi migliore spiegazione	Medicina
-Causale	Capire cause ed effetti	Politica
-Condizionale	“What if?”, simulazione scenari	Strategie
-Analogico	Trasferire struttura concettuale	Metafore
-Associativo	Basato su somiglianza e memoria	Intuizione
-Probabilistico (Bayesiano)	Stima di probabilità	Previsioni
-Euristico	Scorciatoie cognitive	Bias
-Pragmatico/Retorico	Linguaggio, contesto, framing	Politica
-Morale	Valori e norme	Etica
-Metacognitivo	Riflessione sul proprio pensiero	Filosofia
+🔑 Summary
+Type	Main characteristic	Short example
+Deductive	From general to particular, certain conclusion	Mathematics
+Inductive	From cases to a general rule, probable	Science
+Abductive	Best-explanation hypothesis	Medicine
+Causal	Understanding causes and effects	Politics
+Conditional	“What if?”, scenario simulation	Strategies
+Analogical	Transferring conceptual structure	Metaphors
+Associative	Based on similarity and memory	Intuition
+Probabilistic (Bayesian)	Probability estimation	Forecasts
+Heuristic	Cognitive shortcuts	Biases
+Pragmatic/Rhetorical	Language, context, framing	Politics
+Moral	Values and norms	Ethics
+Metacognitive	Reflection on one’s own thinking	Philosophy
  
-Vuoi che li ordini in una specie di mappa mentale (schema grafico) per vedere come si collegano, o preferisci una tabella più dettagliata (con esempi concreti per ciascuno)?
-Ecco un’espansione ancora più completa:
+Would you like me to arrange them in a kind of mind map (graphical diagram) to see how they connect, or would you prefer a more detailed table (with concrete examples for each)?
+Here is an even more complete expansion:
  
-🧠 1) Ragionamenti logico-formali (livello astratto)
-•	Sillogistico: uso di sillogismi formali (“A implica B; B implica C; quindi A implica C”).
-•	Ragionamento matematico: deduzioni simboliche, dimostrazioni, algebra.
-•	Ragionamento assiomatico: costruzione su postulati fissi.
-•	Ragionamento modale: valuta possibilità, necessità, obblighi (logica modale).
+🧠 1) Logical-formal reasoning (abstract level)
+•	Syllogistic: use of formal syllogisms (“A implies B; B implies C; therefore A implies C”).
+•	Mathematical reasoning: symbolic deductions, proofs, algebra.
+•	Axiomatic reasoning: building on fixed postulates.
+•	Modal reasoning: evaluates possibilities, necessities, obligations (modal logic).
  
-🧠 2) Ragionamenti empirici e scientifici
-•	Inferenza statistica: uso di dati numerici per generalizzare.
-•	Ragionamento sperimentale: ipotesi → esperimento → revisione.
-•	Ragionamento controfattuale rigoroso: immaginare mondi alternativi per isolare variabili (“se non fosse successo X, sarebbe successo Y?”).
+🧠 2) Empirical and scientific reasoning
+•	Statistical inference: use of numerical data to generalise.
+•	Experimental reasoning: hypothesis → experiment → revision.
+•	Rigorous counterfactual reasoning: imagining alternative worlds to isolate variables (“if X had not happened, would Y have happened?”).
  
-🧠 3) Ragionamenti pratici (decision making)
-•	Strumentale/teleologico: scelte basate su scopi e mezzi.
-•	Economico: analisi costi-benefici, teoria dei giochi.
-•	Ragionamento sotto incertezza: valutazione di rischi, scenari possibili.
-•	Heuristics & biases avanzati: scorciatoie cognitive (ancoraggio, effetto framing, ecc.).
+🧠 3) Practical reasoning (decision making)
+•	Instrumental/teleological: choices based on ends and means.
+•	Economic: cost-benefit analysis, game theory.
+•	Reasoning under uncertainty: assessment of risks, possible scenarios.
+•	Advanced heuristics & biases: cognitive shortcuts (anchoring, framing effect, etc.).
  
-🧠 4) Ragionamenti creativi
-•	Laterale (Edward de Bono): cerca soluzioni non ovvie, rompe schemi logici.
-•	Divergente: generazione di molte ipotesi senza filtri iniziali.
-•	Sintetico: unisce idee lontane in una nuova configurazione.
-•	Analogico complesso: non solo somiglianze superficiali, ma strutturali.
+🧠 4) Creative reasoning
+•	Lateral (Edward de Bono): looks for non-obvious solutions, breaks logical patterns.
+•	Divergent: generating many hypotheses without initial filters.
+•	Synthetic: joins distant ideas into a new configuration.
+•	Complex analogical: not only surface similarities, but structural ones.
  
-🧠 5) Ragionamenti intuitivi e associativi
-•	Pattern recognition: riconoscimento istantaneo di schemi (esperienza).
-•	Priming semantico: parole e concetti attivano altre idee inconsciamente.
-•	Ragionamento embodied: ragionare attraverso esperienze corporee e sensoriali.
+🧠 5) Intuitive and associative reasoning
+•	Pattern recognition: instant recognition of patterns (experience).
+•	Semantic priming: words and concepts activate other ideas unconsciously.
+•	Embodied reasoning: reasoning through bodily and sensory experiences.
  
-🧠 6) Ragionamenti sociali
-•	Teoria della mente: inferire stati mentali di altri (“pensa che io pensi che…”).
-•	Ragionamento negoziale: prevedere reazioni, compromessi.
-•	Ragionamento morale-sociale: equità, norme, status.
+🧠 6) Social reasoning
+•	Theory of mind: inferring other people’s mental states (“they think that I think that…”).
+•	Negotiation reasoning: predicting reactions, compromises.
+•	Moral-social reasoning: fairness, norms, status.
  
-🧠 7) Ragionamenti narrativi
-•	Costruzione di storie: organizziamo eventi in una sequenza coerente.
-•	Bias di coerenza narrativa: preferiamo spiegazioni che “raccontano bene”, anche se non rigorose.
+🧠 7) Narrative reasoning
+•	Story construction: we organise events into a coherent sequence.
+•	Narrative coherence bias: we prefer explanations that “make a good story”, even if they are not rigorous.
  
-🧠 8) Ragionamenti metacognitivi e riflessivi
-•	Meta-razionalità: sapere quando applicare logica rigorosa vs intuizione.
-•	Epistemico: riflessione su cosa significa “sapere” e “credere”.
-•	De-biasing: strategie per riconoscere e correggere i propri errori.
+🧠 8) Metacognitive and reflective reasoning
+•	Meta-rationality: knowing when to apply rigorous logic vs intuition.
+•	Epistemic: reflection on what it means to “know” and to “believe”.
+•	De-biasing: strategies for recognising and correcting one’s own errors.
  
-🧠 9) Ragionamenti etici e filosofici
-•	Deontologico: giusto/sbagliato a priori (regole).
-•	Consequenzialista: valutazione degli effetti.
-•	Virtù etica: basato su carattere e intenzioni.
-•	Esistenziale: domande di significato e valore.
+🧠 9) Ethical and philosophical reasoning
+•	Deontological: right/wrong a priori (rules).
+•	Consequentialist: evaluation of effects.
+•	Virtue ethics: based on character and intentions.
+•	Existential: questions of meaning and value.
  
-🧠 10) Ragionamenti estetici e valutativi
-•	Giudicare bellezza, armonia, qualità artistica: meno logico, più olistico e percettivo.
+🧠 10) Aesthetic and evaluative reasoning
+•	Judging beauty, harmony, artistic quality: less logical, more holistic and perceptual.
  
-💡 Osservazione chiave:
-Il cervello alterna due sistemi principali (secondo la psicologia cognitiva):
-•	Sistema 1: veloce, automatico, intuitivo (pattern recognition, associazioni).
-•	Sistema 2: lento, deliberato, logico (deduzione, analisi critica).
-Ma in realtà è una rete dinamica: logica, emozione, intuizione e linguaggio lavorano insieme.
+💡 Key observation:
+The brain alternates between two main systems (according to cognitive psychology):
+•	System 1: fast, automatic, intuitive (pattern recognition, associations).
+•	System 2: slow, deliberate, logical (deduction, critical analysis).
+But in reality it is a dynamic network: logic, emotion, intuition and language work together.
  
-📌 Numeri indicativi:
-Se volessimo fare una tassonomia completa, potremmo arrivare a 30-40 sottotipi di ragionamento distinguendo livello (astratto, pratico, creativo), scopo (descrivere, decidere, immaginare), modalità (logico, intuitivo, sociale).
+📌 Indicative figures:
+If we wanted to build a complete taxonomy, we could arrive at 30-40 subtypes of reasoning by distinguishing level (abstract, practical, creative), purpose (describing, deciding, imagining), mode (logical, intuitive, social).
 
 
-🌳 Tassonomia dei tipi di ragionamento (con spiegazioni semplici)
+🌳 Taxonomy of the types of reasoning (with simple explanations)
  
-1. Ragionamenti logico-formali
-💡 Obiettivo: seguire regole astratte e arrivare a conclusioni certe.
-1.1 Deduttivo
-•	Parti da una regola generale → arrivi a un caso specifico.
-•	Esempio: “Tutti i gatti sono mammiferi. Luna è un gatto. → Luna è un mammifero.”
-1.2 Sillogistico
-•	Versione formale del deduttivo con frasi tipo “Tutti… alcuni… nessuno”.
-•	Esempio: “Tutti gli esseri viventi respirano. Gli alberi sono esseri viventi. → Gli alberi respirano.”
-1.3 Matematico/Assiomatico
-•	Ragionamenti rigorosi basati su simboli e postulati.
-•	Esempio: Dimostrare che la somma degli angoli di un triangolo è 180°.
-1.4 Modale
-•	Considera concetti come possibile, necessario, obbligatorio.
-•	Esempio: “È possibile che piova, ma non è necessario.”
+1. Logical-formal reasoning
+💡 Goal: follow abstract rules and reach certain conclusions.
+1.1 Deductive
+•	You start from a general rule → you arrive at a specific case.
+•	Example: “All cats are mammals. Luna is a cat. → Luna is a mammal.”
+1.2 Syllogistic
+•	Formal version of the deductive type, with sentences such as “All… some… none”.
+•	Example: “All living beings breathe. Trees are living beings. → Trees breathe.”
+1.3 Mathematical/Axiomatic
+•	Rigorous reasoning based on symbols and postulates.
+•	Example: Proving that the sum of the angles of a triangle is 180°.
+1.4 Modal
+•	Considers concepts such as possible, necessary, obligatory.
+•	Example: “It is possible that it will rain, but it is not necessary.”
  
-1.5 Induttivo
-•	Parti da molti esempi → deduci una regola generale (ma può essere falsa).
-•	Esempio: “Ho visto solo cigni bianchi → tutti i cigni sono bianchi.” (sbagliato se appare un cigno nero!)
+1.5 Inductive
+•	You start from many examples → you infer a general rule (but it may be false).
+•	Example: “I have only seen white swans → all swans are white.” (wrong if a black swan appears!)
  
-1.6 Abduzione
-•	Ragionamento detective: spieghi un fatto con l’ipotesi più plausibile.
-•	Esempio: “Trovo il prato bagnato. Probabile spiegazione: ha piovuto.”
+1.6 Abduction
+•	Detective reasoning: you explain a fact with the most plausible hypothesis.
+•	Example: “I find the lawn wet. Probable explanation: it rained.”
  
  
-2. Ragionamenti causali e condizionali
-💡 Obiettivo: capire perché succede qualcosa e cosa accadrebbe se cambiamo qualcosa.
-2.1 Causale diretto
-•	Trovi relazioni di causa-effetto.
-•	Esempio: “Spingo il bicchiere → cade.”
-2.2 Controfattuale
-•	Immagini un mondo alternativo: “Se non avessi preso il treno, sarei arrivato in ritardo?”
-•	Serve a capire cause vere.
-2.3 Condizionale/Ipotesi (“se… allora…”)
-•	Simuli scenari.
-•	Esempio: “Se studio, supero l’esame.”
-2.4 Necessario vs sufficiente
-•	Necessario: senza A non c’è B.
-•	Sufficiente: se c’è A, basta per avere B.
-•	Esempio: “L’acqua è necessaria per vivere, ma non sufficiente.”
-2.5 Sistemico
-•	Ragionare su reti complesse (causa-effetto a catena).
-•	Esempio: Economia: “Alzare le tasse riduce consumi, che riduce crescita…”
+2. Causal and conditional reasoning
+💡 Goal: understand why something happens and what would happen if we changed something.
+2.1 Direct causal
+•	You find cause-effect relationships.
+•	Example: “I push the glass → it falls.”
+2.2 Counterfactual
+•	You imagine an alternative world: “If I had not taken the train, would I have arrived late?”
+•	It is used to understand true causes.
+2.3 Conditional/Hypothesis (“if… then…”)
+•	You simulate scenarios.
+•	Example: “If I study, I pass the exam.”
+2.4 Necessary vs sufficient
+•	Necessary: without A there is no B.
+•	Sufficient: if A is present, that is enough to have B.
+•	Example: “Water is necessary to live, but not sufficient.”
+2.5 Systemic
+•	Reasoning about complex networks (chains of cause and effect).
+•	Example: Economics: “Raising taxes reduces consumption, which reduces growth…”
  
-3. Ragionamenti pratici e decisionali
-💡 Obiettivo: scegliere cosa fare.
-3.1 Teleologico/Strumentale
-•	Parti da un obiettivo → cerchi i mezzi.
-•	Esempio: “Voglio laurearmi → devo studiare e superare esami.”
-3.2 Economico (costi-benefici)
-•	Valuti guadagni e perdite.
-•	Esempio: “Comprare l’auto: costa tanto ma risparmio tempo.”
-3.3 Strategico
-•	Pianifichi a lungo termine, come in scacchi.
-3.4 Decisione sotto incertezza
-•	Prendi decisioni senza avere tutti i dati.
-•	Esempio: “Non so che tempo farà, porto l’ombrello?”
-3.5 Euristico
-•	Scorciatoie mentali: “Ho sempre visto semafori verdi qui → passo veloce.”
-•	Veloce ma può sbagliare.
+3. Practical and decision-making reasoning
+💡 Goal: choose what to do.
+3.1 Teleological/Instrumental
+•	You start from a goal → you look for the means.
+•	Example: “I want to graduate → I have to study and pass exams.”
+3.2 Economic (cost-benefit)
+•	You weigh gains and losses.
+•	Example: “Buying the car: it costs a lot but I save time.”
+3.3 Strategic
+•	You plan for the long term, as in chess.
+3.4 Decision under uncertainty
+•	You make decisions without having all the data.
+•	Example: “I don’t know what the weather will be like; should I take the umbrella?”
+3.5 Heuristic
+•	Mental shortcuts: “I have always seen green lights here → I go through fast.”
+•	Fast but can be wrong.
  
-4. Ragionamenti creativi e divergenti
-💡 Obiettivo: trovare idee nuove, rompere schemi.
-4.1 Laterale
-•	Cambi prospettiva per risolvere un problema.
-•	Esempio: Se non riesci a uscire dalla stanza dalla porta, esci dalla finestra.
-4.2 Divergente
-•	Generi tante idee, senza giudicare.
-•	Esempio: Brainstorming.
-4.3 Sintetico
-•	Unisci concetti lontani in una nuova combinazione.
-•	Esempio: Smartphone = telefono + computer.
-4.4 Analogico complesso
-•	Usi somiglianze profonde per capire cose nuove.
-•	Esempio: “Il cervello è come una rete di città collegate (neuroni).”
-4.5 Progettuale
-•	Ragionamento da designer: creare soluzioni funzionali ed estetiche.
+4. Creative and divergent reasoning
+💡 Goal: find new ideas, break patterns.
+4.1 Lateral
+•	You change perspective to solve a problem.
+•	Example: If you cannot get out of the room through the door, get out through the window.
+4.2 Divergent
+•	You generate lots of ideas, without judging.
+•	Example: Brainstorming.
+4.3 Synthetic
+•	You join distant concepts into a new combination.
+•	Example: Smartphone = phone + computer.
+4.4 Complex analogical
+•	You use deep similarities to understand new things.
+•	Example: “The brain is like a network of connected cities (neurons).”
+4.5 Design
+•	A designer’s reasoning: creating functional and aesthetic solutions.
  
-5. Ragionamenti intuitivi e associativi
-💡 Obiettivo: risposte veloci grazie all’esperienza.
+5. Intuitive and associative reasoning
+💡 Goal: fast answers thanks to experience.
 5.1 Pattern recognition
-•	Riconosci schemi: “Questa febbre + tosse = influenza.”
-5.2 Priming semantico
-•	Parole e idee attivano altre idee inconsciamente.
-•	Esempio: Leggi “pane” → pensi “burro”.
-5.3 Somiglianza superficiale
-•	Ti basi su ricordi simili, anche se poco accurati.
-•	Esempio: “Questa persona mi ricorda un amico → mi fido.”
+•	You recognise patterns: “This fever + cough = flu.”
+5.2 Semantic priming
+•	Words and ideas activate other ideas unconsciously.
+•	Example: You read “bread” → you think “butter”.
+5.3 Surface similarity
+•	You rely on similar memories, even if they are not very accurate.
+•	Example: “This person reminds me of a friend → I trust them.”
 5.4 Embodied cognition
-•	Usi il corpo per ragionare.
-•	Esempio: Contare sulle dita, usare gesti per capire spazio.
+•	You use the body to reason.
+•	Example: Counting on your fingers, using gestures to understand space.
  
-6. Ragionamenti sociali
-💡 Obiettivo: capire gli altri.
-6.1 Teoria della mente
-•	Immagini pensieri ed emozioni altrui.
-•	Esempio: “Lui pensa che io sia arrabbiato.”
-6.2 Negoziale
-•	Prevedi le mosse di altri per ottenere compromessi.
-•	Esempio: Trattare uno stipendio.
-6.3 Empatico
-•	Integrare emozioni altrui nelle scelte.
-•	Esempio: Aiuti un amico triste.
-6.4 Culturale
-•	Ragioni in base a norme sociali.
-•	Esempio: In Giappone fai un inchino, non una stretta di mano.
+6. Social reasoning
+💡 Goal: understand others.
+6.1 Theory of mind
+•	You imagine other people’s thoughts and emotions.
+•	Example: “He thinks I am angry.”
+6.2 Negotiation
+•	You predict other people’s moves to reach compromises.
+•	Example: Negotiating a salary.
+6.3 Empathic
+•	Integrating other people’s emotions into choices.
+•	Example: You help a sad friend.
+6.4 Cultural
+•	You reason on the basis of social norms.
+•	Example: In Japan you bow rather than shake hands.
  
-7. Ragionamenti narrativi
-💡 Obiettivo: dare senso agli eventi come storia.
-7.1 Sequenziale
-•	Racconti eventi in ordine cronologico.
-•	Esempio: “Prima mi sono svegliato, poi ho fatto colazione…”
-7.2 Causale narrativo
-•	Colleghi eventi per renderli coerenti.
-•	Esempio: “Ha perso il lavoro perché era sempre in ritardo.”
-7.3 Bias narrativo
-•	Preferisci storie semplici anche se incomplete.
-•	Esempio: Teorie del complotto: storie lineari per eventi complessi.
-7.4 Identitario
-•	Usi storie per definire chi sei.
-•	Esempio: “Sono diventato forte perché da piccolo ero bullizzato.”
+7. Narrative reasoning
+💡 Goal: make sense of events as a story.
+7.1 Sequential
+•	You recount events in chronological order.
+•	Example: “First I woke up, then I had breakfast…”
+7.2 Narrative causal
+•	You link events to make them coherent.
+•	Example: “He lost his job because he was always late.”
+7.3 Narrative bias
+•	You prefer simple stories even if they are incomplete.
+•	Example: Conspiracy theories: linear stories for complex events.
+7.4 Identity-based
+•	You use stories to define who you are.
+•	Example: “I became strong because I was bullied as a child.”
  
-8. Ragionamenti metacognitivi
-💡 Obiettivo: riflettere sul tuo stesso pensiero.
-8.1 Meta-razionalità
-•	Scegli come ragionare.
-•	Esempio: “Per questa decisione userò logica, non intuizione.”
+8. Metacognitive reasoning
+💡 Goal: reflect on your own thinking.
+8.1 Meta-rationality
+•	You choose how to reason.
+•	Example: “For this decision I will use logic, not intuition.”
 8.2 De-biasing
-•	Riconosci e correggi errori mentali.
-•	Esempio: “Sto giudicando male perché sono arrabbiato.”
-8.3 Epistemico
-•	Ti chiedi cosa significa sapere o credere.
-•	Esempio: “Come faccio a sapere che è vero?”
-8.4 Critico-filosofico
-•	Analizzi concetti profondi.
-•	Esempio: “Cos’è il libero arbitrio?”
+•	You recognise and correct mental errors.
+•	Example: “I am judging badly because I am angry.”
+8.3 Epistemic
+•	You ask yourself what it means to know or to believe.
+•	Example: “How do I know it is true?”
+8.4 Critical-philosophical
+•	You analyse deep concepts.
+•	Example: “What is free will?”
  
-9. Ragionamenti morali ed etici
-💡 Obiettivo: stabilire cosa è giusto/sbagliato.
-9.1 Deontologico
-•	Regole assolute.
-•	Esempio: “Rubare è sempre sbagliato.”
-9.2 Consequenzialista
-•	Guardi alle conseguenze.
-•	Esempio: “Mentire è ok se salvi una vita.”
-9.3 Virtù etica
-•	Conta il carattere, non solo regole.
-•	Esempio: “Un uomo onesto non mentirebbe.”
-9.4 Contrattualista
-•	Norme condivise per convivenza.
-•	Esempio: “Rispettiamo semafori per sicurezza.”
+9. Moral and ethical reasoning
+💡 Goal: establish what is right/wrong.
+9.1 Deontological
+•	Absolute rules.
+•	Example: “Stealing is always wrong.”
+9.2 Consequentialist
+•	You look at the consequences.
+•	Example: “Lying is OK if you save a life.”
+9.3 Virtue ethics
+•	Character counts, not just rules.
+•	Example: “An honest man would not lie.”
+9.4 Contractualist
+•	Shared norms for living together.
+•	Example: “We obey traffic lights for safety.”
  
-10. Ragionamenti estetici
-💡 Obiettivo: giudicare bellezza e armonia.
-10.1 Percezione estetica
-•	Simmetria, proporzioni.
-•	Esempio: “Questo dipinto è armonioso.”
-10.2 Creativo-emotivo
-•	Basato sull’emozione artistica.
-•	Esempio: “Questo brano mi commuove.”
-10.3 Culturale
-•	Influenza di gusti e moda.
-•	Esempio: Apprezzare arte astratta perché culturalmente riconosciuta.
+10. Aesthetic reasoning
+💡 Goal: judge beauty and harmony.
+10.1 Aesthetic perception
+•	Symmetry, proportions.
+•	Example: “This painting is harmonious.”
+10.2 Creative-emotional
+•	Based on artistic emotion.
+•	Example: “This piece moves me.”
+10.3 Cultural
+•	Influence of tastes and fashion.
+•	Example: Appreciating abstract art because it is culturally recognised.
  
-11. Ragionamenti scientifici avanzati
-💡 Obiettivo: ragionamenti rigorosi basati su dati.
-11.1 Bayesiano
-•	Aggiorni le credenze con probabilità.
-•	Esempio: “Il test è positivo, ma la probabilità reale di malattia è 5%.”
-11.2 Statistico
-•	Analisi di dati numerici.
-•	Esempio: “Il 70% degli studenti ha superato il test.”
-11.3 Sperimentale
-•	Metodo: ipotesi → esperimento → revisione.
-•	Esempio: Testare un nuovo farmaco.
+11. Advanced scientific reasoning
+💡 Goal: rigorous reasoning based on data.
+11.1 Bayesian
+•	You update beliefs with probabilities.
+•	Example: “The test is positive, but the actual probability of disease is 5%.”
+11.2 Statistical
+•	Analysis of numerical data.
+•	Example: “70% of the students passed the test.”
+11.3 Experimental
+•	Method: hypothesis → experiment → revision.
+•	Example: Testing a new drug.
 11.4 Model-based
-•	Crei modelli matematici per predire eventi (clima, economia).
+•	You create mathematical models to predict events (climate, economy).
  
-12. Ragionamenti specializzati
-💡 Obiettivo: contesti specifici.
-12.1 Giuridico
-•	Interpreti leggi, casi, precedenti.
-•	Esempio: Avvocati in tribunale.
-12.2 Tecnico/ingegneristico
-•	Analisi di sistemi complessi.
-•	Esempio: Progettare un ponte.
-12.3 Clinico
-•	Diagnosi medica (abduzione + esperienza).
-•	Esempio: Un medico analizza sintomi.
-12.4 Strategico-militare
-•	Pianificazione in scenari incerti.
-•	Esempio: Scacchi, guerra, geopolitica.
+12. Specialised reasoning
+💡 Goal: specific contexts.
+12.1 Legal
+•	You interpret laws, cases, precedents.
+•	Example: Lawyers in court.
+12.2 Technical/engineering
+•	Analysis of complex systems.
+•	Example: Designing a bridge.
+12.3 Clinical
+•	Medical diagnosis (abduction + experience).
+•	Example: A doctor analyses symptoms.
+12.4 Strategic-military
+•	Planning in uncertain scenarios.
+•	Example: Chess, war, geopolitics.
  
-💡 In sintesi:
-•	Logico: rigore e certezza.
-•	Empirico/Scientifico: osservazione e test.
-•	Creativo: idee nuove.
-•	Sociale/Morale: relazioni ed etica.
-•	Metacognitivo: riflessione su sé stessi.
-•	Specializzato: applicazioni professionali.
+💡 In summary:
+•	Logical: rigour and certainty.
+•	Empirical/Scientific: observation and testing.
+•	Creative: new ideas.
+•	Social/Moral: relationships and ethics.
+•	Metacognitive: reflection on oneself.
+•	Specialised: professional applications.
 
 
-Ah, chiaro! 💡
-Vuoi sapere se esiste qualcuno che ha tentato di fare proprio quello che stiamo facendo noi adesso: una classificazione generale e organica di tutti i tipi di ragionamento umano (non solo logica, non solo psicologia, ma una sintesi).
-La risposta è: sì, ci sono alcuni filosofi e scienziati cognitivi che hanno provato a costruire tassonomie generali.
-Ti elenco i più rilevanti:
+Ah, got it! 💡
+You want to know whether anyone has tried to do exactly what we are doing now: a general, systematic classification of all types of human reasoning (not only logic, not only psychology, but a synthesis).
+The answer is: yes, there are some philosophers and cognitive scientists who have tried to build general taxonomies.
+Here are the most relevant ones:
  
 📚 1. Charles Sanders Peirce (1839–1914)
-•	🔑 Perché è importante: È forse il primo a sistematizzare tre categorie di ragionamento:
-1.	Deduzione → Derivi conclusioni certe da premesse.
-2.	Induzione → Generalizzi dai casi.
-3.	Abduzione → Ipotesi migliori per spiegare fenomeni.
-•	📖 Opere: “Collected Papers of Charles Sanders Peirce”.
-•	🧩 Anche se la sua tassonomia è più semplice della nostra, è la base di TUTTE le classificazioni moderne.
+•	🔑 Why he matters: He is perhaps the first to systematise three categories of reasoning:
+1.	Deduction → You derive certain conclusions from premises.
+2.	Induction → You generalise from cases.
+3.	Abduction → The best hypotheses to explain phenomena.
+•	📖 Works: “Collected Papers of Charles Sanders Peirce”.
+•	🧩 Although his taxonomy is simpler than ours, it is the basis of ALL modern classifications.
  
 📚 2. Stephen Toulmin (1922–2009)
-•	🔑 Ha creato il Toulmin Model of Argumentation, che analizza struttura e tipi di ragionamento in argomentazioni: claim, data, warrant, backing, qualifier, rebuttal.
-•	Non una tassonomia di “tipi” psicologici, ma un quadro universale per capire COME ragioniamo e argomentiamo.
+•	🔑 He created the Toulmin Model of Argumentation, which analyses the structure and types of reasoning in arguments: claim, data, warrant, backing, qualifier, rebuttal.
+•	Not a taxonomy of psychological “types”, but a universal framework for understanding HOW we reason and argue.
  
-📚 3. Johnson-Laird e la Teoria dei Modelli Mentali (anni ’80–oggi)
-•	🔑 Propone che tutti i ragionamenti (deduzione, controfattuali, causali, ecc.) derivano da un unico meccanismo mentale: la costruzione di modelli mentali nella mente.
-•	Hanno fatto studi sperimentali su come ragioniamo in modo condizionale (“se… allora…”), causale, narrativo.
+📚 3. Johnson-Laird and the Theory of Mental Models (1980s–today)
+•	🔑 He proposes that all reasoning (deduction, counterfactual, causal, etc.) derives from a single mental mechanism: the construction of mental models in the mind.
+•	They have carried out experimental studies on how we reason conditionally (“if… then…”), causally, narratively.
  
-📚 4. Daniel Kahneman & Amos Tversky (anni ’70–2010)
-•	🔑 Classificazione dei processi cognitivi in Sistema 1 (intuitivo) e Sistema 2 (analitico).
-•	Hanno discusso decine di bias cognitivi, mostrando come diversi “tipi” di ragionamento convivono.
-•	📖 Thinking, Fast and Slow è una “tassonomia pratica” dei meccanismi decisionali umani.
+📚 4. Daniel Kahneman & Amos Tversky (1970s–2010)
+•	🔑 Classification of cognitive processes into System 1 (intuitive) and System 2 (analytical).
+•	They discussed dozens of cognitive biases, showing how different “types” of reasoning coexist.
+•	📖 Thinking, Fast and Slow is a “practical taxonomy” of human decision-making mechanisms.
  
 📚 5. Gerd Gigerenzer
-•	🔑 Propone una tassonomia delle euristiche, distinguendole dal ragionamento logico puro.
-•	Mostra che gli esseri umani usano strategie adattive diverse in base al contesto (non un unico “tipo di logica”).
+•	🔑 He proposes a taxonomy of heuristics, distinguishing them from pure logical reasoning.
+•	He shows that human beings use different adaptive strategies depending on the context (not a single “type of logic”).
  
-📚 6. Howard Gardner – Teoria delle Intelligenze Multiple (1983)
-•	🔑 Non è una classificazione di “ragionamenti” in senso stretto, ma mostra che il cervello ha modi diversi di elaborare: logico-matematico, linguistico, spaziale, musicale, interpersonale, intrapersonale, naturalistico.
-•	Implica che ci sono tipi diversi di ragionamento legati a queste intelligenze.
+📚 6. Howard Gardner – Theory of Multiple Intelligences (1983)
+•	🔑 It is not a classification of “reasoning” in the strict sense, but it shows that the brain has different ways of processing: logical-mathematical, linguistic, spatial, musical, interpersonal, intrapersonal, naturalistic.
+•	It implies that there are different types of reasoning tied to these intelligences.
  
 📚 7. Douglas Walton (1942–2020)
-•	🔑 Ha creato una tipologia completa dei tipi di argomentazione (causale, analogica, per esempio, autorità, ecc.).
-•	In “Argumentation Schemes” (2008) mappa decine di schemi di ragionamento, con regole e condizioni.
+•	🔑 He created a complete typology of the types of argument (causal, from analogy, from example, from authority, etc.).
+•	In “Argumentation Schemes” (2008) he maps dozens of reasoning schemes, with rules and conditions.
  
 📚 8. Paul Thagard – Cognitive Science of Reasoning
-•	🔑 Ha integrato filosofia, IA, neuroscienze: propone che il ragionamento umano è una rete di micro-strategie: analogico, causale, probabilistico, basato su vincoli.
-•	Opere: “Mind: Introduction to Cognitive Science”.
+•	🔑 He integrated philosophy, AI, neuroscience: he proposes that human reasoning is a network of micro-strategies: analogical, causal, probabilistic, constraint-based.
+•	Works: “Mind: Introduction to Cognitive Science”.
  
-📚 9. Edward de Bono – Pensiero Laterale
-•	🔑 Non una tassonomia formale, ma distingue chiaramente pensiero verticale (logico) e pensiero laterale (creativo), aprendo la strada a studi sul ragionamento divergente.
+📚 9. Edward de Bono – Lateral Thinking
+•	🔑 Not a formal taxonomy, but he clearly distinguishes vertical thinking (logical) from lateral thinking (creative), paving the way for studies of divergent reasoning.
  
-📚 10. Manuali di logica e scienza cognitiva
-•	Libri come “Cognitive Science” (Stillings et al.) e “The Cambridge Handbook of Thinking and Reasoning” (Holyoak & Morrison, 2005) offrono mappe sintetiche di tutti i tipi di ragionamento (deduzione, induzione, abduzione, causale, analogico, probabilistico…).
+📚 10. Handbooks of logic and cognitive science
+•	Books such as “Cognitive Science” (Stillings et al.) and “The Cambridge Handbook of Thinking and Reasoning” (Holyoak & Morrison, 2005) offer concise maps of all types of reasoning (deduction, induction, abduction, causal, analogical, probabilistic…).
  
-🔑 In sintesi: chi ha fatto un “lavoro come il nostro”
-Autore	Cosa ha fatto	Rilevanza per tassonomia generale
-Peirce	Distinse Deduzione, Induzione, Abduzione	Prima classificazione formale
-Walton	Schemi di argomentazione	Tipologia ricchissima
-Johnson-Laird	Modelli mentali per tutti i ragionamenti	Base cognitiva unificante
-Kahneman & Tversky	Sistema 1/2, bias cognitivi	Spiegano razionale vs intuitivo
-Gigerenzer	Tassonomia euristiche	Ragionamento adattivo
-Thagard	Visione unificata (logico, causale, analogico)	Sintesi moderna
-Toulmin	Schema universale di argomentazione	Struttura di ogni ragionamento
+🔑 In summary: who has done “work like ours”
+Author	What they did	Relevance to a general taxonomy
+Peirce	Distinguished Deduction, Induction, Abduction	First formal classification
+Walton	Argumentation schemes	Extremely rich typology
+Johnson-Laird	Mental models for all reasoning	Unifying cognitive basis
+Kahneman & Tversky	System 1/2, cognitive biases	Explain rational vs intuitive
+Gigerenzer	Taxonomy of heuristics	Adaptive reasoning
+Thagard	Unified view (logical, causal, analogical)	Modern synthesis
+Toulmin	Universal schema of argumentation	Structure of all reasoning
  
-💡 Osservazione:
-Nessuno ha scritto esattamente una lista di 30-40 tipi di ragionamento come stiamo facendo noi, ma Peirce, Walton, Johnson-Laird, Kahneman/Tversky e Thagard sono quelli che più ci si avvicinano:
-•	Peirce → classi di base
-•	Walton → schemi di argomentazione
-•	Johnson-Laird → meccanismo cognitivo unico
-•	Kahneman/Tversky → psicologia dei processi
-•	Thagard → sintesi cognitiva-scientifica
+💡 Observation:
+Nobody has written exactly a list of 30-40 types of reasoning the way we are doing, but Peirce, Walton, Johnson-Laird, Kahneman/Tversky and Thagard are the ones who come closest:
+•	Peirce → basic classes
+•	Walton → argumentation schemes
+•	Johnson-Laird → single cognitive mechanism
+•	Kahneman/Tversky → psychology of processes
+•	Thagard → cognitive-scientific synthesis
 
-per esempio immagina di descrivere una negoziazione con teoria dei giochi. e di conseguenza dimmi l'argoritmo che combinano primitive di ragionamento.
+for example imagine describing a negotiation with game theory. and accordingly tell me the algorithm that combines reasoning primitives.
 ChatGPT said:
-Ottimo! 💡 Facciamo così:
-1.	Descrivo una negoziazione in termini di teoria dei giochi.
-2.	Scompongo i ragionamenti necessari in “primitive cognitive” (i mattoni puri).
-3.	Mostro l’algoritmo mentale che li combina.
+Great! 💡 Let’s do it like this:
+1.	I describe a negotiation in game-theoretic terms.
+2.	I break down the reasoning needed into “cognitive primitives” (the pure building blocks).
+3.	I show the mental algorithm that combines them.
  
-🧩 1. Negoziazione vista con la teoria dei giochi
+🧩 1. Negotiation seen through game theory
 Scenario:
-Due persone, Alice e Bob, devono dividere 100€. Entrambi vogliono massimizzare il guadagno, ma se non raggiungono un accordo, nessuno prende nulla.
-È una classica situazione di “bargaining game”.
-In teoria dei giochi:
-•	Giocatori: Alice, Bob
-•	Strategie: quanto chiedere, come fare offerte
-•	Payoff: guadagno finale di ciascuno
-•	Equilibrio: punto in cui nessuno può migliorare la propria posizione cambiando strategia unilateralmente (Nash equilibrium).
+Two people, Alice and Bob, have to split €100. Both want to maximise their gain, but if they do not reach an agreement, neither gets anything.
+It is a classic “bargaining game” situation.
+In game theory:
+•	Players: Alice, Bob
+•	Strategies: how much to ask for, how to make offers
+•	Payoff: each one’s final gain
+•	Equilibrium: the point at which no one can improve their position by unilaterally changing strategy (Nash equilibrium).
  
-🔍 2. Primitive di ragionamento coinvolte
-Per ragionare in questa situazione, il cervello usa:
-Tipo di ragionamento (primitivo)	Ruolo nella negoziazione
-Deduzione logica	Applicare regole: “Se offro troppo poco, lui rifiuterà.”
-Ragionamento causale	“Se faccio X, Bob reagirà con Y.”
-Ragionamento controfattuale	“E se chiedessi 60 invece di 50?”
-Analogico	“Questo è come la trattativa per comprare una casa.”
-Probabilistico (Bayesiano)	Stimare probabilità delle reazioni: “80% che accetti 50.”
-Teoria della mente (sociale)	Inferire intenzioni: “Vuole sembrare duro ma ha fretta.”
-Euristico	“Dividiamolo a metà: soluzione veloce.”
-Narrativo	Creare una storia convincente per persuadere: “Se accetti ora, entrambi vinciamo.”
-Quindi il ragionamento negoziale non è “nuovo”: è una rete di primitive combinate.
+🔍 2. Reasoning primitives involved
+To reason in this situation, the brain uses:
+Type of reasoning (primitive)	Role in the negotiation
+Logical deduction	Applying rules: “If I offer too little, he will refuse.”
+Causal reasoning	“If I do X, Bob will react with Y.”
+Counterfactual reasoning	“What if I asked for 60 instead of 50?”
+Analogical	“This is like the negotiation to buy a house.”
+Probabilistic (Bayesian)	Estimating the probabilities of reactions: “80% chance he accepts 50.”
+Theory of mind (social)	Inferring intentions: “He wants to seem tough but he is in a hurry.”
+Heuristic	“Let’s split it down the middle: quick solution.”
+Narrative	Creating a convincing story to persuade: “If you accept now, we both win.”
+So negotiation reasoning is not “new”: it is a network of combined primitives.
  
-⚙️ 3. Algoritmo mentale della negoziazione (semplificato)
-Vediamolo come pseudo-codice cognitivo:
-INPUT: Offerta iniziale, informazioni su controparte, tempo, obiettivo.
+⚙️ 3. Mental algorithm of negotiation (simplified)
+Let’s look at it as cognitive pseudo-code:
+INPUT: Initial offer, information about the counterpart, time, goal.
 
-1. Raccogli informazioni
-   - Osserva segnali (linguaggio del corpo, storie passate) [Analogico + Sociale]
-   - Stima bisogni e priorità dell’altro [Teoria della mente]
+1. Gather information
+   - Observe signals (body language, past stories) [Analogical + Social]
+   - Estimate the other party’s needs and priorities [Theory of mind]
 
-2. Genera scenari possibili
-   - Lista di mosse (offerte) [Creativo/Divergente]
-   - Prevedi reazioni dell’altro [Causale + Controfattuale]
+2. Generate possible scenarios
+   - List of moves (offers) [Creative/Divergent]
+   - Predict the other party’s reactions [Causal + Counterfactual]
 
-3. Valuta probabilità e payoff
-   - Assegna probabilità a ogni reazione [Probabilistico/Bayesiano]
-   - Calcola guadagno atteso [Deduttivo/Logico]
+3. Evaluate probabilities and payoffs
+   - Assign a probability to each reaction [Probabilistic/Bayesian]
+   - Compute expected gain [Deductive/Logical]
 
-4. Applica vincoli emotivi/sociali
-   - Considera reputazione, norme culturali [Culturale + Sociale]
-   - Aggiusta strategia (es. fare una concessione per sembrare equo)
+4. Apply emotional/social constraints
+   - Consider reputation, cultural norms [Cultural + Social]
+   - Adjust strategy (e.g. make a concession to appear fair)
 
-5. Scegli strategia ottimale
-   - Usa euristiche (“puntiamo al 50/50 se il tempo stringe”) [Euristico]
-   - O calcola equilibrio di Nash se razionale [Logico-Formale]
+5. Choose the optimal strategy
+   - Use heuristics (“let’s aim for 50/50 if time is tight”) [Heuristic]
+   - Or compute the Nash equilibrium if rational [Logical-Formal]
 
-6. Comunica e persuadi
-   - Presenta offerta con narrativa convincente [Narrativo + Sociale]
+6. Communicate and persuade
+   - Present the offer with a convincing narrative [Narrative + Social]
 
-7. Adatta dinamicamente
-   - Se rifiuto: aggiorna modello di controparte [Bayesiano]
-   - Ripeti dal passo 2 con nuove informazioni.
+7. Adapt dynamically
+   - If refused: update the model of the counterpart [Bayesian]
+   - Repeat from step 2 with new information.
 
-OUTPUT: Accordo ottimale (o fallimento con lezione appresa).
+OUTPUT: Optimal agreement (or failure with a lesson learned).
  
-🧠 Cosa succede nel cervello
-•	La corteccia prefrontale dorsolaterale fa calcoli logici e probabilistici.
-•	L’amigdala e il sistema limbico gestiscono segnali emotivi (pressione, bluff).
-•	La corteccia temporale elabora segnali sociali (volto, tono di voce).
-•	L’ippocampo richiama esempi analogici (altre negoziazioni).
+🧠 What happens in the brain
+•	The dorsolateral prefrontal cortex performs logical and probabilistic calculations.
+•	The amygdala and the limbic system handle emotional signals (pressure, bluffing).
+•	The temporal cortex processes social signals (face, tone of voice).
+•	The hippocampus recalls analogical examples (other negotiations).
  
-🔑 Sintesi
-Il ragionamento negoziale è:
-Una pipeline cognitiva che combina deduzione, ragionamento causale, probabilistico, analogico, teoria della mente, euristiche e narrativa.
-È come un algoritmo multi-modulo: ogni modulo è una “primitiva” di ragionamento, e la negoziazione è il flusso che li orchestra per massimizzare payoff e cooperazione.
+🔑 Summary
+Negotiation reasoning is:
+A cognitive pipeline that combines deduction, causal, probabilistic and analogical reasoning, theory of mind, heuristics and narrative.
+It is like a multi-module algorithm: each module is a reasoning “primitive”, and negotiation is the flow that orchestrates them to maximise payoff and cooperation.
 
-🧩 1. Idee chiave per il linguaggio
-•	Deve essere astratto ma espressivo: poche regole base, ma componibili.
-•	Ogni primitiva è una funzione cognitiva (come if, loop, map in programmazione).
-•	Il linguaggio è dichiarativo: descrivi cosa stai facendo (tipo Prolog), non come eseguirlo passo-passo.
-•	Ogni primitiva può avere input (informazioni, credenze) e output (nuove credenze, decisioni).
+🧩 1. Key ideas for the language
+•	It must be abstract but expressive: few basic rules, but composable ones.
+•	Each primitive is a cognitive function (like if, loop, map in programming).
+•	The language is declarative: you describe what you are doing (as in Prolog), not how to execute it step by step.
+•	Each primitive can have inputs (information, beliefs) and outputs (new beliefs, decisions).
  
-🧩 2. Set di primitive proposte
-Sigla	Nome	Descrizione
-DED	Deduzione	Inferisci conclusioni certe da regole generali.
-IND	Induzione	Generalizza da casi a regola.
-ABD	Abduzione	Ipotesi plausibile che spiega osservazioni.
-CAU	Causale	Stima relazioni causa-effetto.
-CF	Controfattuale	Simula scenari alternativi: “Se non X, allora…”.
-COND	Condizionale	Se… allora…
-PROB	Probabilistico	Aggiornamento credenze basato su probabilità.
-ANA	Analogico	Trasferisci struttura da un dominio noto a uno nuovo.
-HEU	Euristico	Scorciatoia basata su esperienza.
-SOC	Sociale	Inferisci stati mentali altrui (Teoria della Mente).
-NAR	Narrativo	Costruisci una storia coerente per dare senso o persuadere.
-META	Metacognitivo	Ragiona sul tuo stesso ragionamento.
+🧩 2. Proposed set of primitives
+Abbreviation	Name	Description
+DED	Deduction	Infer certain conclusions from general rules.
+IND	Induction	Generalise from cases to a rule.
+ABD	Abduction	A plausible hypothesis that explains observations.
+CAU	Causal	Estimate cause-effect relationships.
+CF	Counterfactual	Simulate alternative scenarios: “If not X, then…”.
+COND	Conditional	If… then…
+PROB	Probabilistic	Belief updating based on probabilities.
+ANA	Analogical	Transfer structure from a known domain to a new one.
+HEU	Heuristic	A shortcut based on experience.
+SOC	Social	Infer other people’s mental states (Theory of Mind).
+NAR	Narrative	Build a coherent story to make sense of things or to persuade.
+META	Metacognitive	Reason about your own reasoning.
  
-🧩 3. Sintassi base (pseudo-linguaggio)
-// Esempio di regola
+🧩 3. Basic syntax (pseudo-language)
+// Example of a rule
 RULE: IF condition THEN conclusion
 
-// Primitive
+// Primitives
 DED(rule, facts) -> conclusion
 IND(cases) -> general_rule
 ABD(observation) -> plausible_hypothesis
@@ -519,76 +521,76 @@ SOC(agent) -> inferred_beliefs
 NAR(events) -> story
 META(process) -> reflection
  
-🧩 4. Negoziazione in questo linguaggio
-Scenario: Alice e Bob negoziano 100€.
-// 1. Osserva segnali sociali
+🧩 4. Negotiation in this language
+Scenario: Alice and Bob negotiate over €100.
+// 1. Observe social signals
 beliefs_Bob = SOC(Bob)
 
-// 2. Genera scenari alternativi
+// 2. Generate alternative scenarios
 scenarios = CF({Alice_offer = 50}, {Alice_offer = 60})
 
-// 3. Stima reazioni probabilistiche
+// 3. Estimate probabilistic reactions
 prob_accept_50 = PROB(accept, prior_data)
 prob_accept_60 = PROB(accept, prior_data)
 
-// 4. Calcola payoff attesi
+// 4. Compute expected payoffs
 payoff_50 = DED({prob_accept_50, offer=50}, payoff_formula)
 payoff_60 = DED({prob_accept_60, offer=60}, payoff_formula)
 
-// 5. Scegli migliore strategia
+// 5. Choose the best strategy
 best_offer = HEU(max(payoff_50, payoff_60))
 
-// 6. Narrazione per persuadere
+// 6. Narrative to persuade
 message = NAR({context, fairness, mutual_benefit})
 
-// 7. Meta-riflessione
+// 7. Meta-reflection
 META({strategy, Bob_reaction}) -> adjust_plan
-Questo mostra come primitive cognitive (SOC, CF, PROB, DED, HEU, NAR, META) si combinano per produrre un ragionamento complesso.
+This shows how cognitive primitives (SOC, CF, PROB, DED, HEU, NAR, META) combine to produce complex reasoning.
  
-🧩 5. Livelli di astrazione
-1.	Primitiva (Assembly del pensiero): DED, ABD, PROB, ANA, ecc.
-2.	Pattern combinati (funzioni cognitive): Decision making, Pianificazione, Diagnosi.
-3.	Dominio applicativo (algoritmo completo): Negoziazione, Strategia militare, Argomentazione giuridica.
+🧩 5. Levels of abstraction
+1.	Primitive (Assembly of thought): DED, ABD, PROB, ANA, etc.
+2.	Combined patterns (cognitive functions): Decision making, Planning, Diagnosis.
+3.	Application domain (complete algorithm): Negotiation, Military strategy, Legal argumentation.
  
-🧩 6. Esempio di composizione per altri casi
-Diagnosi medica
+🧩 6. Example of composition for other cases
+Medical diagnosis
 symptoms -> ABD(symptoms) -> hypothesis
 hypothesis -> PROB(test_result) -> updated_belief
 DECIDE(treatment) = DED({guidelines, updated_belief})
-Giudizio legale
+Legal judgment
 facts -> DED(law) -> ruling
 witness_variants -> CF(alibi) -> consistency_check
 HEU(precedent_patterns) -> likely_outcome
  
-💡 In pratica, questo linguaggio sarebbe una grammatica di alto livello per il ragionamento:
-•	DED, IND, ABD = fondamenti logico-epistemici
-•	CF, PROB, ANA = strumenti di simulazione
-•	HEU, SOC, NAR, META = strumenti adattivi, sociali e riflessivi.
+💡 In practice, this language would be a high-level grammar for reasoning:
+•	DED, IND, ABD = logical-epistemic foundations
+•	CF, PROB, ANA = simulation tools
+•	HEU, SOC, NAR, META = adaptive, social and reflective tools.
 
 
-Ecco un linguaggio minimale ma “vero” per scrivere algoritmi cognitivi a partire dalle primitive di ragionamento. Lo chiamo RPL — Reasoning Primitives Language.
+Here is a minimal but “real” language for writing cognitive algorithms starting from the reasoning primitives. I call it RPL — Reasoning Primitives Language.
  
 RPL — Reasoning Primitives Language (v0.1)
-1) Tipi di dato (statici, con inferenza)
+1) Data types (static, with inference)
 •	Bool, Num, Str
-•	Atom (simbolo: Rain, Alice, Offer(60))
-•	Fact = Atom | Pred(…args…) (es. Likes(Alice, Tea))
+•	Atom (symbol: Rain, Alice, Offer(60))
+•	Fact = Atom | Pred(…args…) (e.g. Likes(Alice, Tea))
 •	Rule = Premises => Conclusion [weight:?Num]
 •	Set[T], List[T], Map[K,V]
-•	Dist[T] (distribuzione discreta su T)
+•	Dist[T] (discrete distribution over T)
 •	Model = {facts:Set[Fact], rules:Set[Rule]}
 •	Agent = {beliefs:Model, priors:Map[Atom,Num]}
-Alias utili
-•	Belief[T] = {value:T, conf:Num} (confidenza 0..1)
+Useful aliases
+•	Belief[T] = {value:T, conf:Num} (confidence 0..1)
 •	Payoff = Num
  
-2) Lessico e identificatori
-•	Nomi: snake_case o CamelCase
-•	Variabili: iniziano con ? (es. ?x, ?offer)
-•	Commenti: // …
-•	Stringhe: "…". Numeri: 42, 0.75.
+2) Lexicon and identifiers
+•	Names: snake_case or CamelCase
+•	Variables: begin with ? (e.g. ?x, ?offer)
+•	Comments: // …
+•	Strings: "…". Numbers: 42, 0.75.
  
-3) Sintassi di base (EBNF ridotta)
+3) Basic syntax (reduced EBNF)
 program      ::= { decl | stmt }
 decl         ::= "let" id "=" expr
 stmt         ::= expr ";"
@@ -605,65 +607,65 @@ args         ::= expr { "," expr }
 params       ::= id ":" type { "," id ":" type }
 type         ::= basic | generic
  
-4) Primitive di ragionamento (firma + intuizione)
-Logico-epistemiche
+4) Reasoning primitives (signature + intuition)
+Logical-epistemic
 •	DED(rule:Rule, facts:Set[Fact]) : Fact|Set[Fact]
-Applica regole a fatti.
+Applies rules to facts.
 •	IND(cases:Set[Fact]) : Rule
-Induce una regola dai casi (greedy, pesata).
+Induces a rule from the cases (greedy, weighted).
 •	ABD(obs:Set[Fact], model:Model) : Set[Hypothesis]
-Ipotesi che spiegano le osservazioni.
-Causali/condizionali
+Hypotheses that explain the observations.
+Causal/conditional
 •	CAU(x:Atom, y:Atom, data:Set[Fact]) : Belief[Link]
-Stima nesso causale (confidenza).
+Estimates the causal link (confidence).
 •	COND(if:Fact, then:Fact) : Rule
 •	CF(world:Model, change:Set[Fact], query:Fact) : Belief[Fact]
-Controfattuale: valuta query nel mondo modificato.
-Probabilistiche
+Counterfactual: evaluates query in the modified world.
+Probabilistic
 •	PROB(event:Atom, prior:Num, likelihoods:Map[Atom,Num]) : Num
-Bayes semplice (restituisce posteriore).
+Simple Bayes (returns the posterior).
 •	UPDATE(dist:Dist[Atom], evidence:Atom) : Dist[Atom]
-Analogiche / strutturali
+Analogical / structural
 •	ANA(src:Model, tgt:Model, map_hint:Map[Atom,Atom]) : Map[Atom,Atom]
-Mappatura analogica (ritorna corrispondenze).
-Sociali / narrative / meta
+Analogical mapping (returns correspondences).
+Social / narrative / meta
 •	SOC(agent:Agent) : Belief[Map[Atom,Num]]
-Cosa crede/valuza l’altro.
+What the other party believes/values.
 •	NAR(events:List[Fact], goal:Atom) : Str
-Testo persuasivo minimale.
+Minimal persuasive text.
 •	META(proof:any) : Str
-Spiega perché una conclusione è stata scelta.
+Explains why a conclusion was chosen.
 Utility
 •	ARGMAX(xs:List[T], f:\(T)->Num) : T
-•	EXPECT(p:Num, win:Num, lose:Num) : Num (valore atteso p*win+(1-p)*lose)
+•	EXPECT(p:Num, win:Num, lose:Num) : Num (expected value p*win+(1-p)*lose)
  
-5) Semantica (intuitiva, deterministica dove possibile)
-•	DED: applica rules in modo forward-chaining finché non ci sono nuovi fatti (chiusura limitata all’ambito del blocco).
-•	IND: genera Rule con confidenza = copertura casi corretti / tot.
-•	ABD: propone ipotesi minime il cui DED spiega obs; ordina per parsimonia (Occam) e conf.
-•	CF: crea una copia del world con change, poi esegue DED/PROB, restituisce Belief.
-•	PROB/UPDATE: normalizzazione bayesiana su insiemi finiti.
-•	ANA: cerca isomorfismi di grafo grezzi tra predicati e relazioni (euristica).
+5) Semantics (intuitive, deterministic where possible)
+•	DED: applies rules by forward chaining until there are no new facts (closure limited to the scope of the block).
+•	IND: generates a Rule with confidence = coverage of correct cases / total.
+•	ABD: proposes minimal hypotheses whose DED explains obs; ranks by parsimony (Occam) and conf.
+•	CF: creates a copy of the world with change, then runs DED/PROB, returns Belief.
+•	PROB/UPDATE: Bayesian normalisation over finite sets.
+•	ANA: looks for rough graph isomorphisms between predicates and relations (heuristic).
  
-6) Mini–standard library (regole utili)
+6) Mini–standard library (useful rules)
 let payoff_of(offer:Num, accept_prob:Num) =
   offer * accept_prob;
 
 let fairness_baseline = 50;
 
 let accept_rule =
-  COND( Offer(?x) & ?x >= 50 , Accept ); // esempio toy
+  COND( Offer(?x) & ?x >= 50 , Accept ); // toy example
 
 let bargain_model : Model = {
   facts = {},
   rules = { accept_rule }
 };
  
-7) Esempio completo: negoziazione (bargaining 100€)
-Obiettivo
-Alice deve scegliere un’offerta a Bob. Se Bob accetta, payoff di Alice = offerta; se rifiuta, 0.
-// ── Dati iniziali
-let offers = [40, 50, 60, 70];          // spazio d’azione
+7) Complete example: negotiation (bargaining over €100)
+Goal
+Alice has to choose an offer to make to Bob. If Bob accepts, Alice’s payoff = offer; if he refuses, 0.
+// ── Initial data
+let offers = [40, 50, 60, 70];          // action space
 let prior_accept = Map{ 40:0.3, 50:0.7, 60:0.5, 70:0.2 };
 
 let bob : Agent = {
@@ -671,39 +673,39 @@ let bob : Agent = {
   priors  = Map{ Accept:0.5 }
 };
 
-// ── Stima probabilistica di accettazione con Bayes “poverissimo”
+// ── Probabilistic estimate of acceptance with a “very crude” Bayes
 let estimate_accept = \(o:Num) -> {
-  // Likelihood semplificata via deduzione di regola di equità
+  // Simplified likelihood via deduction from a fairness rule
   let fair = (o >= fairness_baseline);
   let like = if fair then 0.8 else 0.3;
   let prior = prior_accept[o];
   PROB(Accept, prior, Map{ Evidence: like })
 };
 
-// ── Valore atteso per ogni offerta
+// ── Expected value for each offer
 let expected_payoff = \(o:Num) -> {
   let p = estimate_accept(o);
   payoff_of(o, p)
 };
 
-// ── Scelta ottima (greedy sul valore atteso)
+// ── Optimal choice (greedy on expected value)
 let best_offer = ARGMAX(offers, expected_payoff);
 
-// ── Narrazione persuasiva (framing di equità + urgenza)
+// ── Persuasive narrative (fairness + urgency framing)
 let pitch = NAR(
   [ Fact("MutualBenefit"), Fact("TimeCost") ],
   Goal("AgreeFast")
 );
 
-// ── Output finale
+// ── Final output
 { best_offer, expected_payoff(best_offer), pitch }
-Cosa fa il programma
-1.	Usa una euristica di equità per la likelihood (o>=50 ⇒ più probabile accettazione).
-2.	Bayes aggiorna la probabilità di accettazione per ogni offer.
-3.	Calcola valore atteso e sceglie l’ARGMAX.
-4.	Genera una narrazione per presentare l’offerta.
+What the program does
+1.	It uses a fairness heuristic for the likelihood (o>=50 ⇒ acceptance more likely).
+2.	Bayes updates the probability of acceptance for each offer.
+3.	It computes the expected value and chooses the ARGMAX.
+4.	It generates a narrative to present the offer.
  
-8) Esempio: diagnosi medica (ABD + PROB + DED)
+8) Example: medical diagnosis (ABD + PROB + DED)
 let symptoms = { Fever, Cough };
 let med_model : Model = {
   facts = {},
@@ -713,67 +715,67 @@ let med_model : Model = {
   }
 };
 
-// Ipotesi che spiegano i sintomi osservati
+// Hypotheses that explain the observed symptoms
 let hyps = ABD(symptoms, med_model); // → { Flu, Covid }
 
-// Aggiorna probabilità con test rapido negativo su Covid
+// Update probabilities with a negative rapid Covid test
 let post_flu   = PROB(Flu,   0.10, Map{ TestNeg: 0.9 });
 let post_covid = PROB(Covid, 0.08, Map{ TestNeg: 0.95 });
 
-// Scegli trattamento guidato da linee guida
+// Choose a guideline-driven treatment
 let treat = if post_flu >= post_covid
             then DED(Guideline(Flu), symptoms)
             else DED(Guideline(Covid), symptoms);
  
-9) Esempio: verifica controfattuale legale (CF)
+9) Example: legal counterfactual check (CF)
 let case_world : Model = {
   facts = { Speeding, Rain, Crash },
   rules = { COND(Speeding & Rain, Crash) }
 };
 
-// Sarebbe avvenuto il Crash senza Speeding?
+// Would the Crash have happened without Speeding?
 let alt = CF(case_world, { not Speeding }, Crash);
-// alt : Belief[Fact] con confidenza ~ bassa ⇒ Speeding è causa necessaria
+// alt : Belief[Fact] with confidence ~ low ⇒ Speeding is a necessary cause
  
-10) Tracciabilità (spiegazioni)
-Qualsiasi primitiva può restituire un proof object. Con META ottieni una spiegazione:
+10) Traceability (explanations)
+Any primitive can return a proof object. With META you get an explanation:
 let concl = DED(accept_rule, { Offer(60) });
-let why   = META(concl);   // "Applicata regola accept_rule con premessa Offer(60)…"
+let why   = META(concl);   // "Applied rule accept_rule with premise Offer(60)…"
  
-11) Errori e tipi (checker minimo)
-•	DED richiede Rule compatibili con i Fact in input.
-•	PROB restituisce Num ∈ [0,1]; UPDATE normalizza sempre.
-•	CF lavora su copie di Model (immutabilità per default).
-•	ARGMAX richiede lista non vuota (altrimenti Option[T]).
+11) Errors and types (minimal checker)
+•	DED requires Rules compatible with the input Facts.
+•	PROB returns Num ∈ [0,1]; UPDATE always normalises.
+•	CF works on copies of Model (immutability by default).
+•	ARGMAX requires a non-empty list (otherwise Option[T]).
  
-12) Estendibilità (macro & moduli)
-•	Macro: definisci schemi di argomentazione alla Walton come funzioni:
+12) Extensibility (macros & modules)
+•	Macros: define Walton-style argumentation schemes as functions:
 let from_authority = \(claim:Fact, expert:Atom, domain:Atom) ->
   COND( Expert(expert, domain) & Says(expert, claim), claim );
-•	Moduli: import prob, import causal, import walton_schemes.
+•	Modules: import prob, import causal, import walton_schemes.
  
-13) Cheat-sheet rapido
-•	Deduzione: DED(rule, facts)
-•	Induzione: IND(cases)
-•	Abduzione: ABD(obs, model)
-•	Causale: CAU(x,y,data)
-•	Controfattuale: CF(world, change, query)
-•	Probabilità: PROB(event, prior, likelihoods)
-•	Analogia: ANA(src,tgt,hint)
-•	Sociale: SOC(agent)
-•	Narrazione: NAR(events, goal)
+13) Quick cheat sheet
+•	Deduction: DED(rule, facts)
+•	Induction: IND(cases)
+•	Abduction: ABD(obs, model)
+•	Causal: CAU(x,y,data)
+•	Counterfactual: CF(world, change, query)
+•	Probability: PROB(event, prior, likelihoods)
+•	Analogy: ANA(src,tgt,hint)
+•	Social: SOC(agent)
+•	Narrative: NAR(events, goal)
 •	Meta: META(proof)
-•	Scelta: ARGMAX(list, f)
+•	Choice: ARGMAX(list, f)
  
-14) Perché questo è “un linguaggio vero”
-•	Tipi e firme precise → composizione sicura.
-•	Semantica (forward-chaining, Bayes, copie di mondo per CF).
-•	Primitive ridotte ma espressive → scrivi negoziazione, diagnosi, casi legali.
-•	Trasparenza: META obbliga alla spiegabilità.
+14) Why this is “a real language”
+•	Precise types and signatures → safe composition.
+•	Semantics (forward-chaining, Bayes, world copies for CF).
+•	Few but expressive primitives → you can write negotiation, diagnosis, legal cases.
+•	Transparency: META enforces explainability.
  
 
 
-1️⃣ Grammatica Completa (BNF)
+1️⃣ Complete Grammar (BNF)
 <program>       ::= { <decl> | <stmt> }
 
 <decl>          ::= "let" <id> "=" <expr>
@@ -829,17 +831,17 @@ let from_authority = \(claim:Fact, expert:Atom, domain:Atom) ->
 <letter>        ::= "a" | ... | "z" | "A" | ... | "Z"
 <digit>         ::= "0" | ... | "9"
 <char>          ::= any printable character
-🔑 Nota: questa grammatica è minimalista ma Turing-complete: ha funzioni, applicazioni, strutture dati.
+🔑 Note: this grammar is minimalist but Turing-complete: it has functions, applications, data structures.
  
-2️⃣ Mini-interprete (Specifiche Operative)
-Definiamo come il linguaggio esegue codice.
-Pensa a un interprete funzionale, immutabile per default.
+2️⃣ Mini-interpreter (Operational Specifications)
+Let us define how the language executes code.
+Think of a functional interpreter, immutable by default.
  
-Ambiente di esecuzione
-•	Env: mappa da identificatori → valori.
-•	Value: può essere Num, Str, Bool, Atom, List, Set, Map, Lambda, Fact, Rule, Model, ecc.
+Execution environment
+•	Env: map from identifiers → values.
+•	Value: can be Num, Str, Bool, Atom, List, Set, Map, Lambda, Fact, Rule, Model, etc.
  
-Valutazione espressioni (semantica a piccoli passi)
+Expression evaluation (small-step semantics)
 ⟦x⟧env           = lookup(env, x)
 ⟦n⟧env           = n
 ⟦"text"⟧env      = "text"
@@ -855,72 +857,72 @@ Valutazione espressioni (semantica a piccoli passi)
 ⟦[a,b,c]⟧env     = List[⟦a⟧,⟦b⟧,⟦c⟧]
 ⟦Map{a:b}⟧env    = Map{⟦a⟧:⟦b⟧}
  
-Primitive (semantica intuitiva)
-Primitiva	Semantica
-DED(rules,facts)	Algoritmo di forward-chaining: applica rules finché non emergono nuovi fatti.
-IND(cases)	Analisi frequenze: genera Rule con confidence = countTrue / total.
-ABD(obs,model)	Ricerca abduzione: genera set minimo di ipotesi che spiegano obs sotto model.
-CAU(x,y,data)	Causalità: valuta dipendenza `P(y
-CF(world,change,query)	Copia world, applica change, esegue DED, calcola probabilità di query.
+Primitives (intuitive semantics)
+Primitive	Semantics
+DED(rules,facts)	Forward-chaining algorithm: applies rules until no new facts emerge.
+IND(cases)	Frequency analysis: generates a Rule with confidence = countTrue / total.
+ABD(obs,model)	Abductive search: generates a minimal set of hypotheses that explain obs under model.
+CAU(x,y,data)	Causality: evaluates dependence `P(y
+CF(world,change,query)	Copies world, applies change, runs DED, computes the probability of query.
 PROB(event,prior,likelihoods)	Bayes: posterior = (likelihood*prior)/Z.
-ANA(src,tgt)	Matching grafo: cerca isomorfismi tra src e tgt.
-SOC(agent)	Stima credenze dell’agente (usando priors e modelli).
-NAR(events,goal)	Genera frase narrativa semplice: "Because X,Y -> Goal".
-META(obj)	Genera spiegazione di derivazione (proof tree).
+ANA(src,tgt)	Graph matching: looks for isomorphisms between src and tgt.
+SOC(agent)	Estimates the agent’s beliefs (using priors and models).
+NAR(events,goal)	Generates a simple narrative sentence: "Because X,Y -> Goal".
+META(obj)	Generates an explanation of the derivation (proof tree).
  
-Passi di esecuzione
-1.	Parsing → AST secondo BNF.
-2.	Type-checking: verifica firme di funzioni, tipi dati (Num, Rule, ecc.).
-3.	Evaluation: modello funzionale immutabile, ambiente di binding, applicazione closure.
+Execution steps
+1.	Parsing → AST according to the BNF.
+2.	Type-checking: checks function signatures, data types (Num, Rule, etc.).
+3.	Evaluation: immutable functional model, binding environment, closure application.
 4.	Primitive reasoning engine:
-o	DED/IND/ABD usano algoritmi di logica proposizionale.
-o	CF crea copie di modelli (world) con modifiche.
-o	PROB implementa Bayes.
-5.	Output: valore o Belief[value,confidence].
+o	DED/IND/ABD use propositional logic algorithms.
+o	CF creates copies of models (world) with modifications.
+o	PROB implements Bayes.
+5.	Output: value or Belief[value,confidence].
  
-3️⃣ Manuale RPL (2 pagine)
+3️⃣ RPL Manual (2 pages)
  
-🌐 Cos’è RPL
-Reasoning Primitives Language è un linguaggio minimale per modellare ragionamenti umani come composizioni di primitive cognitive: deduzione, induzione, abduzione, causale, probabilistica, analogica, narrativa, sociale, meta.
-Obiettivo: descrivere algoritmi cognitivi complessi (negoziazioni, diagnosi, decisioni legali) con blocchi di base.
+🌐 What RPL is
+Reasoning Primitives Language is a minimal language for modelling human reasoning as compositions of cognitive primitives: deduction, induction, abduction, causal, probabilistic, analogical, narrative, social, meta.
+Goal: describe complex cognitive algorithms (negotiations, diagnoses, legal decisions) with basic building blocks.
  
-📦 Tipi principali
-Tipo	Significato
-Fact	Fatti atomici: Rain, Offer(60)
-Rule	Regola logica: COND(Premises, Conclusion)
-Model	Insieme di fatti e regole
-Agent	Credenze e priors di un attore
-Dist[T]	Distribuzione probabilistica su T
-Belief[T]	Valore + confidenza (0..1)
+📦 Main types
+Type	Meaning
+Fact	Atomic facts: Rain, Offer(60)
+Rule	Logical rule: COND(Premises, Conclusion)
+Model	Set of facts and rules
+Agent	Beliefs and priors of an actor
+Dist[T]	Probability distribution over T
+Belief[T]	Value + confidence (0..1)
  
-🛠️ Primitive cognitive (API)
-Nome	Firma	Descrizione
+🛠️ Cognitive primitives (API)
+Name	Signature	Description
 DED	(rules:Set[Rule], facts:Set[Fact]) → Set[Fact]	Forward chaining.
-IND	(cases:Set[Fact]) → Rule	Induzione.
-ABD	(obs:Set[Fact], model:Model) → Set[Hypothesis]	Diagnosi ipotesi plausibili.
-CAU	(x:Atom, y:Atom, data:Set[Fact]) → Belief[Link]	Causalità.
-CF	(world:Model, change:Set[Fact], query:Fact) → Belief[Fact]	Controfattuali.
+IND	(cases:Set[Fact]) → Rule	Induction.
+ABD	(obs:Set[Fact], model:Model) → Set[Hypothesis]	Diagnosis of plausible hypotheses.
+CAU	(x:Atom, y:Atom, data:Set[Fact]) → Belief[Link]	Causality.
+CF	(world:Model, change:Set[Fact], query:Fact) → Belief[Fact]	Counterfactuals.
 PROB	(event:Atom, prior:Num, likelihoods:Map[Atom,Num]) → Num	Bayes.
-ANA	(src:Model, tgt:Model, hint:Map[Atom,Atom]) → Map[Atom,Atom]	Analogia strutturale.
-SOC	(agent:Agent) → Belief[Map[Atom,Num]]	Teoria della mente.
-NAR	(events:List[Fact], goal:Atom) → Str	Narrazione persuasiva.
-META	(obj:any) → Str	Spiegazione proof.
+ANA	(src:Model, tgt:Model, hint:Map[Atom,Atom]) → Map[Atom,Atom]	Structural analogy.
+SOC	(agent:Agent) → Belief[Map[Atom,Num]]	Theory of mind.
+NAR	(events:List[Fact], goal:Atom) → Str	Persuasive narrative.
+META	(obj:any) → Str	Proof explanation.
  
-📜 Sintassi essenziale
-let x = expr;        // dichiarazione
-f(x, y);             // chiamata
+📜 Essential syntax
+let x = expr;        // declaration
+f(x, y);             // call
 if cond then a else b
-{ ... }              // blocco
+{ ... }              // block
 \ (a:Type) -> expr   // lambda
 
-// dati
+// data
 {a,b,c}              // set
-[a,b,c]              // lista
-Map{a:b}             // mappa
-COND(Prem,Conc)      // regola
+[a,b,c]              // list
+Map{a:b}             // map
+COND(Prem,Conc)      // rule
  
-🔥 Esempi End-to-End
-1. Negoziazione (bargain 100€)
+🔥 End-to-End Examples
+1. Negotiation (bargain over €100)
 let offers = [40,50,60];
 let prior_accept = Map{40:0.3, 50:0.7, 60:0.5};
 
@@ -931,7 +933,7 @@ let best = ARGMAX(offers, expected);
 let pitch = NAR([Fact("MutualBenefit")], Goal("AgreeFast"));
 { best, expected(best), pitch }
  
-2. Diagnosi medica
+2. Medical diagnosis
 let model = {
   facts = {},
   rules = {
@@ -943,7 +945,7 @@ let model = {
 let obs = {Fever, Cough};
 let hyps = ABD(obs, model);
  
-3. Analisi controfattuale legale
+3. Legal counterfactual analysis
 let world = {
   facts = {Speeding, Rain, Crash},
   rules = {COND(Speeding & Rain, Crash)}
@@ -951,22 +953,22 @@ let world = {
 let alt = CF(world, {not Speeding}, Crash);
 META(alt);
  
-4. Spiegazione (Meta)
+4. Explanation (Meta)
 let r = COND(Offer(60), Accept);
 let concl = DED({r}, {Offer(60)});
-META(concl);  // "Accept derivato applicando r a Offer(60)"
+META(concl);  // "Accept derived by applying r to Offer(60)"
  
-🧩 Architettura
-•	Interprete funzionale, immutabile.
-•	Motore logico: forward/backward chaining.
-•	Probabilità: Bayes discreto.
-•	Controfattuali: copia e muta Model.
-•	Analogico: matching di grafo.
+🧩 Architecture
+•	Functional, immutable interpreter.
+•	Logic engine: forward/backward chaining.
+•	Probability: discrete Bayes.
+•	Counterfactuals: copy and mutate Model.
+•	Analogical: graph matching.
 •	Meta: proof tree.
  
-🎯 Filosofia
-RPL è assembly cognitivo:
-•	Poche primitive universali (logiche, probabilistiche, analogiche, narrative).
-•	Algoritmi complessi = combinazioni (negoziazione, diagnosi, giuridico).
-•	Ogni espressione è spiegabile con META.
+🎯 Philosophy
+RPL is cognitive assembly:
+•	A few universal primitives (logical, probabilistic, analogical, narrative).
+•	Complex algorithms = combinations (negotiation, diagnosis, legal).
+•	Every expression can be explained with META.
 
