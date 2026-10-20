@@ -15,6 +15,7 @@
   <a href="#why">Why</a> ·
   <a href="#how-we-see-future-systems">Future systems</a> ·
   <a href="#procedure-promotion">Procedures</a> ·
+  <a href="#the-cli-can-be-sublated-too">Sublation</a> ·
   <a href="#nodes-that-write-themselves">Nodes</a> ·
   <a href="#build-and-test">Build</a> ·
   <a href="DESIGN.md">Design</a>
@@ -65,6 +66,16 @@ stateDiagram-v2
 Before working on a value, the agent checks a ladder (`whitesnake resolve`): an accepted result for the same question, then a trusted procedure, and only then its own reasoning. When every child of an episode has been resolved without the agent, `whitesnake collapse` merges them into one composed procedure and the agent call moves one level up. The share of work resolved without an agent is the store's main indicator.
 
 Procedures are perishable; knowledge is durable. When a new model can reproduce a procedure's regression cases on its own, the procedure is retired (sublation) and its past outputs stand. The reason to converge on deterministic procedures is reproducibility, auditability and a stable interface, not making up for what the model cannot do yet.
+
+## The CLI can be sublated too
+
+**WhiteSnake's own infrastructure is subject to the same principle.** The CLI embodies procedures for recording decisions, tracing provenance, finding affected results and managing corrections. As models become capable of performing those operations reliably, individual commands—and potentially the CLI itself—may become unnecessary. An agent might reconstruct a provenance chain directly from records or write valid records without a dedicated command. The capability remains available even when its implementation is retired.
+
+The lasting commitments are preserving evidence, making corrections traceable and allowing another person or agent to inherit the work. The command interface and the procedures that fulfil those commitments can evolve independently. A smaller deterministic validator may remain useful while other operations move to the agent; its continued use should also be justified by reliability, reproducibility and overall cost.
+
+Retirement should follow demonstrated capability: the replacement must pass the relevant behavioural tests, including error cases, and preserve the handoff test. Passing examples alone does not establish the same guarantees as deterministic checks. The comparison must also account for the effort and context spent invoking commands and maintaining records. Removing infrastructure can be progress when the agent preserves the required behaviour at a lower overall cost.
+
+This is a design principle for future evolution. In the current implementation, knowledge writes still go through the CLI and its validation and hook contracts.
 
 ## Nodes that write themselves
 
