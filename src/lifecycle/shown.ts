@@ -12,10 +12,11 @@ export interface ShownResult {
 export const DECISION_ID_RE = /\bdec_[0-9a-z]{12}\b/g;
 
 /**
- * Record that decisions were presented to the researcher during `turn`. The first time a decision is shown,
- * every procedure its producing episode used earns one shown use, which may promote it to trusted.
+ * Record that decisions were presented to the researcher during `turn`. The turn is required: a shown use is a
+ * persisted event on the decision, so repeating the command in the same turn changes nothing. The first time a
+ * decision is shown, every procedure its producing episode used earns one shown use, which may promote it to trusted.
  */
-export function markShown(store: LoadedStore, decisionIds: string[], turn: string | null): ShownResult {
+export function markShown(store: LoadedStore, decisionIds: string[], turn: string): ShownResult {
   const result: ShownResult = { shown: [], already: [], unknown: [], promoted: [] };
   for (const id of [...new Set(decisionIds)]) {
     const d = store.nodes.get(id);
@@ -23,12 +24,12 @@ export function markShown(store: LoadedStore, decisionIds: string[], turn: strin
       result.unknown.push(id);
       continue;
     }
-    if (turn && d.shown_at.includes(turn)) {
+    if (d.shown_at.includes(turn)) {
       result.already.push(id);
       continue;
     }
     const firstTime = d.shown_at.length === 0;
-    if (turn) updateNode(store.root, id, { shown_at: [...d.shown_at, turn] }, undefined, { store });
+    updateNode(store.root, id, { shown_at: [...d.shown_at, turn] }, undefined, { store });
     result.shown.push(id);
     if (firstTime && d.produced_by) {
       const ep = store.nodes.get(d.produced_by);

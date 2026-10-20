@@ -10,9 +10,28 @@ export function platformLabel(): string {
   return `${process.platform} ${release()} ${process.arch}`;
 }
 
+function numeric(v: unknown): number | null {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string" && /^\s*-?\d+(\.\d+)?\s*$/.test(v)) return Number(v);
+  return null;
+}
+
+/**
+ * Compare a regression case's expected value with what a procedure or a model produced, respecting types: an absent
+ * value (null or undefined) equals only an absent value, a boolean only a boolean, a number a number or a numeric
+ * string (command output is text), objects by structure, and text leniently on case and surrounding space.
+ */
 export function sameValue(a: unknown, b: unknown): boolean {
-  if (a !== null && b !== null && typeof a === "object" && typeof b === "object") return JSON.stringify(a) === JSON.stringify(b);
-  if (typeof a === "number" || typeof b === "number") return Number(a) === Number(b);
+  const absentA = a === null || a === undefined;
+  const absentB = b === null || b === undefined;
+  if (absentA || absentB) return absentA && absentB;
+  if (typeof a === "boolean" || typeof b === "boolean") return a === b;
+  if (typeof a === "object" || typeof b === "object") return typeof a === typeof b && JSON.stringify(a) === JSON.stringify(b);
+  if (typeof a === "number" || typeof b === "number") {
+    const na = numeric(a);
+    const nb = numeric(b);
+    return na !== null && nb !== null && na === nb;
+  }
   return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 }
 

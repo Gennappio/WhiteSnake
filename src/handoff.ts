@@ -131,6 +131,8 @@ export interface CheckReport {
   missing: string[];
   extra: string[];
   artifacts_missing: string[];
+  /** Artifacts present on disk whose content no longer matches the registered sha256. */
+  artifacts_changed: string[];
   validation_errors: number;
   validation_warnings: number;
   nodes: number;
@@ -144,7 +146,7 @@ export interface CheckReport {
  */
 export function checkStore(root: string, opts: { runProcedures?: boolean } = {}): CheckReport {
   const manifestPath = join(root, MANIFEST_FILE);
-  const report: CheckReport = { manifest_found: false, exported_at: null, history_included: null, mismatched: [], missing: [], extra: [], artifacts_missing: [], validation_errors: 0, validation_warnings: 0, nodes: 0, procedures: null, ok: false };
+  const report: CheckReport = { manifest_found: false, exported_at: null, history_included: null, mismatched: [], missing: [], extra: [], artifacts_missing: [], artifacts_changed: [], validation_errors: 0, validation_warnings: 0, nodes: 0, procedures: null, ok: false };
   if (existsSync(manifestPath)) {
     const m = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
     report.manifest_found = true;
@@ -162,7 +164,13 @@ export function checkStore(root: string, opts: { runProcedures?: boolean } = {})
   for (const n of store.nodes.values()) {
     if (n.type === "artifact" && !existsSync(join(root, n.path))) report.artifacts_missing.push(n.path);
   }
-  const issues = validateStore(store);
+  const issues = validateStore(store, { artifacts: "full" });
+  report.artifacts_changed = issues
+    .filter((i) => i.code === "E_ARTIFACT_HASH")
+    .map((i) => {
+      const n = i.id ? store.nodes.get(i.id) : undefined;
+      return n && n.type === "artifact" ? n.path : (i.id ?? "unknown");
+    });
   // Missing artifacts are reported separately: an export may legitimately exclude bulky files.
   report.validation_errors = errorsOf(issues).filter((i) => i.code !== "E_ARTIFACT_MISSING").length;
   report.validation_warnings = warningsOf(issues).length;

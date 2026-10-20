@@ -149,6 +149,22 @@ const corruptions: { name: string; code: string; apply: (dir: string) => void }[
       writeFileSync(p, readFileSync(p, "utf8").replace("parent: null", "parent: ep_p01nanal0000"));
     },
   },
+  {
+    name: "artifact whose content changed since registration",
+    code: "E_ARTIFACT_HASH",
+    apply: (dir) => {
+      const p = join(dir, "corpus", "P01.md");
+      writeFileSync(p, `${readFileSync(p, "utf8")}\nA sentence added after the artifact was registered.\n`);
+    },
+  },
+  {
+    name: "procedure counter above its recorded shown events",
+    code: "E_COUNTER_MISMATCH",
+    apply: (dir) => {
+      const p = join(dir, "knowledge", "procedures", "proc_tablecount01.md");
+      writeFileSync(p, readFileSync(p, "utf8").replace("shown_uses: 1", "shown_uses: 5"));
+    },
+  },
 ];
 
 for (const c of corruptions) {
@@ -176,6 +192,9 @@ test("add, set and link write valid records and reject bad references", () => {
     assert.equal(ev.status, 0, ev.stdout);
     const evId = (ev.json as { id: string; hash: string }).id;
     assert.match((ev.json as { hash: string }).hash, /^[0-9a-f]{64}$/);
+    const wrongHash = runCli(["--json", "add", "artifact", "--json-in", JSON.stringify({ title: "P02 again", path: "corpus/P02.md", sha256: "0".repeat(64) })], { cwd: dir });
+    assert.equal(wrongHash.status, 2, wrongHash.stdout);
+    assert.match(wrongHash.stdout, /E_ARTIFACT_HASH/);
     const bad = runCli(["--json", "add", "decision", "--json-in", JSON.stringify({ title: "x", kind: "annotation", claim: "c", qualifier: { confidence: 0.5 }, fragility: "mechanical", target: { unit: "P02", field: "n_randomized_total", value: 84 }, data: ["ev_nope00000000"], warrant: ["dec_p01nrand0000"] })], { cwd: dir });
     assert.equal(bad.status, 2);
     assert.match(bad.stdout, /E_DANGLING_EDGE/);

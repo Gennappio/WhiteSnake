@@ -246,9 +246,10 @@ program
 
 program
   .command("validate")
-  .description("check every record: schema, ids, edges, hashes, states. Exit 2 on errors; warnings do not fail")
-  .action(() => {
-    const all = validateStore(loadStore(root()));
+  .description("check every record: schema, ids, edges, hashes, states, artifacts. Exit 2 on errors; warnings do not fail")
+  .option("--full", "re-read every artifact file instead of trusting the size and mtime cache")
+  .action((opts: { full?: boolean }) => {
+    const all = validateStore(loadStore(root()), { artifacts: opts.full ? "full" : "cached" });
     const errors = errorsOf(all);
     const warnings = warningsOf(all);
     const line = (i: (typeof all)[number]) => `${i.code}\t${i.file ?? i.id ?? ""}\t${i.path ?? ""}\t${i.message}`;
@@ -427,7 +428,9 @@ program
   .option("--turn <id>", "override the current turn")
   .action((ids: string[], opts: { turn?: string }) => {
     const r = root();
-    const result = markShown(loadStore(r), ids, opts.turn ?? currentTurn(r));
+    const turn = opts.turn ?? currentTurn(r);
+    if (!turn) throw new CliError("no current turn: `shown` records an event, so it needs the turn it happened in. Run it inside a session (the UserPromptSubmit hook sets the current turn) or pass --turn <turn id>.", 1);
+    const result = markShown(loadStore(r), ids, turn);
     print(
       [`shown: ${result.shown.join(", ") || "none"}`, result.already.length ? `already shown this turn: ${result.already.join(", ")}` : "", result.unknown.length ? `unknown: ${result.unknown.join(", ")}` : "", result.promoted.length ? `promoted to trusted: ${result.promoted.join(", ")}` : ""].filter(Boolean).join("\n"),
       result,
@@ -555,6 +558,7 @@ program
         `${r.ok ? "ok" : "PROBLEMS"}: ${r.nodes} nodes, ${r.validation_errors} validation errors, ${r.validation_warnings} warnings`,
         r.manifest_found ? `manifest from ${r.exported_at} (history ${r.history_included ? "included" : "excluded"}): ${r.mismatched.length} mismatched, ${r.missing.length} missing, ${r.extra.length} new files` : "no manifest (not an export)",
         r.artifacts_missing.length ? `artifacts missing: ${r.artifacts_missing.join(", ")}` : "all artifacts present",
+        r.artifacts_changed.length ? `artifacts changed since registration: ${r.artifacts_changed.join(", ")}` : "present artifacts match their registered sha256",
         r.procedures ? `procedures re-run: ${r.procedures.checked.length}, passed ${r.procedures.passed.length}, suspended ${r.procedures.suspended.length}${r.procedures.suspended.length ? `: ${r.procedures.suspended.map((s) => s.id).join(", ")}` : ""}` : "procedures not re-run",
         ...r.mismatched.map((f) => `  mismatched ${f}`),
         ...r.missing.map((f) => `  missing ${f}`),

@@ -315,7 +315,8 @@ export function runHook(event: string, input: HookInput): HookOutput {
           // Decisions the agent listed in its final message count as shown to the researcher.
           const finalText = lastAssistantText(input.transcript_path);
           const ids = finalText ? decisionIdsIn(finalText) : [];
-          if (ids.length) shown = markShown(loadStore(root), ids, currentTurn(root));
+          const turn = currentTurn(root);
+          if (ids.length) shown = turn ? markShown(loadStore(root), ids, turn) : { skipped: ids, reason: "no current turn: the UserPromptSubmit hook did not run in this session" };
         }
         buildIndex(root);
         // By result, not by command: files under knowledge/ that changed since the last check without a CLI receipt.

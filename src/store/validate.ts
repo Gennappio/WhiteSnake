@@ -1,8 +1,7 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { REMOTE_SUFFIX, edgeSpec, extractEdges } from "../schema/edges.js";
 import type { NodeType } from "../schema/ids.js";
 import { canonicalBody, sha256 } from "../util.js";
+import { artifactIssues, type ArtifactCheckMode } from "./artifacts.js";
 import type { LoadedStore, ValidationIssue } from "./files.js";
 
 /** Graph-level checks on top of the file-level issues collected by loadStore. */
@@ -14,9 +13,15 @@ export function warningsOf(issues: ValidationIssue[]): ValidationIssue[] {
   return issues.filter((i) => i.severity === "warning");
 }
 
-export function validateStore(store: LoadedStore): ValidationIssue[] {
+export interface ValidateOptions {
+  /** How artifact files are compared with their registered sha256: trust a size/mtime cache, re-read every file, or skip. */
+  artifacts?: ArtifactCheckMode | "skip";
+}
+
+export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): ValidationIssue[] {
   const issues: ValidationIssue[] = [...store.issues];
   const ids = [...store.nodes.keys()].sort();
+  const shownUsesBound = shownUsesPerProcedure(store);
 
   for (const id of ids) {
     const node = store.nodes.get(id)!;
@@ -74,15 +79,14 @@ export function validateStore(store: LoadedStore): ValidationIssue[] {
         }
         break;
       }
-      case "artifact":
-        if (!existsSync(join(store.root, node.path))) {
-          issues.push({ code: "E_ARTIFACT_MISSING", id, file, path: "path", message: `${id} refers to ${node.path}, which does not exist` });
-        }
-        break;
       case "procedure": {
         const last = node.history[node.history.length - 1];
         if (last && last.to !== node.state) {
           issues.push({ code: "E_STATE_MISMATCH", id, file, path: "state", message: `${id}.state is ${node.state} but the last history entry says ${last.to}` });
+        }
+        const bound = shownUsesBound.get(id) ?? 0;
+        if (node.counters.shown_uses > bound) {
+          issues.push({ code: "E_COUNTER_MISMATCH", id, file, path: "counters.shown_uses", message: `${id}.counters.shown_uses is ${node.counters.shown_uses} but only ${bound} shown decision(s) were produced with it; shown uses derive from recorded shown events` });
         }
         break;
       }
@@ -92,6 +96,7 @@ export function validateStore(store: LoadedStore): ValidationIssue[] {
   }
 
   issues.push(...cycleIssues(store));
+  if (opts.artifacts !== "skip") issues.push(...artifactIssues(store, opts.artifacts ?? "cached"));
 
   for (const i of issues) if (!i.severity) i.severity = "error";
   return issues.sort((a, b) => (a.file ?? "").localeCompare(b.file ?? "") || a.code.localeCompare(b.code) || (a.path ?? "").localeCompare(b.path ?? ""));
@@ -172,4 +177,19 @@ function findCycles(adjacency: Map<string, { dst: string; rel: string }[]>): { p
     }
   }
   return found;
+}
+
+/** Upper bound of a procedure's shown uses: the decisions with a recorded shown event whose episode used it. */
+function shownUsesPerProcedure(store: LoadedStore): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const n of store.nodes.values()) {
+    if (n.type !== "decision" || n.shown_at.length === 0 || !n.produced_by) continue;
+    const ep = store.nodes.get(n.produced_by);
+    if (!ep || ep.type !== "episode") continue;
+    for (const used of ep.uses) {
+      const p = store.nodes.get(used);
+      if (p && p.type === "procedure") out.set(used, (out.get(used) ?? 0) + 1);
+    }
+  }
+  return out;
 }

@@ -80,12 +80,20 @@ test("a correction suspends the procedure, supersedes the decision when a value 
     const ep = runCli(["--json", "get", a.ep], { cwd: dir }).json as { outcome: string };
     assert.equal(ep.outcome, "corrected");
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+    const reuse = runCli(["--json", "resolve", "--unit", "P02", "--field", "n_analyzed_total"], { cwd: dir }).json as { mode: string; decision: string };
+    assert.equal(reuse.mode, "cached", "the researcher's replacement is active and is what gets reused");
+    assert.equal(reuse.decision, result.replacement);
 
     // Correcting a criterion flags every annotation that cites it, including the fixture's P01 decision.
     const crit = runCli(["--json", "correct", "dec_crit0analyz1", "--reason", "we now count randomised"], { cwd: dir }).json as { needs_review: string[]; suspended: string[] };
     assert.ok(crit.needs_review.includes("dec_p01nanal0000"));
     assert.ok(crit.needs_review.includes(result.replacement!));
     assert.deepEqual(crit.suspended, []);
+    // The ladder never offers a decision under review for reuse.
+    const review = runCli(["--json", "resolve", "--unit", "P01", "--field", "n_analyzed_total"], { cwd: dir }).json as { mode: string; decision: string; advice: string };
+    assert.equal(review.mode, "review");
+    assert.equal(review.decision, "dec_p01nanal0000");
+    assert.match(review.advice, /supersedes dec_p01nanal0000/);
     const k = runCli(["--json", "kpi"], { cwd: dir }).json as { procedures: { by_state: Record<string, number> }; decisions: { by_status: Record<string, number> }; transitions: { to: string }[] };
     assert.equal(k.procedures.by_state["suspended"], 1);
     assert.ok((k.decisions.by_status["needs_review"] ?? 0) >= 2);
@@ -173,5 +181,25 @@ test("shown uses are not counted for suspended or retired procedures", () => {
   } finally {
     retiredCase.cleanup();
     suspendedCase.cleanup();
+  }
+});
+
+test("shown needs the turn it happened in, and repeating it changes nothing", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const noTurn = runCli(["--json", "shown", "dec_p01outcm0000"], { cwd: dir });
+    assert.equal(noTurn.status, 1);
+    assert.match(noTurn.stdout + noTurn.stderr, /current turn/);
+    const withTurn = runCli(["--json", "shown", "dec_p01outcm0000", "--turn", "turn_claude_toyseed0001_0001"], { cwd: dir });
+    assert.equal(withTurn.status, 0, withTurn.stdout);
+    assert.deepEqual((withTurn.json as { shown: string[] }).shown, ["dec_p01outcm0000"]);
+    const repeat = runCli(["--json", "shown", "dec_p01outcm0000", "--turn", "turn_claude_toyseed0001_0001"], { cwd: dir });
+    assert.deepEqual((repeat.json as { already: string[] }).already, ["dec_p01outcm0000"]);
+    const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
+    assert.equal(proc.state, "provisional");
+    assert.equal(proc.counters.shown_uses, 1, "a decision shown before earns nothing twice");
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
   }
 });

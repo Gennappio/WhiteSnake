@@ -124,3 +124,32 @@ test("recheck retires a procedure the model alone reproduces and keeps one it do
     cleanup();
   }
 });
+
+test("gc --apply refuses without git and commits uncommitted records before compacting them", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const first = plantGarbage(dir);
+    assert.equal(runCli(["--json", "gc", "--cold-after", "0"], { cwd: dir }).status, 0, "the plan is available without git");
+    const refused = runCli(["--json", "gc", "--apply", "--cold-after", "0"], { cwd: dir });
+    assert.equal(refused.status, 1);
+    assert.match(refused.stdout + refused.stderr, /git repository/);
+    assert.ok(existsSync(join(dir, "knowledge", "episodes", `${first.ep}.md`)), "nothing was removed");
+    gitInit(dir);
+    const second = plantGarbage(dir);
+    assert.ok(git(dir, "status", "--porcelain").includes(second.ep), "the second attempt is not committed yet");
+    const apply = runCli(["--json", "gc", "--apply", "--cold-after", "0"], { cwd: dir });
+    assert.equal(apply.status, 0, apply.stdout);
+    const { plan, result } = apply.json as { plan: { sweep: { id: string }[]; templates: { ids: string[] }[] }; result: { swept: number; templates: string[] } };
+    assert.equal(result.swept, 4);
+    assert.equal(new Set(plan.sweep.map((s) => s.id)).size, 4, "two subtrees compacted together: each record is swept once");
+    assert.equal(plan.templates.length, 2);
+    assert.equal(plan.templates.flatMap((t) => t.ids).length, 4, "no record is listed in two templates");
+    const tpl = runCli(["--json", "get", result.templates[0]!], { cwd: dir }).json as { compacted_from: { commit: string } };
+    assert.equal(git(dir, "log", "-1", "--format=%s", tpl.compacted_from.commit), "store: before gc");
+    assert.match(git(dir, "show", `${tpl.compacted_from.commit}:knowledge/episodes/${second.ep}.md`), /abandoned/);
+    assert.equal(git(dir, "status", "--porcelain"), "");
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
+  }
+});
