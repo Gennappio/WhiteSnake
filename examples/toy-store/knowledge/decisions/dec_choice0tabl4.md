@@ -24,6 +24,7 @@ answers: null
 produced_by: null
 caused_by: turn_claude_toyseed0001_0001
 shown_at: []
+threshold: null
 ---
 
 Methodological choice made while annotating P01; tables are structured and less prone to rounding in prose.

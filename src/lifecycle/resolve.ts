@@ -8,6 +8,8 @@ export interface Resolution {
   decision_status: string | null;
   trusted_procedures: NodeRow[];
   provisional_procedures: NodeRow[];
+  /** A rewrite running alongside the procedure it means to replace: both are live, the new one lists the old in supersedes. */
+  shadow: { old: string; new: string; new_state: string }[];
   precedents: PrecedentRow[];
   advice: string;
 }
@@ -25,6 +27,21 @@ export function resolve(db: DatabaseSync, unit: string | undefined, field: strin
   const trusted = listNodes(db, { type: "procedure", status: "trusted" });
   const provisional = listNodes(db, { type: "procedure", status: "provisional" });
   const precedents = text.trim() ? precedent(db, text, { limit: 5 }) : [];
+  const liveIds = new Set([...trusted, ...provisional].map((r) => r.id));
+  const shadow: Resolution["shadow"] = [];
+  for (const row of [...trusted, ...provisional]) {
+    const p = getNode(db, row.id);
+    if (!p || p.type !== "procedure") continue;
+    for (const old of p.supersedes) if (liveIds.has(old)) shadow.push({ old, new: p.id, new_state: p.state });
+  }
+  shadow.sort((a, b) => a.new.localeCompare(b.new) || a.old.localeCompare(b.old));
+  const shadowAdvice = shadow
+    .map((s) =>
+      s.new_state === "trusted"
+        ? `${s.new} is trusted and supersedes ${s.old}: run \`whitesnake procedure supersede ${s.new}\` to retire ${s.old} from this ladder once the comparison shows no regression.`
+        : `${s.new} (provisional) is meant to replace ${s.old}: run both on this input, list both in the episode's uses and show one value; if they disagree keep ${s.old}'s value, record ${s.new}'s output as rebuttal evidence and raise a question.`,
+    )
+    .join(" ");
   const ladder = trusted.length
     ? `Run a trusted procedure if its applicability matches, record its output as execution evidence and list it in the episode's uses: ${trusted.map((p) => p.id).join(", ")}.`
     : provisional.length
@@ -42,5 +59,6 @@ export function resolve(db: DatabaseSync, unit: string | undefined, field: strin
     mode = trusted.length ? "code" : "agent";
     advice = decision && status === "proposed" ? `A proposed decision ${decision} exists for ${unit}/${field} but was never accepted by the researcher: check it rather than reuse it, then confirm it or supersede it. ${ladder}` : ladder;
   }
-  return { mode, decision, decision_status: status, trusted_procedures: trusted, provisional_procedures: provisional, precedents, advice };
+  if (shadowAdvice) advice = `${advice} ${shadowAdvice}`;
+  return { mode, decision, decision_status: status, trusted_procedures: trusted, provisional_procedures: provisional, shadow, precedents, advice };
 }

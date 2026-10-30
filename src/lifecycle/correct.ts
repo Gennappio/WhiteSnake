@@ -69,10 +69,10 @@ export function correctDecision(store: LoadedStore, decisionId: string, reason: 
       updateNode(store.root, ep.id, { outcome: "corrected" }, undefined, { store });
       for (const used of ep.uses) {
         const u = store.nodes.get(used);
-        if (u && u.type === "procedure" && u.state !== "suspended" && u.state !== "retired") {
-          recordCorrection(store, used, reason, turn);
-          suspended.push(used);
-        }
+        if (!u || u.type !== "procedure" || u.state === "suspended") continue;
+        // The correction is counted against every procedure behind the value; only one still in use is suspended by it.
+        const after = recordCorrection(store, used, reason, turn);
+        if (after.state === "suspended") suspended.push(used);
       }
     }
   }

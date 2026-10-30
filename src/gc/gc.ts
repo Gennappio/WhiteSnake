@@ -1,24 +1,35 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, rmSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { newId } from "../schema/ids.js";
-import type { Episode, Evidence, Node, Template } from "../schema/nodes.js";
+import type { Episode, Evidence, Node, Procedure, Template } from "../schema/nodes.js";
 import { loadStore, nodePath, writeNodeFile, type LoadedStore } from "../store/files.js";
 import { recordDelete } from "../store/journal.js";
+import { updateNode } from "../store/ops.js";
 import { errorsOf, validateStore } from "../store/validate.js";
 import { CliError, collapseWs, nowIso, truncate } from "../util.js";
 
 /**
  * Garbage collection as compaction. Live roots are the records a reader may still rely on: decisions that are not
- * superseded or retired, procedures that are not retired, questions, sessions, turns, artifacts, templates, and every
- * episode that produced or promoted something live, or that is the parent of a live episode. A closed, cold episode
- * subtree that nothing live needs is compacted into a `template` node (summary, locators, negative examples, the ids
- * it replaces, the commit that still holds the raw files) and swept from the working tree. Git history keeps the raw.
+ * superseded or retired, procedures still in use (not retired or superseded), questions, sessions, turns, artifacts,
+ * templates, and every episode that produced or promoted something live, or that is the parent of a live episode.
+ * A closed, cold episode subtree that nothing live needs is compacted into a `template` node (summary, locators,
+ * negative examples, the ids it replaces, the commit that still holds the raw files) and swept from the working tree.
+ * The code of a superseded or retired procedure is archived the same way once it is cold: the record stays, with the
+ * commit that holds the code, because every result it produced still points at it. Git history keeps the raw.
  */
 export interface SweepItem {
   id: string;
   type: string;
   title: string;
+  reason: string;
+}
+
+export interface CodeArchiveItem {
+  id: string;
+  entrypoint: string;
+  /** Paths removed from the working tree: the entrypoint's directory when no other procedure lives there, else the file. */
+  remove: string[];
   reason: string;
 }
 
@@ -28,6 +39,16 @@ export interface GcPlan {
   live: number;
   sweep: SweepItem[];
   templates: { title: string; ids: string[]; negative_examples: number }[];
+  code_archive: CodeArchiveItem[];
+}
+
+/** Evidence a record still cites: a decision's data, backing or rebuttal, or a procedure's justification. */
+function citedByRecord(nodes: Map<string, Node>, evidenceId: string): boolean {
+  for (const d of nodes.values()) {
+    if (d.type === "decision" && (d.data.includes(evidenceId) || d.backing.includes(evidenceId) || d.rebuttal.evidence.includes(evidenceId))) return true;
+    if (d.type === "procedure" && d.justification?.evidence.includes(evidenceId)) return true;
+  }
+  return false;
 }
 
 function sessionOrder(store: LoadedStore): Map<string, number> {
@@ -51,15 +72,14 @@ export function planGc(store: LoadedStore, opts: { coldAfter?: number } = {}): G
   const needed = new Set<string>();
   for (const n of nodes.values()) {
     if (n.type === "decision" && n.status !== "superseded" && n.status !== "retired" && n.produced_by) needed.add(n.produced_by);
-    if (n.type === "procedure" && n.state !== "retired") {
+    if (n.type === "procedure" && n.state !== "retired" && n.state !== "superseded") {
       for (const e of n.promoted_from) needed.add(e);
       if (n.produced_by) needed.add(n.produced_by);
     }
     if (n.type === "question" && n.status === "open" && n.raised_in) needed.add(n.raised_in);
-    if (n.type === "evidence" && n.produced_by) {
-      // evidence cited by a live decision keeps its episode
-      const cited = [...nodes.values()].some((d) => d.type === "decision" && d.status !== "superseded" && d.status !== "retired" && (d.data.includes(n.id) || d.backing.includes(n.id) || d.rebuttal.evidence.includes(n.id)));
-      if (cited) needed.add(n.produced_by);
+    if (n.type === "evidence" && n.produced_by && citedByRecord(nodes, n.id)) {
+      // cited evidence keeps its episode
+      needed.add(n.produced_by);
     }
   }
 
@@ -98,15 +118,37 @@ export function planGc(store: LoadedStore, opts: { coldAfter?: number } = {}): G
     const treeIds = new Set(tree.map((e) => e.id));
     for (const n of nodes.values()) {
       if (n.type !== "evidence" || !n.produced_by || !treeIds.has(n.produced_by) || swept.has(n.id)) continue;
-      const cited = [...nodes.values()].some((d) => d.type === "decision" && d.status !== "superseded" && d.status !== "retired" && (d.data.includes(n.id) || d.backing.includes(n.id) || d.rebuttal.evidence.includes(n.id)));
-      if (cited) continue;
+      if (citedByRecord(nodes, n.id)) continue;
       ids.push(n.id);
       swept.add(n.id);
       sweep.push({ id: n.id, type: "evidence", title: n.title, reason: "produced inside a swept subtree and cited by nothing live" });
     }
     templates.push({ title: `Compacted: ${rootEp.title}`, ids, negative_examples: negatives });
   }
-  return { cold_after_sessions: coldAfter, sessions: order.size, live: nodes.size - swept.size, sweep, templates };
+
+  // Code of superseded or retired procedures: cold when the transition is old enough, archived with its commit.
+  const isFile = (rel: string) => {
+    const abs = join(store.root, rel);
+    return existsSync(abs) && statSync(abs).isFile();
+  };
+  const archivable = [...nodes.values()].filter((n): n is Procedure => n.type === "procedure" && (n.state === "superseded" || n.state === "retired") && n.code_hash !== null && n.code_archived === null && isFile(n.entrypoint));
+  const coldProcedure = (p: Procedure): boolean => {
+    const last = p.history[p.history.length - 1];
+    const s = sessionOfTurn(store, last?.caused_by ?? null);
+    if (s === null) return true;
+    const idx = order.get(s);
+    return idx !== undefined && latest - idx >= coldAfter;
+  };
+  const candidates = archivable.filter(coldProcedure);
+  const candidateIds = new Set(candidates.map((p) => p.id));
+  const code_archive: CodeArchiveItem[] = candidates.map((p) => {
+    const dir = dirname(p.entrypoint);
+    const under = (f: string) => f === dir || f.startsWith(`${dir}/`);
+    const sharers = [...nodes.values()].filter((n): n is Procedure => n.type === "procedure" && n.id !== p.id && !candidateIds.has(n.id) && [n.entrypoint, ...n.regression_cases].some(under));
+    const wholeDir = dir !== "." && dir !== "" && dir !== "procedures" && sharers.length === 0;
+    return { id: p.id, entrypoint: p.entrypoint, remove: [wholeDir ? dir : p.entrypoint], reason: `${p.state} procedure whose code is cold; the record stays and git keeps the code` };
+  });
+  return { cold_after_sessions: coldAfter, sessions: order.size, live: nodes.size - swept.size, sweep, templates, code_archive };
 }
 
 function headCommit(root: string): string {
@@ -118,12 +160,14 @@ function headCommit(root: string): string {
 export interface GcResult {
   swept: number;
   templates: string[];
+  /** Procedures whose code left the working tree in this run. */
+  code_archived: string[];
   commit: string | null;
 }
 
 export function applyGc(root: string, plan: GcPlan): GcResult {
   const store = loadStore(root);
-  if (!plan.sweep.length) return { swept: 0, templates: [], commit: null };
+  if (!plan.sweep.length && !plan.code_archive.length) return { swept: 0, templates: [], code_archived: [], commit: null };
   if (!existsSync(join(root, ".git"))) {
     throw new CliError("gc --apply needs a git repository: the raw records of a compacted subtree survive only in git history. Put the store under git and commit it first, or use the plan without --apply.", 1);
   }
@@ -169,12 +213,19 @@ export function applyGc(root: string, plan: GcPlan): GcResult {
     rmSync(swept, { force: true });
     recordDelete(root, swept);
   }
+  // The record is updated before its code goes: it must say where the code lives before the file is missing.
+  const archived: string[] = [];
+  for (const item of plan.code_archive) {
+    updateNode(root, item.id, { code_archived: { commit, at: nowIso(), removed: item.remove } }, undefined, { store });
+    for (const rel of item.remove) rmSync(join(root, rel), { recursive: true, force: true });
+    archived.push(item.id);
+  }
   const after = loadStore(root);
   const errors = errorsOf(validateStore(after));
   if (errors.length) {
     // Never leave an invalid store: restore from git when possible.
     if (commit) {
-      execFileSync("git", ["-C", root, "checkout", "--", "knowledge"], { stdio: "ignore" });
+      execFileSync("git", ["-C", root, "checkout", "--", "."], { stdio: "ignore" });
       for (const id of created) {
         rmSync(nodePath(root, "template", id), { force: true });
         recordDelete(root, nodePath(root, "template", id));
@@ -185,8 +236,8 @@ export function applyGc(root: string, plan: GcPlan): GcResult {
   let newCommit: string | null = null;
   if (commit) {
     execFileSync("git", ["-C", root, "add", "-A"], { stdio: "ignore" });
-    execFileSync("git", ["-C", root, "commit", "-q", "-m", `store: gc compacted ${plan.sweep.length} records into ${created.length} template(s)`], { stdio: "ignore" });
+    execFileSync("git", ["-C", root, "commit", "-q", "-m", `store: gc compacted ${plan.sweep.length} records into ${created.length} template(s)${archived.length ? `, archived the code of ${archived.length} procedure(s)` : ""}`], { stdio: "ignore" });
     newCommit = headCommit(root);
   }
-  return { swept: plan.sweep.length, templates: created, commit: newCommit };
+  return { swept: plan.sweep.length, templates: created, code_archived: archived, commit: newCommit };
 }

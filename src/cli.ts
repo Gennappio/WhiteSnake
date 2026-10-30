@@ -15,11 +15,14 @@ import { NODE_TYPES, TYPE_DIR, type NodeType } from "./schema/ids.js";
 import { CONFIG_FILE, ConfigSchema, findStoreRoot, writeConfig } from "./store/config.js";
 import { resolveWorkingStore, type WorkingStore } from "./store/context.js";
 import { loadStore, serializeNode } from "./store/files.js";
-import { createNode, currentTurn, lastWarnings, linkNodes, readNode, updateNode } from "./store/ops.js";
+import { codeHashOf, createNode, currentTurn, lastWarnings, linkNodes, readNode, updateNode } from "./store/ops.js";
 import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
 import { correctDecision } from "./lifecycle/correct.js";
 import { kpi, renderKpi } from "./lifecycle/kpi.js";
 import { reinstate, retire } from "./lifecycle/procedures.js";
+import { compareProcedures, renderCompare } from "./lifecycle/compare.js";
+import { renderScorecard, scorecard } from "./lifecycle/scorecard.js";
+import { supersedeProcedure } from "./lifecycle/supersede.js";
 import { resolve as resolveLadder } from "./lifecycle/resolve.js";
 import { markShown } from "./lifecycle/shown.js";
 import { renderReview } from "./render/html.js";
@@ -503,6 +506,58 @@ program
         const result = recheckProcedure(loadStore(r), id, { harness: opts.harness as RunnerHarness, model: opts.model ?? null, retireOnPass: !!opts.retire });
         print([`${result.procedure}: ${result.cases.filter((c) => c.pass).length}/${result.cases.length} cases reproduced by ${result.model ?? opts.harness} alone${result.retired ? "; procedure retired" : ""}`, ...result.cases.map((c) => `  ${c.pass ? "pass" : "FAIL"}\t${c.file}\texpected ${JSON.stringify(c.expected)}\tgot ${JSON.stringify(c.got)}`)].join("\n"), result);
       }),
+  )
+  .addCommand(
+    new Command("compare")
+      .argument("<old>")
+      .argument("<new>")
+      .option("--episode <id>", "episode the comparison belongs to")
+      .option("--no-record", "do not record the report as execution evidence")
+      .description("replay everything recorded about <old> with <new>: never worse on an accepted case, better on at least one?")
+      .action((oldId: string, newId: string, opts: { episode?: string; record: boolean }) => {
+        const r = root();
+        const report = compareProcedures(loadStore(r), oldId, newId, { episode: opts.episode ?? null, record: opts.record });
+        printWarnings();
+        print(renderCompare(report), report);
+      }),
+  )
+  .addCommand(
+    new Command("supersede")
+      .argument("<new>")
+      .option("--old <id>", "which of the procedures <new> supersedes to retire from the ladder, when it lists several")
+      .option("--episode <id>", "episode the replacement belongs to")
+      .description("replace the procedure <new> supersedes: needs trust, dominance on every recorded case and every declared threshold")
+      .action((newId: string, opts: { old?: string; episode?: string }) => {
+        const r = root();
+        const result = supersedeProcedure(loadStore(r), newId, { old: opts.old, episode: opts.episode ?? null });
+        printWarnings();
+        print(`${result.old} is now superseded by ${result.new}: ${result.report.improvement.join("; ")}\ndecision ${result.decision}, comparison ${result.comparison ?? "not recorded"}`, result);
+      }),
+  )
+  .addCommand(
+    new Command("scorecard")
+      .argument("<id>")
+      .description("measurements derived from the records: use, shown and corrected outputs, regression checks, latency per machine, thresholds")
+      .action((id: string) => {
+        const card = scorecard(loadStore(root()), id);
+        print(renderScorecard(card), card);
+      }),
+  )
+  .addCommand(
+    new Command("rehash")
+      .argument("<id>")
+      .description("register the entrypoint's current code hash; allowed only while nothing has used the procedure")
+      .action((id: string) => {
+        const r = root();
+        const store = loadStore(r);
+        const p = store.nodes.get(id);
+        if (!p || p.type !== "procedure") throw new CliError(`${id} is not a procedure`, 1);
+        const used = [...store.nodes.values()].filter((n) => (n.type === "episode" && n.uses.includes(id)) || (n.type === "decision" && n.depends_on.includes(id)) || (n.type === "procedure" && n.uses.includes(id)));
+        if (used.length) throw new CliError(`${id} was used by ${used.map((n) => n.id).join(", ")}: code that produced a result never changes. Register the new version as a new procedure with "supersedes": ["${id}"] and a justification.`, 2);
+        const hash = codeHashOf(r, p.entrypoint);
+        const node = updateNode(r, id, { code_hash: hash }, undefined, { store });
+        print(`${id} code_hash ${hash ?? "null"}`, node);
+      }),
   );
 
 program
@@ -638,11 +693,19 @@ program
     const r = root();
     const plan = planGc(loadStore(r), { coldAfter: opts.coldAfter !== undefined ? Number(opts.coldAfter) : undefined });
     if (!opts.apply) {
-      print([`plan: ${plan.sweep.length} record(s) in ${plan.templates.length} subtree(s) would be compacted (cold after ${plan.cold_after_sessions} sessions; ${plan.live} live records stay)`, ...plan.sweep.map((s) => `  ${s.type}\t${s.id}\t${s.title}\t${s.reason}`)].join("\n"), plan);
+      print(
+        [
+          `plan: ${plan.sweep.length} record(s) in ${plan.templates.length} subtree(s) would be compacted, the code of ${plan.code_archive.length} procedure(s) archived (cold after ${plan.cold_after_sessions} sessions; ${plan.live} live records stay)`,
+          ...plan.sweep.map((s) => `  ${s.type}\t${s.id}\t${s.title}\t${s.reason}`),
+          ...plan.code_archive.map((c) => `  code\t${c.id}\t${c.remove.join(", ")}\t${c.reason}`),
+        ].join("\n"),
+        plan,
+      );
       return;
     }
     const result = applyGc(r, plan);
-    print(result.swept ? `compacted ${result.swept} record(s) into ${result.templates.join(", ")}${result.commit ? ` (commit ${result.commit.slice(0, 8)})` : ""}` : "nothing to compact", { plan, result });
+    const parts = [result.swept ? `compacted ${result.swept} record(s) into ${result.templates.join(", ")}` : "", result.code_archived.length ? `archived the code of ${result.code_archived.join(", ")}` : ""].filter(Boolean);
+    print(parts.length ? `${parts.join("; ")}${result.commit ? ` (commit ${result.commit.slice(0, 8)})` : ""}` : "nothing to compact", { plan, result });
   });
 
 program

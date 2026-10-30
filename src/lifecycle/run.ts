@@ -5,7 +5,7 @@ import type { Evidence } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
 import { createNode } from "../store/ops.js";
 import { sha256, truncate } from "../util.js";
-import { platformLabel } from "./regression.js";
+import { hostLabel, platformLabel } from "./regression.js";
 
 export interface RunOptions {
   episode?: string | null;
@@ -73,7 +73,7 @@ export function runAndRecord(store: LoadedStore, command: string, opts: RunOptio
       title: opts.title ?? `Execution: ${truncate(command, 80)}`,
       kind: "execution",
       locator: { artifact: opts.artifact ?? null, path, section: command },
-      execution: { command, cwd: ".", exit_code: exit, duration_ms: duration, platform: platformLabel(), input_hashes: hashes, truncated },
+      execution: { command, cwd: ".", exit_code: exit, duration_ms: duration, platform: platformLabel(), host: hostLabel(), input_hashes: hashes, truncated },
       produced_by: opts.episode ?? null,
     },
     body,

@@ -23,7 +23,7 @@ h1 { font-size:22px; margin:0 0 4px } h2 { font-size:17px; margin:32px 0 12px; p
 .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin:16px 0 }
 .tile { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px } .tile b { display:block; font-size:22px; font-weight:600 } .tile span { color:var(--muted); font-size:13px }
 .chip { display:inline-block; background:var(--chip); border-radius:999px; padding:1px 8px; font-size:12px; margin-right:4px; white-space:nowrap }
-.status-active,.state-trusted { color:var(--ok) } .status-needs_review,.state-suspended,.status-proposed,.state-provisional { color:var(--warn) } .status-superseded,.status-retired,.state-retired { color:var(--muted) }
+.status-active,.state-trusted { color:var(--ok) } .status-needs_review,.state-suspended,.status-proposed,.state-provisional { color:var(--warn) } .status-superseded,.status-retired,.state-retired,.state-superseded { color:var(--muted) }
 code { font:13px ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--chip); padding:0 4px; border-radius:4px }
 details { border:1px solid var(--line); border-radius:8px; background:var(--card); padding:8px 12px; margin:6px 0 } summary { cursor:pointer } details[open] > summary { margin-bottom:8px }
 .turn { margin:12px 0 } .turn .prompt { font-weight:600 } .caused { margin:6px 0 0 16px; padding:0; list-style:none } .caused li { margin:3px 0 }
@@ -118,9 +118,9 @@ ${s.turns
     : '<p class="empty">No sessions ingested yet.</p>';
 
   const proceduresHtml = procedures.length
-    ? `<table><thead><tr><th>Procedure</th><th>State</th><th>Resolution</th><th>Shown uses</th><th>Corrections</th><th>Applicability</th><th>History</th></tr></thead><tbody>${procedures
+    ? `<table><thead><tr><th>Procedure</th><th>State</th><th>Resolution</th><th>Shown uses</th><th>Corrections</th><th>Replaces</th><th>Applicability</th><th>History</th></tr></thead><tbody>${procedures
         .map(
-          (p) => `<tr><td><code>${esc(p.id)}</code><br>${esc(p.title)}<br><span class="muted">${esc(p.entrypoint)}</span></td><td class="state-${esc(p.state)}">${esc(p.state)}</td><td>${esc(p.resolution)}</td><td>${p.counters.shown_uses}</td><td>${p.counters.corrections}</td><td>${p.applicability.map((a) => esc(a)).join("<br>")}${p.abstain_when.length ? `<br><span class="muted">abstain: ${p.abstain_when.map((a) => esc(a)).join("; ")}</span>` : ""}</td><td>${p.history.map((h) => `${esc(h.at.slice(0, 16))} ${esc(h.from ?? "-")} → ${esc(h.to)}<br><span class="muted">${esc(h.reason)}</span>`).join("<br>") || '<span class="empty">none</span>'}</td></tr>`,
+          (p) => `<tr><td><code>${esc(p.id)}</code><br>${esc(p.title)}<br><span class="muted">${esc(p.entrypoint)}${p.code_hash ? ` · ${esc(p.code_hash.slice(0, 12))}…` : ""}${p.code_archived ? ` · code archived at ${esc(p.code_archived.commit.slice(0, 8))}` : ""}</span></td><td class="state-${esc(p.state)}">${esc(p.state)}</td><td>${esc(p.resolution)}</td><td>${p.counters.shown_uses}</td><td>${p.counters.corrections}</td><td>${p.supersedes.length ? `${p.supersedes.map((id) => `<code>${esc(id)}</code>`).join(" ")}${p.justification ? `<br><span class="chip">${esc(p.justification.kind)}</span> ${esc(p.justification.text)}` : ""}` : '<span class="empty">-</span>'}</td><td>${p.applicability.map((a) => esc(a)).join("<br>")}${p.abstain_when.length ? `<br><span class="muted">abstain: ${p.abstain_when.map((a) => esc(a)).join("; ")}</span>` : ""}</td><td>${p.history.map((h) => `${esc(h.at.slice(0, 16))} ${esc(h.from ?? "-")} → ${esc(h.to)}<br><span class="muted">${esc(h.reason)}</span>`).join("<br>") || '<span class="empty">none</span>'}</td></tr>`,
         )
         .join("")}</tbody></table>`
     : '<p class="empty">No procedures registered.</p>';

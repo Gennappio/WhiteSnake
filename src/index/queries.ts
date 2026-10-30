@@ -90,7 +90,7 @@ const WHY_POLICY: Record<string, { expand: readonly string[]; shallow: readonly 
   evidence: { expand: ["locator", "caused_by"], shallow: ["produced_by"] },
   artifact: { expand: [], shallow: ["caused_by"] },
   episode: { expand: ["caused_by"], shallow: ["uses", "parent", "question"] },
-  procedure: { expand: ["caused_by"], shallow: ["uses", "promoted_from", "produced_by"] },
+  procedure: { expand: ["caused_by"], shallow: ["uses", "promoted_from", "produced_by", "supersedes", "justification"] },
   question: { expand: ["caused_by"], shallow: ["raised_in", "answered_by"] },
   turn: { expand: ["session"], shallow: [] },
   session: { expand: [], shallow: [] },

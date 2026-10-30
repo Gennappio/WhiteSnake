@@ -25,9 +25,13 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake ask "<question>"` | ask an agent about the store; answer cites record ids |
 | `whitesnake delegate --child <dir> --question "..."` | hand a question to a child store; its answer comes back as evidence |
 | `whitesnake export <dir>` / `whitesnake check` | hand the store over, verify an imported copy |
-| `whitesnake gc [--apply]` | compact cold subtrees nothing live needs; `--apply` needs git and commits first; reversible via git |
+| `whitesnake gc [--apply]` | compact cold subtrees nothing live needs and archive the code of cold superseded or retired procedures; `--apply` needs git and commits first; reversible via git |
 | `whitesnake collapse <episode>` | one composed procedure from a deterministic subtree |
 | `whitesnake procedure recheck <id> --harness h [--retire]` | can the model alone reproduce the regression cases? |
+| `whitesnake procedure compare <old> <new> [--episode id] [--no-record]` | replay everything recorded about `old` with `new`: same, fixed, regression, diverge per case; dominates or not; recorded as execution evidence |
+| `whitesnake procedure supersede <new> [--old id]` | replace the procedure `new` supersedes: refused unless `new` is trusted, dominates on a fresh comparison and clears every threshold criterion; records a choice decision |
+| `whitesnake procedure scorecard <id>` | measurements from the records: use, shown and corrected outputs, observed error, regression checks, latency per machine, code versions, thresholds |
+| `whitesnake procedure rehash <id>` | re-register the entrypoint's code hash; only while nothing has used the procedure |
 | `whitesnake validate` | check the whole store (exit 2 on errors; warnings do not fail) |
 | `whitesnake index [--dump]` | rebuild the SQLite index |
 | `whitesnake timeline [--session id]` | prompts and the records each one caused |

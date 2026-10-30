@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { edgeSpec } from "../schema/edges.js";
 import { isAuthoredType, newId, type NodeType } from "../schema/ids.js";
@@ -54,6 +54,7 @@ export function createNode(root: string, type: NodeType, input: Record<string, u
     raw["caused_by"] = opts.causedBy === undefined ? currentTurn(root) : opts.causedBy;
   }
   if (type === "evidence" && raw["hash"] === undefined) raw["hash"] = sha256(canonicalBody(body));
+  if (type === "procedure" && raw["code_hash"] === undefined) raw["code_hash"] = codeHashOf(root, raw["entrypoint"]);
   if (type === "episode" && raw["started"] === undefined) raw["started"] = raw["created"];
   if (type === "turn" && raw["prompt_hash"] === undefined && typeof raw["prompt_excerpt"] === "string") {
     raw["prompt_hash"] = sha256(raw["prompt_excerpt"]);
@@ -69,7 +70,18 @@ export function createNode(root: string, type: NodeType, input: Record<string, u
   return parsed.node;
 }
 
-const SHALLOW_MERGE_KEYS = new Set(["qualifier", "locator", "rebuttal", "counters", "target", "qualified_on", "compacted_from"]);
+/** sha256 of a procedure's entrypoint when it is a file in the store; null for a command or a missing file. */
+export function codeHashOf(root: string, entrypoint: unknown): string | null {
+  if (typeof entrypoint !== "string" || !entrypoint) return null;
+  const abs = join(root, entrypoint);
+  try {
+    return existsSync(abs) && statSync(abs).isFile() ? sha256(readFileSync(abs)) : null;
+  } catch {
+    return null;
+  }
+}
+
+const SHALLOW_MERGE_KEYS = new Set(["qualifier", "locator", "rebuttal", "counters", "target", "qualified_on", "compacted_from", "justification", "code_archived", "threshold"]);
 
 export function updateNode(root: string, id: string, patch: Record<string, unknown>, body?: string, opts: WriteOptions = {}): Node {
   const store = opts.store ?? loadStore(root);

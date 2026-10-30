@@ -158,6 +158,22 @@ const corruptions: { name: string; code: string; apply: (dir: string) => void }[
     },
   },
   {
+    name: "procedure code edited in place after registration",
+    code: "E_PROCEDURE_HASH",
+    apply: (dir) => {
+      const p = join(dir, "procedures", "table_counts", "run.py");
+      writeFileSync(p, `${readFileSync(p, "utf8")}\n# edited after a result was produced with this code\n`);
+    },
+  },
+  {
+    name: "procedure that supersedes another without a justification",
+    code: "E_UNJUSTIFIED_SUPERSESSION",
+    apply: (dir) => {
+      const p = join(dir, "knowledge", "procedures", "proc_tablecount01.md");
+      writeFileSync(p, readFileSync(p, "utf8").replace("supersedes: []", "supersedes:\n  - proc_tablecount01"));
+    },
+  },
+  {
     name: "procedure counter above its recorded shown events",
     code: "E_COUNTER_MISMATCH",
     apply: (dir) => {

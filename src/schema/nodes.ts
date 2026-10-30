@@ -24,6 +24,8 @@ export const QuestionSchema = z.strictObject({
 });
 
 export const DECISION_KINDS = ["annotation", "criterion", "choice"] as const;
+/** Measurements a threshold criterion can bound: observed error (corrections over shown outputs) and median latency. */
+export const THRESHOLD_METRICS = ["observed_error_rate", "median_duration_ms"] as const;
 export const DECISION_STATUSES = ["proposed", "active", "needs_review", "superseded", "retired"] as const;
 export const FRAGILITIES = ["mechanical", "interpretive", "analogical", "absence"] as const;
 
@@ -59,10 +61,29 @@ export const DecisionSchema = z
     produced_by: Id.nullable().default(null),
     caused_by: Id.nullable().default(null),
     shown_at: IdList,
+    /**
+     * Criteria only: a quantitative bar a procedure must clear before it may replace another. The CLI measures
+     * (`procedure scorecard`); the researcher decides the bar, as a criterion like any other rule.
+     */
+    threshold: z
+      .strictObject({
+        metric: z.enum(THRESHOLD_METRICS),
+        max: z.number(),
+        /** Shown outputs needed before the metric counts; below it the bar is "insufficient", not met. */
+        min_shown: z.number().int().min(0).default(0),
+        /** Procedures the bar applies to; empty means every procedure of the store. */
+        procedures: IdList,
+      })
+      .nullable()
+      .default(null),
   })
   .refine((d) => d.kind !== "annotation" || d.target !== null, {
     message: "annotation decisions require target {unit, field, value}",
     path: ["target"],
+  })
+  .refine((d) => d.threshold === null || d.kind === "criterion", {
+    message: "only criterion decisions carry a threshold",
+    path: ["threshold"],
   });
 
 export const EvidenceSchema = z
@@ -87,6 +108,8 @@ export const EvidenceSchema = z
         exit_code: z.number().int(),
         duration_ms: z.number().int().nullable().default(null),
         platform: z.string().nullable().default(null),
+        /** Short hash of the host name: tells two machines with the same platform apart without naming either. */
+        host: z.string().nullable().default(null),
         input_hashes: z.record(z.string(), Sha256).default({}),
         truncated: z.boolean().default(false),
       })
@@ -111,7 +134,9 @@ export const ArtifactSchema = z.strictObject({
   caused_by: Id.nullable().default(null),
 });
 
-export const PROCEDURE_STATES = ["provisional", "trusted", "suspended", "retired"] as const;
+export const PROCEDURE_STATES = ["provisional", "trusted", "suspended", "superseded", "retired"] as const;
+/** Why a procedure was rewritten: each kind names the evidence it needs (see `procedure compare`). */
+export const JUSTIFICATION_KINDS = ["correctness", "performance", "scope", "platform"] as const;
 export const PROCEDURE_RESOLUTIONS = ["code", "frozen_prompt", "skill"] as const;
 
 export const ProcedureSchema = z.strictObject({
@@ -125,6 +150,21 @@ export const ProcedureSchema = z.strictObject({
   abstain_when: z.array(z.string()).default([]),
   regression_cases: z.array(z.string()).default([]),
   promoted_from: IdList,
+  /** sha256 of the entrypoint file at registration. Code that produced a result never changes: a new version is a new procedure. */
+  code_hash: Sha256.nullable().default(null),
+  /** Procedures this one replaces; requires a justification. */
+  supersedes: IdList,
+  justification: z
+    .strictObject({
+      kind: z.enum(JUSTIFICATION_KINDS),
+      /** The records that prove the reason: a correction, a comparison, new regression cases, a check suspension. */
+      evidence: IdList,
+      text: z.string().default(""),
+    })
+    .nullable()
+    .default(null),
+  /** Set by gc when the code of a superseded or retired procedure leaves the working tree; git keeps it at `commit`. */
+  code_archived: z.strictObject({ commit: z.string(), at: Iso, removed: z.array(z.string()).default([]) }).nullable().default(null),
   qualified_on: z.strictObject({ harness: z.string(), model: z.string() }).nullable().default(null),
   history: z
     .array(

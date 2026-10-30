@@ -14,7 +14,10 @@
 <p align="center">
   <a href="#why">Why</a> ·
   <a href="#how-we-see-future-systems">Future systems</a> ·
+  <a href="#generalization-at-scale-an-open-question">Generalization</a> ·
+  <a href="#critical-review">Critical review</a> ·
   <a href="#procedure-promotion">Procedures</a> ·
+  <a href="#rewriting-a-procedure">Rewrites</a> ·
   <a href="#the-cli-can-be-sublated-too">Sublation</a> ·
   <a href="#nodes-that-write-themselves">Nodes</a> ·
   <a href="#build-and-test">Build</a> ·
@@ -48,6 +51,23 @@ You don't build the tool first and use it afterwards. You work on the actual tas
 
 What the agent learns from the user about a task therefore lives in files under git, not in a session or in a model. It survives the end of the session, a change of model and a change of person.
 
+## Generalization at scale: an open question
+
+> [!IMPORTANT]
+> **Critical design question, still under discussion.** For a large annotation task, such as work on a database the size of CELLxGENE, asking an agent to prefer deterministic code does not establish that it will generalize enough to make the work affordable. WhiteSnake has not yet demonstrated this at scale.
+
+An agent can write code for each individual case, or reuse a procedure while still making model calls to select, invoke and inspect it for every record. The working hypothesis is that it should actively discover families of cases, develop reusable rules from informative examples, validate them on separate cases and execute them in batches, returning to the model for grouped exceptions. Applicability, abstention and provenance must survive that generalization.
+
+The [skill](skill/whitesnake/SKILL.md#generalization-for-large-annotation-tasks) now includes experimental guidance for this behaviour. Whether instructions are sufficient, which checks should be enforced by the runtime, and how much generalization is economically worthwhile remain open. The objective under discussion is total cost per correct result at the required quality and coverage. The current episode-based KPI does not measure actual model calls or spending, and prompt instructions do not enforce a hard budget.
+
+See the [design discussion and proposed evaluation](DESIGN.md#h-open-discussion-generalization-and-cost-at-scale). This guidance is not evidence of an implemented optimization loop or validated savings.
+
+## Critical review
+
+The shared skill uses [Walton-inspired critical questions](skill/whitesnake/references/walton-checklist.md) at specific triggers: substantial work, weak or conflicting evidence, broader application of a rule, recurring failures or unexpected costs, and substantive completion claims. The agent consults existing decisions, performs relevant checks and records findings with evidence. A review can be reused across a batch within its stated scope.
+
+The agent handles delegated implementation choices and involves the user when an unresolved choice about meaning, goals, acceptable error, coverage or resources changes the outcome. Prior answers remain in the store for reuse. This workflow is implemented as skill guidance; its effect on quality, cost and user interruptions remains to be evaluated. It adds no automatic budget or approval enforcement.
+
 ## Procedure promotion
 
 A procedure is a reusable way of doing one step: a script, a frozen prompt (prompt, pinned model and output schema) or a skill. It starts provisional and earns trust from use. Nobody sets its state by hand; the CLI derives it from recorded events.
@@ -60,12 +80,24 @@ stateDiagram-v2
     provisional --> suspended: researcher correction
     trusted --> suspended: researcher correction
     suspended --> provisional: fixed and reinstated
+    trusted --> superseded: a trusted rewrite dominates it
+    suspended --> superseded: a trusted rewrite dominates it
     trusted --> retired: the model alone passes its cases
 ```
 
 Before working on a value, the agent checks a ladder (`whitesnake resolve`): an accepted result for the same question, then a trusted procedure, and only then its own reasoning. When every child of an episode has been resolved without the agent, `whitesnake collapse` merges them into one composed procedure and the agent call moves one level up. The share of work resolved without an agent is the store's main indicator.
 
 Procedures are perishable; knowledge is durable. When a new model can reproduce a procedure's regression cases on its own, the procedure is retired (sublation) and its past outputs stand. The reason to converge on deterministic procedures is reproducibility, auditability and a stable interface, not making up for what the model cannot do yet.
+
+## Rewriting a procedure
+
+An agent that finds a procedure wanting does not edit it. **Code that produced a result never changes**: the record keeps the sha256 of the entrypoint, exactly as artifacts keep the hash of a source, and a file that differs makes the store invalid (`E_PROCEDURE_HASH`). Every recorded execution says which code version ran, so provenance keeps pointing at the code that produced each value. A change is a new procedure that names the one it replaces (`supersedes`) and says why, in a form the store can check (`justification`): the kind of reason, from a closed list, and the records that prove it. "Rewritten because it was slow" is prose; "rewritten because on P03 the old one took 4.1 s and the new 0.3 s on this machine, executions ev_111 and ev_112" is a justification. Correctness needs a correction or a failing case, performance two timings on the same inputs, scope new regression cases, platform a recorded check failure.
+
+Whether the rewrite is better is not a judgement either. The old procedure carries its own test battery: its regression cases, plus every input it was run on together with what the researcher did with the value, accepted, corrected or never confirmed. `whitesnake procedure compare <old> <new>` replays all of it with the new code and judges each case against the record: `same`, `fixed`, `regression`, `still_wrong`, `diverge` where no accepted value exists. The rule is **never worse on a recorded case, better on at least one**. A rewrite that fixes one case and breaks another is not better, it is different, and the diverging cases go to the researcher. The report is recorded as execution evidence.
+
+Until then the two coexist. The new one starts provisional, the agent runs both on new inputs, lists both in the episode's `uses` and shows one value, so agreements earn the newcomer shown uses with no extra work from the researcher, and disagreements become rebuttal evidence and a question. `whitesnake procedure supersede <new>` does the replacement when three things hold: the new procedure is trusted, it dominates on every recorded case, and it clears every threshold the researcher declared. It records a `choice` decision with the comparison as data, and the old procedure becomes `superseded`: out of the resolution ladder, its past outputs standing. Its record stays as long as any value points at it; `gc` later archives its code with the commit that keeps it.
+
+Measurements are derived, thresholds are decided. `whitesnake procedure scorecard <id>` computes from the records how often a procedure was used, how many outputs were shown and corrected, the observed error rate (a lower bound: unobserved outputs tell nothing), the regression checks that failed, the latency per platform and machine, and whether several code versions ran under one record. A bar on those numbers is a criterion like any other rule: a `criterion` decision with a `threshold` ("zero corrections over at least twenty observed outputs"), applied by the CLI and reopened by `affected` when it changes. Without one, the dominance rule applies, and at equal results the faster procedure on the same machine wins.
 
 ## The CLI can be sublated too
 
@@ -74,6 +106,8 @@ Procedures are perishable; knowledge is durable. When a new model can reproduce 
 The lasting commitments are preserving evidence, making corrections traceable and allowing another person or agent to inherit the work. The command interface and the procedures that fulfil those commitments can evolve independently. A smaller deterministic validator may remain useful while other operations move to the agent; its continued use should also be justified by reliability, reproducibility and overall cost.
 
 Retirement should follow demonstrated capability: the replacement must pass the relevant behavioural tests, including error cases, and preserve the handoff test. Passing examples alone does not establish the same guarantees as deterministic checks. The comparison must also account for the effort and context spent invoking commands and maintaining records. Removing infrastructure can be progress when the agent preserves the required behaviour at a lower overall cost.
+
+At large volumes, a procedure may remain worth keeping even when the model can reproduce its results: replacing cheap repeated execution with model calls can increase total cost. Capability and economic benefit need separate evaluation.
 
 This is a design principle for future evolution. In the current implementation, knowledge writes still go through the CLI and its validation and hook contracts.
 
@@ -135,12 +169,13 @@ States are never edited by hand; the CLI derives them from recorded events and t
 - `whitesnake episode open|close` brackets a unit of work; a decision's `produced_by` must be a leaf episode listing in `uses` only what it applied.
 - `whitesnake shown <ids>` records that decisions were presented to the researcher (the Stop hook also scans the agent's final message for decision ids). The first time a decision is shown, each procedure its episode used earns a shown use; at `promotion.shown_uses_to_trust` uses without a correction (default 3) a provisional procedure becomes trusted. `shown` needs the turn it happened in (the current turn, or `--turn`): it is a recorded event, so repeating it changes nothing, and the validator checks that a procedure's shown uses never exceed the shown decisions produced with it.
 - `whitesnake correct <id> --reason ... [--value v]` records a researcher correction: the decision is marked `needs_review` (or superseded by a new one when a value is given), the episode becomes `corrected`, the procedures it used are suspended, and everything that relied on the decision is marked `needs_review`.
-- `whitesnake resolve --unit U --field F` applies the resolution ladder: an accepted decision, a trusted procedure, or agent work. A decision under review after a correction is never offered for reuse: `resolve` answers `review` and asks for the value to be redone and superseded.
+- `whitesnake resolve --unit U --field F` applies the resolution ladder: an accepted decision, a trusted procedure, or agent work. A decision under review after a correction is never offered for reuse: `resolve` answers `review` and asks for the value to be redone and superseded. When a live procedure lists a live one in `supersedes`, the answer also says how to run the two side by side.
+- `whitesnake procedure compare <old> <new>` replays the old procedure's recorded battery with the new code and records the verdicts; `whitesnake procedure supersede <new>` replaces the old one when the new is trusted, dominates and clears the declared thresholds; `whitesnake procedure scorecard <id>` derives the measurements; `whitesnake procedure rehash <id>` re-registers the code hash, only while nothing has used the procedure.
 - `whitesnake kpi` and `whitesnake render` (writes `review.html`) show how the store is doing: episodes resolved without an agent, decisions by status and whether they were shown, procedure transitions per session, items to review, the timeline by prompt, and recording warnings.
 
 ## Commands versus code
 
-An agent that solves a step with a terminal command is not forced to write software. `whitesnake run "<command>" --episode <id>` executes the command and records it as execution evidence (command, exit code, platform, hashes of the input files, output). When the same command recurs across episodes, `whitesnake procedure propose --from-evidence <ids>` distils the recorded executions into a procedure skeleton with one regression case per execution; shown uses then promote it like any procedure. On another machine, `whitesnake check` (also run automatically at the first open of an imported store) re-runs the regression cases of code procedures and suspends those that no longer reproduce, with the platform in the reason: the agent falls back to doing the step itself and may supersede them with an adapted version. Past outputs always stand.
+An agent that solves a step with a terminal command is not forced to write software. `whitesnake run "<command>" --episode <id>` executes the command and records it as execution evidence (command, exit code, platform, hashes of the input files, output). When the same command recurs across episodes, `whitesnake procedure propose --from-evidence <ids>` distils the recorded executions into a procedure skeleton with one regression case per execution; shown uses then promote it like any procedure. On another machine, `whitesnake check` (also run automatically at the first open of an imported store) re-runs the regression cases of code procedures and suspends those that no longer reproduce, with the platform in the reason: the agent falls back to doing the step itself and may register an adapted version that supersedes them (see [Rewriting a procedure](#rewriting-a-procedure)). Past outputs always stand. Every registered procedure carries the sha256 of its entrypoint, and every execution records the hash of the script it ran and a short hash of the host, so a value can always be traced to the exact code and machine that produced it.
 
 ## Where memory goes
 
@@ -155,7 +190,7 @@ Gaps are covered by the coding agent working in a store, never by a human or a r
 
 ## Compaction, collapse and sublation
 
-- `whitesnake gc [--apply] [--cold-after N]` compacts closed, cold episode subtrees that nothing live depends on into `template` nodes (summary, locators, negative examples, the ids replaced and the commit that still holds the raw files) and removes them from the working tree. Live provenance never changes; git history keeps the raw records; a second apply is a no-op. `--apply` requires git and commits the working tree first, so the commit recorded in the template contains every raw record it replaces.
+- `whitesnake gc [--apply] [--cold-after N]` compacts closed, cold episode subtrees that nothing live depends on into `template` nodes (summary, locators, negative examples, the ids replaced and the commit that still holds the raw files) and removes them from the working tree. Live provenance never changes; git history keeps the raw records; a second apply is a no-op. `--apply` requires git and commits the working tree first, so the commit recorded in the template contains every raw record it replaces. The same pass archives the code of superseded and retired procedures once it is cold: the file (or its directory, when no other procedure lives there) leaves the working tree and the record keeps the commit that holds it. The record itself is never removed, because every value produced with it still points there.
 - `whitesnake collapse <episode>` turns a parent episode whose children were all resolved without an agent into one composed procedure (a step list reusing the children's procedures). The agent call moves one level up.
 - `whitesnake procedure recheck <id> --harness claude|codex [--model M] [--retire]` is the sublation check: the model alone, without the procedure's code, must reproduce every regression case. When it does and `--retire` is given, the procedure is retired; its past outputs stand.
 

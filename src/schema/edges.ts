@@ -32,6 +32,7 @@ export const EDGE_SPECS: Record<NodeType, readonly EdgeSpec[]> = {
     { rel: "produced_by", path: ["produced_by"], targets: ["episode"], relies: true },
     turn(),
     { rel: "shown_at", path: ["shown_at"], targets: ["turn"], relies: false },
+    { rel: "threshold", path: ["threshold", "procedures"], targets: ["procedure"], relies: false },
   ],
   evidence: [
     { rel: "locator", path: ["locator", "artifact"], targets: ["artifact"], relies: true },
@@ -43,6 +44,8 @@ export const EDGE_SPECS: Record<NodeType, readonly EdgeSpec[]> = {
     { rel: "uses", path: ["uses"], targets: ["procedure", "decision"], relies: true },
     { rel: "promoted_from", path: ["promoted_from"], targets: ["episode"], relies: false },
     { rel: "produced_by", path: ["produced_by"], targets: ["episode"], relies: false },
+    { rel: "supersedes", path: ["supersedes"], targets: ["procedure"], relies: false },
+    { rel: "justification", path: ["justification", "evidence"], targets: ["evidence", "decision"], relies: true },
     turn(),
   ],
   episode: [

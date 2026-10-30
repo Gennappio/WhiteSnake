@@ -264,6 +264,17 @@
     "options": []
   },
   {
+    "name": "procedure compare",
+    "args": [
+      "<old>",
+      "<new>"
+    ],
+    "options": [
+      "--episode",
+      "--no-record"
+    ]
+  },
+  {
     "name": "procedure propose",
     "args": [],
     "options": [
@@ -285,6 +296,13 @@
     ]
   },
   {
+    "name": "procedure rehash",
+    "args": [
+      "<id>"
+    ],
+    "options": []
+  },
+  {
     "name": "procedure reinstate",
     "args": [
       "<id>"
@@ -300,6 +318,23 @@
     ],
     "options": [
       "--reason"
+    ]
+  },
+  {
+    "name": "procedure scorecard",
+    "args": [
+      "<id>"
+    ],
+    "options": []
+  },
+  {
+    "name": "procedure supersede",
+    "args": [
+      "<new>"
+    ],
+    "options": [
+      "--episode",
+      "--old"
     ]
   },
   {
@@ -367,7 +402,9 @@
   {
     "name": "validate",
     "args": [],
-    "options": []
+    "options": [
+      "--full"
+    ]
   },
   {
     "name": "why",

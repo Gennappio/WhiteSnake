@@ -5,6 +5,9 @@ import { CliError, nowIso } from "../util.js";
 
 export type ProcedureState = Procedure["state"];
 
+/** States in which a procedure is offered for new work and accumulates shown uses. */
+export const LIVE_STATES: readonly ProcedureState[] = ["provisional", "trusted"];
+
 /**
  * State transitions are computed here from recorded events and appended to `history`; the frontmatter `state`
  * is only a cache of the last entry, which the validator cross-checks. Nobody edits states by hand.
@@ -24,7 +27,7 @@ export function transition(store: LoadedStore, procId: string, to: ProcedureStat
 export function recordShownUse(store: LoadedStore, procId: string, causedBy: string | null): { procedure: Procedure; promoted: boolean } {
   const proc = store.nodes.get(procId);
   if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
-  if (proc.state === "suspended" || proc.state === "retired") return { procedure: proc, promoted: false };
+  if (!LIVE_STATES.includes(proc.state)) return { procedure: proc, promoted: false };
   const counters = { ...proc.counters, shown_uses: proc.counters.shown_uses + 1 };
   let updated = updateNode(store.root, procId, { counters }, undefined, { store }) as Procedure;
   const threshold = store.config.promotion.shown_uses_to_trust;
@@ -42,7 +45,8 @@ export function recordCorrection(store: LoadedStore, procId: string, reason: str
   if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
   const counters = { ...proc.counters, corrections: proc.counters.corrections + 1 };
   updateNode(store.root, procId, { counters }, undefined, { store });
-  if (proc.state === "retired") return store.nodes.get(procId) as Procedure;
+  // A retired or superseded procedure is no longer in use: the correction is counted, nothing moves.
+  if (proc.state === "retired" || proc.state === "superseded") return store.nodes.get(procId) as Procedure;
   return transition(store, procId, "suspended", `researcher correction: ${reason}`, causedBy);
 }
 
@@ -54,4 +58,9 @@ export function reinstate(store: LoadedStore, procId: string, reason: string, ca
 
 export function retire(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
   return transition(store, procId, "retired", reason, causedBy);
+}
+
+/** Another procedure now does this one's job: it leaves the resolution ladder, its past outputs stand. */
+export function markSuperseded(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
+  return transition(store, procId, "superseded", reason, causedBy);
 }

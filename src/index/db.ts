@@ -69,7 +69,7 @@ function indexedText(node: Node, body: string): string {
       if (node.target) parts.push(node.target.unit, node.target.field, String(node.target.value));
       break;
     case "procedure":
-      parts.push(node.entrypoint, node.resolution, ...node.applicability, ...node.abstain_when);
+      parts.push(node.entrypoint, node.resolution, ...node.applicability, ...node.abstain_when, node.justification?.text ?? "");
       break;
     case "question":
       parts.push(node.why);

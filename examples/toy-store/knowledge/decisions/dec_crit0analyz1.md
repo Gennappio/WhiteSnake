@@ -24,6 +24,7 @@ answers: q_ittvspp00001
 produced_by: null
 caused_by: turn_claude_toyseed0001_0002
 shown_at: []
+threshold: null
 ---
 
 Set by the researcher in turn 2 after P01 raised the ITT versus per-protocol question.

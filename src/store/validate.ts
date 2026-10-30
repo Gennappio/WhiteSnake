@@ -1,7 +1,10 @@
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { REMOTE_SUFFIX, edgeSpec, extractEdges } from "../schema/edges.js";
 import type { NodeType } from "../schema/ids.js";
 import { canonicalBody, sha256 } from "../util.js";
 import { artifactIssues, type ArtifactCheckMode } from "./artifacts.js";
+import type { Node } from "../schema/nodes.js";
 import type { LoadedStore, ValidationIssue } from "./files.js";
 
 /** Graph-level checks on top of the file-level issues collected by loadStore. */
@@ -22,6 +25,7 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
   const issues: ValidationIssue[] = [...store.issues];
   const ids = [...store.nodes.keys()].sort();
   const shownUsesBound = shownUsesPerProcedure(store);
+  const successors = successorsPerProcedure(store);
 
   for (const id of ids) {
     const node = store.nodes.get(id)!;
@@ -88,6 +92,13 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
         if (node.counters.shown_uses > bound) {
           issues.push({ code: "E_COUNTER_MISMATCH", id, file, path: "counters.shown_uses", message: `${id}.counters.shown_uses is ${node.counters.shown_uses} but only ${bound} shown decision(s) were produced with it; shown uses derive from recorded shown events` });
         }
+        issues.push(...codeHashIssues(store, node, file));
+        if (node.supersedes.length > 0 && (!node.justification || node.justification.evidence.length === 0)) {
+          issues.push({ code: "E_UNJUSTIFIED_SUPERSESSION", id, file, path: "justification", message: `${id} supersedes ${node.supersedes.join(", ")} without a justification that cites evidence; state the kind (correctness, performance, scope, platform) and the records that prove it` });
+        }
+        if (node.state === "superseded" && !(successors.get(id)?.length)) {
+          issues.push({ code: "E_SUPERSEDED_NO_SUCCESSOR", id, file, path: "state", message: `${id} is superseded but no procedure lists it in supersedes; the state is derived from a recorded supersession` });
+        }
         break;
       }
       default:
@@ -109,7 +120,7 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
  */
 const ACYCLIC_FAMILIES: readonly { type: NodeType; rels: readonly string[] }[] = [
   { type: "decision", rels: ["depends_on", "warrant", "backing", "supersedes"] },
-  { type: "procedure", rels: ["uses"] },
+  { type: "procedure", rels: ["uses", "supersedes"] },
   { type: "episode", rels: ["parent"] },
   { type: "episode", rels: ["children"] },
 ];
@@ -177,6 +188,42 @@ function findCycles(adjacency: Map<string, { dst: string; rel: string }[]>): { p
     }
   }
   return found;
+}
+
+/**
+ * The code behind a procedure is verified by content, like a source artifact: the record keeps the sha256 of the
+ * entrypoint at registration, and a file that differs means past executions point at code that is no longer there.
+ * A procedure whose code gc archived (git keeps it at the recorded commit) may legitimately have no file.
+ */
+function codeHashIssues(store: LoadedStore, node: Extract<Node, { type: "procedure" }>, file: string | undefined): ValidationIssue[] {
+  if (!node.code_hash) return [];
+  const abs = join(store.root, node.entrypoint);
+  const present = existsSync(abs) && statSync(abs).isFile();
+  if (!present) {
+    if (node.code_archived) return [];
+    return [{ code: "E_PROCEDURE_HASH", id: node.id, file, path: "entrypoint", message: `${node.id}: ${node.entrypoint} is missing but the procedure's code was registered with sha256 ${node.code_hash.slice(0, 12)}…; restore it from git, or let gc archive it` }];
+  }
+  const actual = sha256(readFileSync(abs));
+  if (actual === node.code_hash) return [];
+  return [
+    {
+      code: "E_PROCEDURE_HASH",
+      id: node.id,
+      file,
+      path: "code_hash",
+      message: `${node.id}: ${node.entrypoint} has sha256 ${actual.slice(0, 12)}… on disk but ${node.code_hash.slice(0, 12)}… was registered. Code that produced results never changes: restore the file, or register the new version as a new procedure that supersedes ${node.id} (whitesnake procedure rehash is allowed only while nothing used it).`,
+    },
+  ];
+}
+
+/** Procedures that list each procedure in `supersedes`. */
+function successorsPerProcedure(store: LoadedStore): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const n of store.nodes.values()) {
+    if (n.type !== "procedure") continue;
+    for (const old of n.supersedes) out.set(old, [...(out.get(old) ?? []), n.id]);
+  }
+  return out;
 }
 
 /** Upper bound of a procedure's shown uses: the decisions with a recorded shown event whose episode used it. */

@@ -1,13 +1,19 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { release } from "node:os";
+import { hostname, release } from "node:os";
 import { extname, join } from "node:path";
 import type { Procedure } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
+import { sha256 } from "../util.js";
 import { transition } from "./procedures.js";
 
 export function platformLabel(): string {
   return `${process.platform} ${release()} ${process.arch}`;
+}
+
+/** Twelve hex characters of the host name's sha256: two machines with the same platform stay distinguishable, neither is named. */
+export function hostLabel(): string {
+  return sha256(hostname()).slice(0, 12);
 }
 
 function numeric(v: unknown): number | null {
@@ -72,40 +78,74 @@ export interface CaseResult {
   error?: string;
 }
 
+export interface Execution {
+  /** Parsed stdout (JSON, number or text); null when the entrypoint could not run at all. */
+  output: unknown;
+  exit_code: number | null;
+  duration_ms: number;
+  error?: string;
+}
+
+/** Run a code procedure's entrypoint in the store with positional arguments, the way regression cases and comparisons do. */
+export function executeEntrypoint(store: LoadedStore, entrypoint: string, args: string[]): Execution {
+  const entry = join(store.root, entrypoint);
+  if (!existsSync(entry)) return { output: null, exit_code: null, duration_ms: 0, error: `entrypoint ${entrypoint} missing` };
+  const interp = interpreterFor(entrypoint);
+  const executable = !interp && (statSync(entry).mode & 0o111) !== 0;
+  if (!interp && !executable) return { output: null, exit_code: null, duration_ms: 0, error: `no interpreter for ${entrypoint}` };
+  const cmd = interp ? interp[0]! : entry;
+  const argv = interp ? [...interp.slice(1), entry, ...args] : args;
+  const started = Date.now();
+  const r = spawnSync(cmd, argv, { cwd: store.root, encoding: "utf8", timeout: 120_000, maxBuffer: 64 * 1024 * 1024 });
+  const duration = Date.now() - started;
+  if (r.error || r.status !== 0) {
+    return { output: parseOutput(r.stdout ?? ""), exit_code: r.status, duration_ms: duration, error: r.error?.message ?? `exit ${r.status}: ${(r.stderr ?? "").trim().slice(0, 200)}` };
+  }
+  return { output: parseOutput(r.stdout), exit_code: 0, duration_ms: duration };
+}
+
+export interface RegressionCase {
+  file: string;
+  args: string[];
+  expected: unknown;
+  /** Set when the case file uses `expected_total`: the procedure's output is an object and its `total` is compared. */
+  key: "total" | null;
+  error?: string;
+}
+
+/** Read a regression case file: positional inputs and the expected value, in either of the two accepted shapes. */
+export function readRegressionCase(store: LoadedStore, rel: string): RegressionCase {
+  const casePath = join(store.root, rel);
+  if (!existsSync(casePath)) return { file: rel, args: [], expected: null, key: null, error: "case file missing" };
+  const c = JSON.parse(readFileSync(casePath, "utf8")) as Record<string, unknown>;
+  const input = c["input"];
+  const args = (Array.isArray(input) ? input : input === undefined ? [] : [input]).map(String);
+  if (c["expected_total"] !== undefined) return { file: rel, args, expected: c["expected_total"], key: "total" };
+  return { file: rel, args, expected: c["expected"], key: null };
+}
+
+/** The part of an output a case compares: the whole output, or its `total` for `expected_total` cases. */
+export function projectOutput(output: unknown, key: "total" | null): unknown {
+  if (key && output && typeof output === "object" && key in (output as Record<string, unknown>)) return (output as Record<string, unknown>)[key];
+  return output;
+}
+
 /** Run a code procedure's regression cases by executing its entrypoint with each case's inputs. */
 export function runRegressionCases(store: LoadedStore, proc: Procedure): CaseResult[] {
   const results: CaseResult[] = [];
-  const entry = join(store.root, proc.entrypoint);
   for (const rel of proc.regression_cases) {
-    const casePath = join(store.root, rel);
-    if (!existsSync(casePath)) {
-      results.push({ file: rel, ok: false, expected: null, got: null, error: "case file missing" });
+    const c = readRegressionCase(store, rel);
+    if (c.error) {
+      results.push({ file: rel, ok: false, expected: c.expected, got: null, error: c.error });
       continue;
     }
-    const c = JSON.parse(readFileSync(casePath, "utf8")) as Record<string, unknown>;
-    const expected = c["expected"] ?? c["expected_total"];
-    const input = c["input"];
-    const args = (Array.isArray(input) ? input : input === undefined ? [] : [input]).map(String);
-    if (!existsSync(entry)) {
-      results.push({ file: rel, ok: false, expected, got: null, error: `entrypoint ${proc.entrypoint} missing` });
+    const run = executeEntrypoint(store, proc.entrypoint, c.args);
+    if (run.error) {
+      results.push({ file: rel, ok: false, expected: c.expected, got: run.output, error: run.error });
       continue;
     }
-    const interp = interpreterFor(proc.entrypoint);
-    const executable = !interp && (statSync(entry).mode & 0o111) !== 0;
-    if (!interp && !executable) {
-      results.push({ file: rel, ok: false, expected, got: null, error: `no interpreter for ${proc.entrypoint}` });
-      continue;
-    }
-    const cmd = interp ? interp[0]! : entry;
-    const argv = interp ? [...interp.slice(1), entry, ...args] : args;
-    const r = spawnSync(cmd, argv, { cwd: store.root, encoding: "utf8", timeout: 120_000, maxBuffer: 64 * 1024 * 1024 });
-    if (r.error || r.status !== 0) {
-      results.push({ file: rel, ok: false, expected, got: parseOutput(r.stdout ?? ""), error: r.error?.message ?? `exit ${r.status}: ${(r.stderr ?? "").trim().slice(0, 200)}` });
-      continue;
-    }
-    const parsed = parseOutput(r.stdout);
-    const got = c["expected_total"] !== undefined && parsed && typeof parsed === "object" && "total" in (parsed as Record<string, unknown>) ? (parsed as Record<string, unknown>)["total"] : parsed;
-    results.push({ file: rel, ok: sameValue(got, expected), expected, got });
+    const got = projectOutput(run.output, c.key);
+    results.push({ file: rel, ok: sameValue(got, c.expected), expected: c.expected, got });
   }
   return results;
 }

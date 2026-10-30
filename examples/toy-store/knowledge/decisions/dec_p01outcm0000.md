@@ -30,6 +30,7 @@ produced_by: ep_p01outcm0000
 caused_by: turn_claude_toyseed0001_0001
 shown_at:
   - turn_claude_toyseed0001_0002
+threshold: null
 ---
 
 Verbatim from Methods / Outcomes.

@@ -19,6 +19,10 @@ regression_cases:
 promoted_from:
   - ep_p01nrand0000
   - ep_p01nanal0000
+code_hash: f4a7ba544e769fccd53756a7161b690d5f53d31911e4f064b320396a3dcb9013
+supersedes: []
+justification: null
+code_archived: null
 qualified_on:
   harness: claude
   model: fixture
