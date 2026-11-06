@@ -183,7 +183,7 @@ const outcomeExcerpt = "The prespecified primary outcome was the Timed Up and Go
 const execOutput = '{"column": "Randomised", "rows": [["Early mobilisation", 60], ["Usual care", 60]], "total": 120}';
 type Exec = Extract<Node, { type: "evidence" }>["execution"];
 const ev = (id: string, title: string, kind: "excerpt" | "observation" | "execution", body: string, locator: Record<string, unknown>, producedBy: string, execution: Exec = null): Node => ({
-  ...base(id, title, T2), type: "evidence", kind, locator: { artifact: artIds["P01"]!, path: null, page: null, table: null, section: null, span: null, ...locator }, hash: sha256(canonicalBody(body)), execution, produced_by: producedBy, caused_by: TURN1,
+  ...base(id, title, T2), type: "evidence", kind, locator: { artifact: artIds["P01"]!, path: null, page: null, table: null, section: null, span: null, ...locator }, hash: sha256(canonicalBody(body)), execution, cites: [], produced_by: producedBy, caused_by: TURN1,
 });
 add(ev(EV_TABLE, "P01 Table 1 participant flow", "excerpt", tableExcerpt, { table: "Table 1", section: "Results" }, EP_RAND), tableExcerpt);
 add(ev(EV_OUTCOME, "P01 primary outcome sentence", "excerpt", outcomeExcerpt, { section: "Methods / Outcomes" }, EP_OUT), outcomeExcerpt);

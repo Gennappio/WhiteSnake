@@ -223,3 +223,9 @@ export function headOf(dir: string): string | null {
   const r = gitTry(dir, ["rev-parse", "--short", "HEAD"]);
   return r.status === 0 ? r.stdout : null;
 }
+
+/** Full hash of HEAD: what a remote reference pins, since a short hash is only unique today. */
+export function fullHeadOf(dir: string): string | null {
+  const r = gitTry(dir, ["rev-parse", "HEAD"]);
+  return r.status === 0 ? r.stdout : null;
+}

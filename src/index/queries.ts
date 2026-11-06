@@ -1,7 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
-import { EDGE_SPECS } from "../schema/edges.js";
-import type { NodeType } from "../schema/ids.js";
-import type { Node } from "../schema/nodes.js";
+import { EDGE_SPECS, REMOTE_SUFFIX } from "../schema/edges.js";
+import { typeOfId, type NodeType } from "../schema/ids.js";
+import { isRemoteRef, remoteKey, type Node } from "../schema/nodes.js";
 import { collapseWs, truncate } from "../util.js";
 import { tokenize } from "./db.js";
 
@@ -79,6 +79,8 @@ export interface WhyNode {
   children: { rel: string; node: WhyNode }[];
   truncated?: boolean;
   shallow?: boolean;
+  /** A record in another store: shown as a boundary, never followed from here. */
+  remote?: { store: string; id: string; commit: string | null };
 }
 
 /**
@@ -149,6 +151,11 @@ export function why(db: DatabaseSync, id: string, maxDepth = 6): WhyNode | null 
     const policy = WHY_POLICY[n.type] ?? { expand: [], shallow: [] };
     const edges = db.prepare("SELECT rel, dst FROM edges WHERE src = ? ORDER BY rel, dst").all(nodeId) as { rel: string; dst: string }[];
     for (const e of edges) {
+      if (e.rel.endsWith(REMOTE_SUFFIX)) {
+        const base = e.rel.slice(0, -REMOTE_SUFFIX.length);
+        if (policy.expand.includes(base) || policy.shallow.includes(base)) w.children.push({ rel: e.rel, node: remoteNode(n, base, e.dst) });
+        continue;
+      }
       const shallow = policy.shallow.includes(e.rel) || (depth > 0 && e.rel === "caused_by");
       if (shallow) {
         const child = getNode(db, e.dst);
@@ -163,7 +170,18 @@ export function why(db: DatabaseSync, id: string, maxDepth = 6): WhyNode | null 
   return walk(id, 0);
 }
 
+/** The boundary node `why` shows for a reference into another store, with the commit the reference pins. */
+function remoteNode(n: IndexedNode, rel: string, dst: string): WhyNode {
+  const refs = (n as unknown as Record<string, unknown>)[rel];
+  const ref = Array.isArray(refs) ? refs.find((r) => isRemoteRef(r) && remoteKey(r) === dst) : undefined;
+  const colon = dst.indexOf(":");
+  const store = dst.slice(0, colon);
+  const id = dst.slice(colon + 1);
+  return { id: dst, type: typeOfId(id) ?? "decision", title: `record of store ${store}`, children: [], shallow: true, remote: { store, id, commit: isRemoteRef(ref) ? ref.commit : null } };
+}
+
 export function renderWhy(w: WhyNode, indent = ""): string {
+  if (w.remote) return `${indent}${w.id} (remote ${w.type}, store ${w.remote.store}${w.remote.commit ? `, commit ${w.remote.commit.slice(0, 12)}` : ""}) not followed: ask that store`;
   const bits: string[] = [`${w.id} (${w.type}${w.kind ? `/${w.kind}` : ""}${w.status ? `, ${w.status}` : ""}) ${w.title}`];
   if (w.claim) bits.push(`${indent}    claim: ${w.claim}`);
   if (w.value !== undefined) bits.push(`${indent}    value: ${JSON.stringify(w.value)}`);
@@ -194,8 +212,9 @@ export interface AffectedRow {
  */
 export function affected(db: DatabaseSync, id: string): AffectedRow[] {
   const root = getNode(db, id);
-  if (!root) return [];
-  const rootIsDecision = root.type === "decision";
+  // A remote key (`<store>:<id>`) has no node here, only the edges that point at it.
+  if (!root && !id.includes(":")) return [];
+  const rootIsDecision = root?.type === "decision";
   const incoming = new Map<string, { src: string; rel: string }[]>();
   for (const e of db.prepare("SELECT src, rel, dst FROM edges WHERE relies = 1 ORDER BY src, rel").all() as { src: string; rel: string; dst: string }[]) {
     const list = incoming.get(e.dst) ?? [];

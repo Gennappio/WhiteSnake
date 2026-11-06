@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { edgeSpec } from "../schema/edges.js";
 import { isAuthoredType, newId, type NodeType } from "../schema/ids.js";
-import { parseNode, type Node } from "../schema/nodes.js";
+import { parseNode, refKey, type Node, type Ref } from "../schema/nodes.js";
 import { CliError, canonicalBody, isRecord, nowIso, readText, sha256 } from "../util.js";
 import { loadStore, nodePath, readNodeFile, writeNodeFile, type LoadedStore } from "./files.js";
 import { errorsOf, validateStore, warningsOf } from "./validate.js";
@@ -109,7 +109,7 @@ export function updateNode(root: string, id: string, patch: Record<string, unkno
   return parsed.node;
 }
 
-export function linkNodes(root: string, src: string, rel: string, dsts: string[], opts: WriteOptions = {}): Node {
+export function linkNodes(root: string, src: string, rel: string, dsts: Ref[], opts: WriteOptions = {}): Node {
   const store = opts.store ?? loadStore(root);
   const node = store.nodes.get(src);
   if (!node) throw new CliError(`unknown node ${src}`, 1);
@@ -120,8 +120,19 @@ export function linkNodes(root: string, src: string, rel: string, dsts: string[]
   for (const key of spec.path.slice(0, -1)) container = container[key] as Record<string, unknown>;
   const leaf = spec.path[spec.path.length - 1]!;
   const current = container[leaf];
-  const patchValue = Array.isArray(current) ? [...new Set([...(current as string[]), ...dsts])] : dsts.length === 1 ? dsts[0] : undefined;
-  if (patchValue === undefined) throw new CliError(`${rel} holds a single reference; pass exactly one id`, 1);
+  let patchValue: unknown;
+  if (Array.isArray(current)) {
+    const merged = [...(current as Ref[])];
+    const seen = new Set(merged.map(refKey));
+    for (const d of dsts) {
+      if (seen.has(refKey(d))) continue;
+      seen.add(refKey(d));
+      // An episode's remote child is `{store, id}` only; the schema decides which fields accept a remote form.
+      merged.push(typeof d !== "string" && rel === "children" ? ({ store: d.store, id: d.id } as unknown as Ref) : d);
+    }
+    patchValue = merged;
+  } else if (dsts.length === 1 && typeof dsts[0] === "string") patchValue = dsts[0];
+  if (patchValue === undefined) throw new CliError(`${rel} holds a single local reference; pass exactly one id`, 1);
   const patch: Record<string, unknown> =
     spec.path.length === 1 ? { [leaf]: patchValue } : { [spec.path[0]!]: { ...(raw[spec.path[0]!] as Record<string, unknown>), [leaf]: patchValue } };
   return updateNode(root, src, patch, undefined, { ...opts, store });

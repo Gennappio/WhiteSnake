@@ -24,6 +24,7 @@ execution:
     corpus/P01.md: 3a528fd5eb485ae43f6a12b89eabf680074fcc0c8342ef982c53e28b15d9ece1
     procedures/table_counts/run.py: f4a7ba544e769fccd53756a7161b690d5f53d31911e4f064b320396a3dcb9013
   truncated: false
+cites: []
 produced_by: ep_p01nrand0000
 caused_by: turn_claude_toyseed0001_0001
 ---

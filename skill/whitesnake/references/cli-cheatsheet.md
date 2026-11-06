@@ -8,14 +8,14 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake frontier` | open questions, proposed decisions, provisional/suspended procedures, open episodes |
 | `whitesnake precedent <words...> [--type decision procedure] [--limit 10]` | lexical search over decisions, procedures, questions, episodes |
 | `whitesnake why <id \| unit/field>` | provenance tree: decision → criteria, evidence, locators, episode, prompt |
-| `whitesnake affected <id>` | everything that transitively relies on a node |
+| `whitesnake affected <id \| store:id>` | everything that transitively relies on a node, or on a record of another store |
 | `whitesnake get <id \| unit/field>` | print one record |
 | `whitesnake ls [type] [--status s] [--kind k]` | list records |
 | `whitesnake add <type> --json-in '<json>' [--body "<text>" \| --body-file <path>]` | create a record (id, created, caused_by filled in) |
 | `whitesnake run "<command>" --episode <id>` | run a command and record it as execution evidence in one step |
 | `whitesnake procedure propose --from-evidence <ids...> [--name n]` | distil recorded executions into a procedure skeleton with regression cases |
 | `whitesnake set <id> --json-in '<patch>' [--body ...]` | update a record |
-| `whitesnake link <id> <field> <ids...>` | append references to an edge field |
+| `whitesnake link <id> <field> <ids...>` | append references to an edge field; `<store>:<id>[@<commit>]` refers to a record of another store (accepted in `data`, `backing`, `depends_on`, `cites`) |
 | `whitesnake episode open <title> [--parent id] [--uses ids...]` / `whitesnake episode close <id> [--outcome o] [--produces ids...]` | bracket a unit of work |
 | `whitesnake shown <ids...> [--turn T]` | record that these decisions were presented to the researcher in the current turn, with the moment (promotes procedures over time); a turn is required |
 | `whitesnake correct <id> --reason "<text>" [--value <json>] [--event <id>]` | the researcher says a result is wrong: records the correction as an identified event on the decision, marks it, suspends the procedures behind it, flags dependents; the same event again changes nothing; `--event` is required without a current turn |

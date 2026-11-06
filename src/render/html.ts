@@ -1,6 +1,7 @@
 import { ensureIndex } from "../index/db.js";
 import { frontier, getNode, timeline, type IndexedNode } from "../index/queries.js";
 import { kpi, type Kpi } from "../lifecycle/kpi.js";
+import { remoteKey, type Ref, type RemoteRef } from "../schema/nodes.js";
 import { loadConfig } from "../store/config.js";
 import { loadStore } from "../store/files.js";
 import { validateStore, warningsOf } from "../store/validate.js";
@@ -34,21 +35,25 @@ input.filter { width:100%; padding:8px 10px; border:1px solid var(--line); borde
 `;
 
 function decisionDetails(db: ReturnType<typeof ensureIndex>, d: IndexedNode & { type: "decision" }): string {
-  const ev = (ids: string[]) =>
+  const remote = (r: RemoteRef) => `<li><code>${esc(remoteKey(r))}</code> <span class="muted">record of another store${r.commit ? `, commit ${esc(r.commit.slice(0, 12))}` : ""}</span></li>`;
+  const ev = (ids: Ref[]) =>
     ids
-      .map((id) => {
+      .map((ref) => {
+        if (typeof ref !== "string") return remote(ref);
+        const id = ref;
         const e = getNode(db, id);
         if (!e || e.type !== "evidence") return `<li><code>${esc(id)}</code></li>`;
         const loc = Object.entries(e.locator).filter(([, v]) => v !== null && v !== undefined).map(([k, v]) => `${k}=${v}`).join(", ");
         return `<li><code>${esc(id)}</code> ${esc(e.title)} <span class="muted">(${esc(loc)})</span><div class="excerpt">${esc(truncate(collapseWs(e.body), 400))}</div></li>`;
       })
       .join("");
-  const refs = (ids: string[]) =>
+  const refs = (ids: Ref[]) =>
     ids.length
       ? ids
-          .map((id) => {
-            const n = getNode(db, id);
-            return `<li><code>${esc(id)}</code> ${esc(n?.title ?? "")}</li>`;
+          .map((ref) => {
+            if (typeof ref !== "string") return remote(ref);
+            const n = getNode(db, ref);
+            return `<li><code>${esc(ref)}</code> ${esc(n?.title ?? "")}</li>`;
           })
           .join("")
       : '<li class="empty">none</li>';

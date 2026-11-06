@@ -38,6 +38,7 @@ export const EDGE_SPECS: Record<NodeType, readonly EdgeSpec[]> = {
   ],
   evidence: [
     { rel: "locator", path: ["locator", "artifact"], targets: ["artifact"], relies: true },
+    { rel: "cites", path: ["cites"], targets: ["evidence", "decision"], relies: true },
     { rel: "produced_by", path: ["produced_by"], targets: ["episode"], relies: false },
     turn(),
   ],
@@ -109,6 +110,10 @@ export function extractEdges(node: Node): Edge[] {
   return out;
 }
 
+/** The spec of an edge; a `<rel>_remote` edge inherits its base spec, so a remote dependency relies like a local one. */
 export function edgeSpec(type: NodeType, rel: string): EdgeSpec | undefined {
-  return EDGE_SPECS[type].find((s) => s.rel === rel);
+  const direct = EDGE_SPECS[type].find((s) => s.rel === rel);
+  if (direct || !rel.endsWith(REMOTE_SUFFIX)) return direct;
+  const base = EDGE_SPECS[type].find((s) => s.rel === rel.slice(0, -REMOTE_SUFFIX.length));
+  return base ? { ...base, rel } : undefined;
 }

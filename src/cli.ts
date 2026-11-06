@@ -12,6 +12,7 @@ import { affected, frontier, getNode, listNodes, precedent, renderFrontier, rend
 import { claudeLogPath } from "./ingest/claude.js";
 import { ingestLogFile } from "./ingest/index.js";
 import { NODE_TYPES, TYPE_DIR, type NodeType } from "./schema/ids.js";
+import { parseRef } from "./schema/nodes.js";
 import { CONFIG_FILE, ConfigSchema, findStoreRoot, writeConfig } from "./store/config.js";
 import { resolveWorkingStore, type WorkingStore } from "./store/context.js";
 import { loadStore, serializeNode } from "./store/files.js";
@@ -214,9 +215,9 @@ program
 
 program
   .command("link <src> <rel> <dst...>")
-  .description("append references to an edge field (e.g. link dec_x data ev_y ev_z)")
+  .description("append references to an edge field (e.g. link dec_x data ev_y ev_z); <store>:<id>[@<commit>] refers to a record in another store")
   .action((src: string, rel: string, dst: string[]) => {
-    const node = linkNodes(root(), src, rel, dst);
+    const node = linkNodes(root(), src, rel, dst.map(parseRef));
     printWarnings();
     print(`${node.id}.${rel} now ${JSON.stringify((node as unknown as Record<string, unknown>)[rel] ?? "(nested)")}`, node);
   });
@@ -292,10 +293,10 @@ program
 
 program
   .command("affected <id>")
-  .description("everything that transitively relies on a node (what to re-examine if it changes)")
+  .description("everything that transitively relies on a node (what to re-examine if it changes); <store>:<id> names a record of another store")
   .action((id: string) => {
     const db = ensureIndex(root());
-    if (!getNode(db, id)) {
+    if (!id.includes(":") && !getNode(db, id)) {
       db.close();
       throw new CliError(`no node ${id}`, 1);
     }

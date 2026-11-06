@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { commitAll, headOf, openParentBranch } from "../branch.js";
+import { commitAll, fullHeadOf, headOf, openParentBranch } from "../branch.js";
 import { randomSuffix } from "../schema/ids.js";
 import { loadConfig } from "../store/config.js";
 import { loadStore } from "../store/files.js";
@@ -82,6 +82,7 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
   writeText(join(work, ".whitesnake", "tasks", `${task.id}.output.json`), `${JSON.stringify({ status: run.status, text: run.text, json: run.json }, null, 2)}\n`);
   // The child's Stop hook usually commits first; report the branch head either way.
   const childCommit = commitAll(work, `store: task ${task.id} for ${parentCfg.id}`) ?? headOf(work);
+  const childHead = fullHeadOf(work);
   if (run.status !== 0 && !output) throw new CliError(`child agent failed (exit ${run.status}): ${run.stderr.slice(0, 400)}`, 1);
 
   // Parent side: the child's answer becomes an artifact plus execution evidence, and an episode with a remote child.
@@ -111,6 +112,8 @@ export function delegateTask(parentRoot: string, childRoot: string, spec: { ques
       title: `Child answer for ${task.id} (${childCfg.id})`,
       kind: "execution",
       locator: { artifact: artifact.id, section: output ? `decisions ${output.decision_ids.join(", ") || "none"}` : "raw output" },
+      // Typed references to what the child recorded, pinned to its commit: a correction there reaches this evidence through `affected`.
+      cites: [...(output?.decision_ids ?? []), ...(output?.evidence_ids ?? [])].map((id) => ({ store: childCfg.id, id, commit: childHead })),
       produced_by: episode.id,
     },
     output ? `${output.result}\n\nchild decisions: ${output.decision_ids.join(", ") || "none"}\nchild evidence: ${output.evidence_ids.join(", ") || "none"}\nuncertainties: ${output.uncertainties.join("; ") || "none"}` : run.text,

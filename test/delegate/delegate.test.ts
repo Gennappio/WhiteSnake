@@ -39,7 +39,7 @@ test("delegation runs the child on the parent's branch and records the answer as
     gitInit(child.dir);
     const r = runCli(["--json", "delegate", "--child", child.dir, "--question", "How many participants were randomised in P02?", "--why", "needed for the pooled total", "--harness", "stub"], { cwd: parent.dir, env });
     assert.equal(r.status, 0, r.stdout);
-    const d = r.json as { task: { id: string }; branch: string; worktree: string; child_commit: string | null; output: { status: string; episode_id: string; decision_ids: string[] }; parent_episode: string; parent_evidence: string; parent_artifact: string };
+    const d = r.json as { task: { id: string }; branch: string; worktree: string; child_commit: string | null; output: { status: string; episode_id: string; decision_ids: string[]; evidence_ids: string[] }; parent_episode: string; parent_evidence: string; parent_artifact: string };
     assert.equal(d.branch, "parent/parent-lab");
     assert.equal(d.output.status, "completed");
     assert.ok(d.child_commit, "the child's work was committed on its branch");
@@ -52,10 +52,15 @@ test("delegation runs the child on the parent's branch and records the answer as
     assert.deepEqual(ep.children, [{ store: "toy", id: d.output.episode_id }]);
     assert.equal(ep.outcome, "success");
     assert.ok(ep.produces.includes(d.parent_evidence));
-    const ev = runCli(["--json", "get", d.parent_evidence], { cwd: parent.dir }).json as { kind: string; locator: { artifact: string }; body: string };
+    const ev = runCli(["--json", "get", d.parent_evidence], { cwd: parent.dir }).json as { kind: string; locator: { artifact: string }; body: string; cites: { store: string; id: string; commit: string | null }[] };
     assert.equal(ev.kind, "execution");
     assert.equal(ev.locator.artifact, d.parent_artifact);
     assert.match(ev.body, new RegExp(d.output.decision_ids[0]!));
+    // The child's records are cited as typed remote references pinned to the child's commit, not only named in text.
+    const head = git(d.worktree, "rev-parse", "HEAD");
+    assert.deepEqual(ev.cites, [...d.output.decision_ids, ...d.output.evidence_ids].map((id) => ({ store: "toy", id, commit: head })));
+    const reach = runCli(["--json", "affected", `toy:${d.output.decision_ids[0]}`], { cwd: parent.dir }).json as { id: string }[];
+    assert.ok(reach.some((row) => row.id === d.parent_evidence), "a correction of the child's decision reaches the parent's evidence through affected");
     assert.ok(existsSync(join(parent.dir, "artifacts", "delegations", `${d.task.id}.json`)));
     assert.equal(runCli(["validate"], { cwd: parent.dir }).status, 0);
     const why = runCli(["--json", "why", d.parent_evidence], { cwd: parent.dir }).json as { children: { rel: string; node: { type: string } }[] };

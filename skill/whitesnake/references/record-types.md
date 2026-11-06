@@ -14,11 +14,11 @@ Edges are frontmatter fields holding ids. Their direction is fixed: a decision p
 | `qualifier` | `{confidence: 0..1, scope: "where it holds / open question ids"}` |
 | `fragility` | `mechanical`, `interpretive`, `analogical`, `absence` |
 | `target` | annotation only: `{unit, field, value}` |
-| `data` | evidence ids the claim rests on |
-| `warrant` | criterion decision ids that license the inference |
-| `backing` | evidence or decisions that justify the warrant itself (optional) |
+| `data` | evidence ids the claim rests on; a record of another store as `{store, id, commit}` |
+| `warrant` | criterion decision ids that license the inference (always of this store) |
+| `backing` | evidence or decisions that justify the warrant itself (optional); remote form allowed |
 | `rebuttal` | `{text, evidence}`: conditions under which the claim would be wrong |
-| `depends_on` | other decisions or procedures whose change should trigger re-examination |
+| `depends_on` | other decisions or procedures whose change should trigger re-examination; remote form allowed, e.g. the child's decision behind a delegated answer |
 | `supersedes`, `answers`, `produced_by`, `caused_by` | links to the replaced decision, the question answered, the episode, the prompt |
 | `shown_at` | `[{turn, at}]`: the turns in which the decision was shown to the researcher and when; written by `shown`, never by hand |
 | `corrections` | `[{turn, at, reason, event, actor}]`: researcher corrections as identified events; written by `correct`, never by hand |

@@ -6,6 +6,11 @@ const IdList = z.array(Id).default([]);
 const Iso = z.string().min(10);
 const Sha256 = z.string().regex(/^[0-9a-f]{64}$/, "sha256 hex expected");
 
+/** A record in another store, pinned to the commit that held it. The endpoint is resolved through the registry, never stored here. */
+export const RemoteRefSchema = z.strictObject({ store: z.string().min(1), id: z.string().min(3), commit: z.string().nullable().default(null) });
+/** Local ids and remote references side by side: the edges a decision rests on may cross a store boundary. */
+const RefList = z.array(z.union([Id, RemoteRefSchema])).default([]);
+
 const common = {
   id: Id,
   title: z.string().min(1),
@@ -51,13 +56,13 @@ export const DecisionSchema = z
       })
       .nullable()
       .default(null),
-    data: IdList,
+    data: RefList,
     warrant: IdList,
-    backing: IdList,
+    backing: RefList,
     rebuttal: z
       .strictObject({ text: z.string().default(""), evidence: IdList })
       .default({ text: "", evidence: [] }),
-    depends_on: IdList,
+    depends_on: RefList,
     supersedes: IdList,
     answers: Id.nullable().default(null),
     produced_by: Id.nullable().default(null),
@@ -142,6 +147,8 @@ export const EvidenceSchema = z
       })
       .nullable()
       .default(null),
+    /** Records in other stores this evidence stands for: the child's decisions and evidence behind a delegated answer. */
+    cites: RefList,
     produced_by: Id.nullable().default(null),
     caused_by: Id.nullable().default(null),
   })
@@ -343,4 +350,36 @@ export function kindOf(node: Node): string {
     default:
       return "";
   }
+}
+
+export type RemoteRef = z.infer<typeof RemoteRefSchema>;
+export type Ref = string | RemoteRef;
+
+export function isRemoteRef(x: unknown): x is RemoteRef {
+  return !!x && typeof x === "object" && "store" in x && "id" in x;
+}
+
+/** The index key of a remote reference: `<store>:<id>`, the dst of its `_remote` edge. */
+export function remoteKey(r: RemoteRef): string {
+  return `${r.store}:${r.id}`;
+}
+
+export function refKey(r: Ref): string {
+  return typeof r === "string" ? r : remoteKey(r);
+}
+
+export function localIds(refs: readonly Ref[]): string[] {
+  return refs.filter((r): r is string => typeof r === "string");
+}
+
+export function remoteRefs(refs: readonly Ref[]): RemoteRef[] {
+  return refs.filter(isRemoteRef);
+}
+
+const REMOTE_REF_RE = /^([a-z0-9][a-z0-9-]{0,40}):([a-z]+_[0-9a-z_]+)(?:@([0-9a-f]{4,64}))?$/;
+
+/** `<store>:<id>[@<commit>]` is a remote reference; anything else is a local id. */
+export function parseRef(text: string): Ref {
+  const m = REMOTE_REF_RE.exec(text);
+  return m ? { store: m[1]!, id: m[2]!, commit: m[3] ?? null } : text;
 }
