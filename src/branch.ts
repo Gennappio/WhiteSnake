@@ -141,16 +141,21 @@ export interface BranchStatus {
   ahead: number;
   behind: number;
   worktree: string | null;
+  /** Open questions raised on the branch and not on main: what the branch asks this store's researcher. */
+  questions: string[];
 }
 
 export function branchStatus(root: string): BranchStatus[] {
   requireRepo(root);
   const refs = git(root, ["for-each-ref", "--format=%(refname:short)", "refs/heads/parent/"]).split("\n").filter(Boolean);
+  const main = refs.length ? loadStore(root) : null;
   return refs.map((branch) => {
     const counts = git(root, ["rev-list", "--left-right", "--count", `${branch}...main`]).split(/\s+/);
     const parent = branch.slice("parent/".length);
     const wt = worktreeDir(root, parent);
-    return { branch, parent, ahead: Number(counts[0] ?? 0), behind: Number(counts[1] ?? 0), worktree: existsSync(wt) ? wt : null };
+    const present = existsSync(wt);
+    const questions = present && main ? [...loadStore(wt).nodes.values()].filter((n) => n.type === "question" && n.status === "open" && !main.nodes.has(n.id)).map((n) => n.id).sort() : [];
+    return { branch, parent, ahead: Number(counts[0] ?? 0), behind: Number(counts[1] ?? 0), worktree: present ? wt : null, questions };
   });
 }
 

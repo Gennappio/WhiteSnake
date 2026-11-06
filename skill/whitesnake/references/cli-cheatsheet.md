@@ -23,7 +23,8 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake kpi` | resolutions without agent, decisions by status, procedure transitions |
 | `whitesnake render` | write review.html for the researcher |
 | `whitesnake ask "<question>"` | ask an agent about the store; answer cites record ids |
-| `whitesnake delegate --child <dir> --question "..."` | hand a question to a child store; its answer comes back as evidence |
+| `whitesnake delegate --child <dir> --question "..."` | hand a question to a child store; its answer comes back as evidence citing the child's records |
+| `whitesnake sync [--child <id>]` | deliver the queued acceptances and corrections to the child stores they concern (local stores under `stores:`); the Stop hook does this too |
 | `whitesnake export <dir>` / `whitesnake check` | hand the store over, verify an imported copy |
 | `whitesnake gc [--apply]` | compact cold subtrees nothing live needs and archive the code of cold superseded or retired procedures; `--apply` needs git and commits first; reversible via git |
 | `whitesnake collapse <episode>` | one composed procedure from a deterministic subtree |

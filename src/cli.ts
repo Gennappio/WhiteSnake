@@ -26,6 +26,7 @@ import { renderScorecard, scorecard } from "./lifecycle/scorecard.js";
 import { supersedeProcedure } from "./lifecycle/supersede.js";
 import { resolve as resolveLadder } from "./lifecycle/resolve.js";
 import { markShown } from "./lifecycle/shown.js";
+import { syncOutbox } from "./lifecycle/sync.js";
 import { renderReview } from "./render/html.js";
 import { checkStore, exportStore } from "./handoff.js";
 import { branchStatus, mergeParentBranch, openParentBranch } from "./branch.js";
@@ -661,7 +662,7 @@ program
   .addCommand(
     new Command("status").description("parent branches with ahead/behind counts").action(() => {
       const rows = branchStatus(root());
-      print(rows.map((r) => `${r.branch}\tahead ${r.ahead}\tbehind ${r.behind}\t${r.worktree ?? "-"}`).join("\n") || "(no parent branches)", rows);
+      print(rows.map((r) => `${r.branch}\tahead ${r.ahead}\tbehind ${r.behind}\t${r.worktree ?? "-"}${r.questions.length ? `\tasks ${r.questions.length} question(s): ${r.questions.join(", ")}` : ""}`).join("\n") || "(no parent branches)", rows);
     }),
   )
   .addCommand(
@@ -670,6 +671,21 @@ program
       print(r.merged ? `merged ${r.commits} commit(s) from ${r.branch}` : `${r.branch} has nothing to merge`, r);
     }),
   );
+
+program
+  .command("sync")
+  .description("deliver the queued acceptances and corrections to the child stores they concern (local stores under stores:); the Stop hook does this too")
+  .option("--child <id>", "only the events for this child store (id or alias)")
+  .action((opts: { child?: string }) => {
+    const r = syncOutbox(root(), { child: opts.child });
+    print(
+      [
+        ...r.delivered.map((d) => `delivered ${d.kind} of ${d.target} to ${d.store} on ${d.branch}${d.commit ? ` (${d.commit})` : ""}${d.question ? `; raised ${d.question}` : ""}`),
+        ...r.pending.map((p) => `pending ${p.kind} of ${p.target} to ${p.store}: ${p.reason}`),
+      ].join("\n") || "(nothing to deliver)",
+      r,
+    );
+  });
 
 program
   .command("ask <question...>")

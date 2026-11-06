@@ -6,6 +6,8 @@ import { frontier, renderFrontier } from "../index/queries.js";
 import { ensureIndex } from "../index/db.js";
 import { ingestLogFile, lastAssistantText } from "../ingest/index.js";
 import { decisionIdsIn, markShown } from "../lifecycle/shown.js";
+import { syncOutbox } from "../lifecycle/sync.js";
+import { branchStatus } from "../branch.js";
 import { sessionIdFor, turnIdFor } from "../schema/ids.js";
 import type { Turn } from "../schema/nodes.js";
 import { findStoreRoot, loadConfig } from "../store/config.js";
@@ -174,10 +176,20 @@ export function runHook(event: string, input: HookInput): HookOutput {
         db.close();
         const cfg = loadConfig(root);
         const baseline = ensureSnapshot(root);
+        let branches = "";
+        if (existsSync(join(root, ".git"))) {
+          try {
+            const rows = branchStatus(root).filter((b) => b.questions.length);
+            if (rows.length) branches = rows.map((b) => `${b.branch} asks this store ${b.questions.length} open question(s) (${b.questions.join(", ")}): see \`whitesnake branch status\`.`).join("\n");
+          } catch {
+            // No parent branches, or git unavailable: nothing to report.
+          }
+        }
         log(root, { event, session: input.session_id, source: input.source, journal: baseline ? "baseline taken" : "baseline kept" });
         const text = [
           `WhiteSnake store "${cfg.name}" (${cfg.id}). Mandate: ${cfg.mandate || "not stated"}.`,
           firstOpen,
+          branches,
           "Before deciding, consult precedents with `whitesnake precedent <text>`; explain results with `whitesnake why <id|unit/field>`.",
           "Record decisions and evidence only through `whitesnake add` / `whitesnake set` / `whitesnake link`; never edit files under knowledge/ directly.",
           "",
@@ -310,13 +322,22 @@ export function runHook(event: string, input: HookInput): HookOutput {
       case "PreCompact": {
         let ingested: unknown = null;
         let shown: unknown = null;
+        let sync: unknown = null;
         if (input.transcript_path) {
           ingested = ingestLogFile(root, input.transcript_path);
+          buildIndex(root);
           // Decisions the agent listed in its final message count as shown to the researcher.
           const finalText = lastAssistantText(input.transcript_path);
           const ids = finalText ? decisionIdsIn(finalText) : [];
           const turn = currentTurn(root);
           if (ids.length) shown = turn ? markShown(loadStore(root), ids, turn) : { skipped: ids, reason: "no current turn: the UserPromptSubmit hook did not run in this session" };
+        }
+        // Acceptances and corrections owed to other stores are delivered when they can be; what cannot waits in the outbox.
+        try {
+          const s = syncOutbox(root);
+          if (s.delivered.length || s.pending.length) sync = s;
+        } catch (e) {
+          sync = { error: (e as Error).message };
         }
         buildIndex(root);
         // By result, not by command: files under knowledge/ that changed since the last check without a CLI receipt.
@@ -324,7 +345,7 @@ export function runHook(event: string, input: HookInput): HookOutput {
         const directWrites = journal.direct.map((d) => `${d.path} ${d.change}`);
         const issues = validateStore(loadStore(root)).filter((i) => i.severity !== "warning");
         const commit = gitCommit(root, `store: ${event.toLowerCase()} ${(input.session_id ?? "").slice(0, 8)}`.trim());
-        log(root, { event, session: input.session_id, ingested, shown, validation_errors: issues.length, direct_writes: directWrites, journal_baseline: journal.baseline, commit });
+        log(root, { event, session: input.session_id, ingested, shown, sync, validation_errors: issues.length, direct_writes: directWrites, journal_baseline: journal.baseline, commit });
         const notes: string[] = [];
         if (directWrites.length) {
           const listed = directWrites.slice(0, 5).join(", ") + (directWrites.length > 5 ? `, and ${directWrites.length - 5} more` : "");

@@ -398,6 +398,13 @@
     ]
   },
   {
+    "name": "sync",
+    "args": [],
+    "options": [
+      "--child"
+    ]
+  },
+  {
     "name": "timeline",
     "args": [],
     "options": [

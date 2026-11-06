@@ -1,10 +1,11 @@
 import { ensureIndex } from "../index/db.js";
 import { affected } from "../index/queries.js";
-import type { Decision } from "../schema/nodes.js";
+import type { Decision, RemoteRef } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
 import { createNode, updateNode } from "../store/ops.js";
 import { CliError, nowIso, sha256 } from "../util.js";
 import { branchContext, ownerFor } from "./derive.js";
+import { correctedEventId, enqueue, remoteDecisionTargets, turnInfo, type OutboxEvent } from "./outbox.js";
 import { recomputeProcedureCache } from "./procedures.js";
 
 export interface CorrectionResult {
@@ -17,6 +18,8 @@ export interface CorrectionResult {
   event: string;
   /** True when the event had already been applied: nothing was written, the previous outcome is reported. */
   already: boolean;
+  /** Corrections queued for the records of other stores this decision rests on; `sync` delivers them. */
+  remote: { event: string; target: RemoteRef }[];
 }
 
 export interface CorrectOptions {
@@ -43,7 +46,7 @@ export function correctDecision(store: LoadedStore, decisionId: string, reason: 
   const event = opts.event ?? sha256(`${decisionId}:${turn}`);
   if (d.corrections.some((c) => c.event === event)) {
     const replacement = [...store.nodes.values()].find((n): n is Decision => n.type === "decision" && n.supersedes.includes(decisionId)) ?? null;
-    return { decision: decisionId, replacement: replacement?.id ?? null, needs_review: [], suspended: [], episode: d.produced_by, event, already: true };
+    return { decision: decisionId, replacement: replacement?.id ?? null, needs_review: [], suspended: [], episode: d.produced_by, event, already: true, remote: [] };
   }
   if (d.status === "superseded" || d.status === "retired") {
     const successor = [...store.nodes.values()].find((n): n is Decision => n.type === "decision" && n.supersedes.includes(decisionId));
@@ -114,5 +117,13 @@ export function correctDecision(store: LoadedStore, decisionId: string, reason: 
       needsReview.push(n.id);
     }
   }
-  return { decision: decisionId, replacement, needs_review: needsReview.sort(), suspended: suspended.sort(), episode: d.produced_by, event, already: false };
+  // The records of other stores this decision rested on receive the correction too, once a turn gives it provenance.
+  let remote: CorrectionResult["remote"] = [];
+  const targets = remoteDecisionTargets(store, d);
+  if (targets.length && turn) {
+    const info = turnInfo(store, turn);
+    const events: OutboxEvent[] = targets.map((t) => ({ event: correctedEventId(t, event), kind: "corrected", target: t, turn: info, at, origin: { decision: decisionId, event }, reason, value: opts.value, cell: d.target ? { unit: d.target.unit, field: d.target.field } : null, created: nowIso() }));
+    remote = enqueue(store.root, events).map((e) => ({ event: e.event, target: e.target }));
+  }
+  return { decision: decisionId, replacement, needs_review: needsReview.sort(), suspended: suspended.sort(), episode: d.produced_by, event, already: false, remote };
 }

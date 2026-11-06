@@ -1,6 +1,9 @@
+import { ensureIndex } from "../index/db.js";
+import { remoteKey, type RemoteRef } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
 import { updateNode } from "../store/ops.js";
 import { nowIso } from "../util.js";
+import { enqueue, remoteDecisionTargets, remoteTargetsForUnknownId, shownEventId, turnInfo, type OutboxEvent } from "./outbox.js";
 import { recomputeProcedureCache } from "./procedures.js";
 
 export interface ShownResult {
@@ -8,6 +11,8 @@ export interface ShownResult {
   already: string[];
   unknown: string[];
   promoted: string[];
+  /** Acceptances queued for the records of other stores these decisions rest on; `sync` delivers them. */
+  remote: { event: string; target: RemoteRef }[];
 }
 
 export const DECISION_ID_RE = /\bdec_[0-9a-z]{12}\b/g;
@@ -18,8 +23,9 @@ export const DECISION_ID_RE = /\bdec_[0-9a-z]{12}\b/g;
  * procedures the producing episode used derive a shown use from the first such event, which may promote them.
  */
 export function markShown(store: LoadedStore, decisionIds: string[], turn: string, opts: { at?: string } = {}): ShownResult {
-  const result: ShownResult = { shown: [], already: [], unknown: [], promoted: [] };
+  const result: ShownResult = { shown: [], already: [], unknown: [], promoted: [], remote: [] };
   const at = opts.at ?? nowIso();
+  const targets = new Map<string, RemoteRef>();
   for (const id of [...new Set(decisionIds)]) {
     const d = store.nodes.get(id);
     if (!d || d.type !== "decision") {
@@ -32,6 +38,7 @@ export function markShown(store: LoadedStore, decisionIds: string[], turn: strin
     }
     updateNode(store.root, id, { shown_at: [...d.shown_at, { turn, at }] }, undefined, { store });
     result.shown.push(id);
+    for (const t of remoteDecisionTargets(store, d)) targets.set(remoteKey(t), t);
     if (!d.produced_by) continue;
     const ep = store.nodes.get(d.produced_by);
     if (!ep || ep.type !== "episode") continue;
@@ -41,6 +48,17 @@ export function markShown(store: LoadedStore, decisionIds: string[], turn: strin
       const r = recomputeProcedureCache(store, used);
       if (r.from === "provisional" && r.to === "trusted") result.promoted.push(used);
     }
+  }
+  if (result.unknown.length) {
+    // An id this store does not hold may still be a record of another store, cited by a delegation here.
+    const db = ensureIndex(store.root);
+    for (const id of result.unknown) for (const t of remoteTargetsForUnknownId(db, id)) targets.set(remoteKey(t), t);
+    db.close();
+  }
+  if (targets.size) {
+    const info = turnInfo(store, turn);
+    const events: OutboxEvent[] = [...targets.values()].map((t) => ({ event: shownEventId(t, turn), kind: "shown", target: t, turn: info, at, created: nowIso() }));
+    result.remote = enqueue(store.root, events).map((e) => ({ event: e.event, target: e.target }));
   }
   return result;
 }
