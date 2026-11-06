@@ -77,3 +77,22 @@ Note on detection: in Codex rollouts the commands are nested inside JavaScript p
 Deterministic tests (3 new, suite at 44 passing): `gc` leaves untouched a store in which everything is live, compacts a cold, failed subtree into a `template` node with negative examples, locators, the list of replaced ids and the source commit, leaves live provenance byte-identical, is idempotent on a second application and reversible from git history; `collapse` refuses a subtree that still needs the agent and composes a step procedure from two episodes resolved with code; `recheck` retires a procedure that the model reproduces and keeps the one it does not reproduce.
 
 Live test (`npm run e2e:m4`): **passed with Claude Code and with Codex (`--harness codex --model gpt-5.6-sol`)**, with the same outcome. The model alone reproduces the regression case of the `table_counts` procedure (sum 120 on P01), and the procedure is retired by sublation; it cannot produce the sha256 of a file (null answer), and that procedure stays provisional; `why` on P01 still resolves to the retired procedure; final states `provisional=1, retired=1`; valid store.
+
+## Foundations for the node network
+
+**Closed on 2026-11-06 on the toy store with the stub agent.** The number of this milestone is assigned when the plan for the network of nodes enters the design record. Five commits, one per step (`d858472` CI, `5731e04` events instead of counters, `57d599c` one active annotation per cell and idempotent corrections, `1b8ebb7` typed remote references, `38a5b46` acceptances and corrections returned to the child); decisions 46 to 51 in DESIGN section K. The open question on the state diagram is settled by decision 47.
+
+Deterministic tests (`npm test`): 84 passing, from 64. Added: the replay of procedure events (promotion at the threshold, reset on reinstate, a correction by another context's researcher that counts in the scorecard and not in the state, order independence, transitions the rules do not admit, the toy's cache equal to its derivation); a stale cache reported by `validate` and repaired by `procedure recompute`; a merge and a rebase in which both sides used the same procedure, the cache-only conflict resolved and the counters adding up; a merge abandoned because its result would not validate; two active annotations for one cell; a correction applied twice, and one without a turn; typed remote references through the schema, the edges, `link`, `affected`, `why` and `render`; `delegate` citing the child's records at its commit; an acceptance and a correction delivered to the child's branch, the order of delivery, a retry, the Stop hook, an id unknown here but cited remotely. The seeded corruptions now cover `E_HISTORY_MISMATCH` and `E_DUPLICATE_ACTIVE`. The toy store was regenerated: its literal counter was one short.
+
+Continuous integration: every push runs the suite and `gate` on Ubuntu and macOS with Node 22.13 and 24. The five commits passed all four combinations.
+
+Scenario run by hand with the stub agent, two stores in two directories, the child registered under `stores:`:
+
+| Step | Outcome |
+|---|---|
+| The parent delegates P02 to the child and records its own decision citing the child's decision in `depends_on` (remote form, with the child's commit) | `why` in the parent shows the reference as a boundary line, not followed |
+| The parent's researcher is shown the decision; `sync` | delivered on `parent/parent-lab` of the child; the child's decision carries the parent's turn, mirrored with no prompt text (`created_by: sync:parent-lab`); the branch's procedure goes from 2 to 3 shown uses and becomes `trusted`; the child's main stays at 2, `provisional` |
+| The parent's researcher corrects the value in a later turn; `sync` | the child's decision is superseded by the corrected value under `human:researcher@parent-lab`; the branch's procedure is `suspended` (3 shown uses, 1 correction; history provisional, trusted, suspended); a question on the shared procedure is raised on the branch; `branch status` in the child lists it and the SessionStart hook names it; the child's main is untouched |
+| Validation | the parent, the worktree and the child's main are all valid |
+
+Not covered here: a real harness (the live tests of M1 to M4 were not re-run on these features) and a child on another machine, since there is no transport yet.
