@@ -1,11 +1,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { hostname, release } from "node:os";
-import { extname, join } from "node:path";
-import type { Procedure } from "../schema/nodes.js";
+import { basename, extname, join } from "node:path";
+import type { Evidence, Procedure } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
+import { createNode } from "../store/ops.js";
 import { sha256 } from "../util.js";
-import { transition } from "./procedures.js";
+import { recomputeProcedureCache, recordTransitionDecision } from "./procedures.js";
 
 export function platformLabel(): string {
   return `${process.platform} ${release()} ${process.arch}`;
@@ -76,6 +77,8 @@ export interface CaseResult {
   expected: unknown;
   got: unknown;
   error?: string;
+  exit_code?: number | null;
+  duration_ms?: number;
 }
 
 export interface Execution {
@@ -141,11 +144,11 @@ export function runRegressionCases(store: LoadedStore, proc: Procedure): CaseRes
     }
     const run = executeEntrypoint(store, proc.entrypoint, c.args);
     if (run.error) {
-      results.push({ file: rel, ok: false, expected: c.expected, got: run.output, error: run.error });
+      results.push({ file: rel, ok: false, expected: c.expected, got: run.output, error: run.error, exit_code: run.exit_code, duration_ms: run.duration_ms });
       continue;
     }
     const got = projectOutput(run.output, c.key);
-    results.push({ file: rel, ok: sameValue(got, c.expected), expected: c.expected, got });
+    results.push({ file: rel, ok: sameValue(got, c.expected), expected: c.expected, got, exit_code: run.exit_code, duration_ms: run.duration_ms });
   }
   return results;
 }
@@ -174,10 +177,40 @@ export function checkProcedures(store: LoadedStore, opts: { suspend: boolean }):
     }
     out.failed.push({ id: p.id, cases: results });
     if (opts.suspend) {
-      const reason = `regression failed on ${platformLabel()}: ${results.filter((r) => !r.ok).map((r) => `${r.file} expected ${JSON.stringify(r.expected)} got ${JSON.stringify(r.got)}${r.error ? ` (${r.error})` : ""}`).join("; ")}`.slice(0, 500);
-      transition(store, p.id, "suspended", reason, null);
+      const failing = results.filter((r) => !r.ok);
+      const reason = `regression failed on ${platformLabel()}: ${failing.map((r) => `${r.file} expected ${JSON.stringify(r.expected)} got ${JSON.stringify(r.got)}${r.error ? ` (${r.error})` : ""}`).join("; ")}`.slice(0, 500);
+      // The suspension is an explicit transition: a choice decision whose data is what actually ran here.
+      const evidence = failing.map((r) => recordCaseExecution(store, p, r).id);
+      recordTransitionDecision(store, p.id, "suspended", reason, null, { evidence, actor: "cli:check", title: `Suspension: ${p.id} fails its regression cases on this platform` });
+      recomputeProcedureCache(store, p.id);
       out.suspended.push({ id: p.id, reason });
     }
   }
   return out;
+}
+
+/** Record a regression case's run as execution evidence: the command, how it ended, and the hashes of what it read. */
+export function recordCaseExecution(store: LoadedStore, proc: Procedure, r: CaseResult): Evidence {
+  const c = readRegressionCase(store, r.file);
+  const interp = (interpreterFor(proc.entrypoint) ?? []).map((t) => (t === process.execPath ? "node" : basename(t)));
+  const command = [...interp, proc.entrypoint, ...c.args].join(" ");
+  const inputHashes: Record<string, string> = {};
+  for (const rel of [proc.entrypoint, ...c.args]) {
+    const abs = join(store.root, rel);
+    if (existsSync(abs) && statSync(abs).isFile()) inputHashes[rel] = sha256(readFileSync(abs));
+  }
+  const body = JSON.stringify({ expected: r.expected, got: r.got, error: r.error ?? null }, null, 2);
+  return createNode(
+    store.root,
+    "evidence",
+    {
+      title: `Regression check of ${proc.id} on ${r.file}`,
+      kind: "execution",
+      locator: { path: r.file },
+      execution: { command, cwd: ".", exit_code: r.exit_code ?? -1, duration_ms: r.duration_ms ?? null, platform: platformLabel(), host: hostLabel(), input_hashes: inputHashes, truncated: false },
+      produced_by: null,
+    },
+    body,
+    { store, causedBy: null, actor: "cli:check" },
+  ) as Evidence;
 }

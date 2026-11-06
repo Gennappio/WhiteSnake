@@ -19,7 +19,7 @@ import { codeHashOf, createNode, currentTurn, lastWarnings, linkNodes, readNode,
 import { errorsOf, validateStore, warningsOf } from "./store/validate.js";
 import { correctDecision } from "./lifecycle/correct.js";
 import { kpi, renderKpi } from "./lifecycle/kpi.js";
-import { reinstate, retire } from "./lifecycle/procedures.js";
+import { recomputeAll, reinstate, retire } from "./lifecycle/procedures.js";
 import { compareProcedures, renderCompare } from "./lifecycle/compare.js";
 import { renderScorecard, scorecard } from "./lifecycle/scorecard.js";
 import { supersedeProcedure } from "./lifecycle/supersede.js";
@@ -467,18 +467,40 @@ program
   .command("procedure")
   .description("manual procedure transitions")
   .addCommand(
-    new Command("reinstate").argument("<id>").requiredOption("--reason <text>").description("suspended -> provisional after a fix").action((id: string, opts: { reason: string }) => {
-      const r = root();
-      const p = reinstate(loadStore(r), id, opts.reason, currentTurn(r));
-      print(`${p.id} is now ${p.state}`, p);
-    }),
+    new Command("reinstate")
+      .argument("<id>")
+      .requiredOption("--reason <text>")
+      .requiredOption("--evidence <ids...>", "records that show what was fixed, or the recheck a new model failed")
+      .description("suspended, superseded or retired -> provisional, recorded as a choice decision with evidence")
+      .action((id: string, opts: { reason: string; evidence: string[] }) => {
+        const r = root();
+        const p = reinstate(loadStore(r), id, opts.reason, currentTurn(r), { evidence: opts.evidence });
+        printWarnings();
+        print(`${p.id} is now ${p.state}`, p);
+      }),
   )
   .addCommand(
-    new Command("retire").argument("<id>").requiredOption("--reason <text>").description("stop using a procedure; its outputs stand").action((id: string, opts: { reason: string }) => {
-      const r = root();
-      const p = retire(loadStore(r), id, opts.reason, currentTurn(r));
-      print(`${p.id} is now ${p.state}`, p);
-    }),
+    new Command("retire")
+      .argument("<id>")
+      .requiredOption("--reason <text>")
+      .option("--evidence <ids...>", "records behind the retirement, such as a recheck")
+      .description("stop using a procedure; its outputs stand; recorded as a choice decision")
+      .action((id: string, opts: { reason: string; evidence?: string[] }) => {
+        const r = root();
+        const p = retire(loadStore(r), id, opts.reason, currentTurn(r), { evidence: opts.evidence ?? [] });
+        printWarnings();
+        print(`${p.id} is now ${p.state}`, p);
+      }),
+  )
+  .addCommand(
+    new Command("recompute")
+      .argument("[ids...]")
+      .description("rewrite the cached state, counters and history of procedures from the recorded events (all when no id is given)")
+      .action((ids: string[]) => {
+        const r = root();
+        const results = recomputeAll(loadStore(r), ids.length ? ids : undefined);
+        print(results.map((x) => `${x.id}\t${x.changed ? `${x.from} -> ${x.to} (cache rewritten)` : `${x.to} (cache up to date)`}${x.warnings.length ? `\n  ${x.warnings.join("\n  ")}` : ""}`).join("\n") || "(no procedures)", results);
+      }),
   )
   .addCommand(
     new Command("propose")

@@ -8,6 +8,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Node } from "../schema/nodes.js";
 import { TYPE_DIR } from "../schema/ids.js";
+import { recomputeAll } from "../lifecycle/procedures.js";
 import { writeConfig } from "../store/config.js";
 import { loadStore, writeNodeFile } from "../store/files.js";
 import { validateStore } from "../store/validate.js";
@@ -98,7 +99,7 @@ const C_OUTCOME = "dec_crit0outcom3";
 const CHOICE_TABLE = "dec_choice0tabl4";
 const crit = (id: string, title: string, claim: string, scope: string, created: string, causedBy: string, rebuttal: string, answers: string | null = null): Node => ({
   ...base(id, title, created), type: "decision", kind: "criterion", status: "active", claim, qualifier: { confidence: 1, scope }, fragility: "mechanical", target: null,
-  data: [], warrant: [], backing: [], rebuttal: { text: rebuttal, evidence: [] }, depends_on: [], supersedes: [], answers, produced_by: null, caused_by: causedBy, shown_at: [], threshold: null,
+  data: [], warrant: [], backing: [], rebuttal: { text: rebuttal, evidence: [] }, depends_on: [], supersedes: [], answers, produced_by: null, caused_by: causedBy, shown_at: [], corrections: [], threshold: null, transition: null,
 });
 add(crit(C_ANALYZED, "Criterion: analysed population is the ITT population", "n_analyzed_total counts participants in the intention-to-treat analysis of the primary outcome, summed over arms; per-protocol counts are not used.", "all papers in this store", T1, TURN2, "Does not apply if a paper reports no ITT analysis at all; then record the analysed population it reports and lower confidence.", Q1),
   "Set by the researcher in turn 2 after P01 raised the ITT versus per-protocol question.");
@@ -106,7 +107,7 @@ add(crit(C_RANDOM, "Criterion: randomised total is the sum of randomised per arm
   "Stated in the mandate; made explicit as a criterion so annotations can cite it.");
 add(crit(C_OUTCOME, "Criterion: primary outcome is the prespecified measure as named", "primary_outcome is the prespecified primary outcome measure named in the methods, including instrument and time point when stated.", "all papers in this store", T0, TURN1, "If the paper names more than one primary outcome, record all, separated by semicolons, and raise a question."),
   "Stated in the mandate.");
-add({ ...base(CHOICE_TABLE, "Choice: tables are the source of counts when prose and tables disagree", T0), type: "decision", kind: "choice", status: "active", claim: "When the prose and a participant-flow table disagree on counts, the table is used and the disagreement is recorded as evidence.", qualifier: { confidence: 0.9, scope: "all papers in this store" }, fragility: "interpretive", target: null, data: [], warrant: [], backing: [], rebuttal: { text: "A table with an obvious arithmetic error (arms not summing to the total) is not trusted over the prose.", evidence: [] }, depends_on: [], supersedes: [], answers: null, produced_by: null, caused_by: TURN1, shown_at: [], threshold: null },
+add({ ...base(CHOICE_TABLE, "Choice: tables are the source of counts when prose and tables disagree", T0), type: "decision", kind: "choice", status: "active", claim: "When the prose and a participant-flow table disagree on counts, the table is used and the disagreement is recorded as evidence.", qualifier: { confidence: 0.9, scope: "all papers in this store" }, fragility: "interpretive", target: null, data: [], warrant: [], backing: [], rebuttal: { text: "A table with an obvious arithmetic error (arms not summing to the total) is not trusted over the prose.", evidence: [] }, depends_on: [], supersedes: [], answers: null, produced_by: null, caused_by: TURN1, shown_at: [], corrections: [], threshold: null, transition: null },
   "Methodological choice made while annotating P01; tables are structured and less prone to rounding in prose.");
 
 // Procedure: sum table columns
@@ -154,7 +155,7 @@ if __name__ == "__main__":
 writeText(join(target, "procedures", "table_counts", "cases", "p01.json"), `${JSON.stringify({ input: ["corpus/P01.md", "Randomised"], expected_total: 120 }, null, 2)}\n`);
 const PROC_ENTRY = "procedures/table_counts/run.py";
 const PROC_HASH = sha256(readFileSync(join(target, PROC_ENTRY)));
-add({ ...base(PROC, "Sum a column of the participant-flow table", T2), type: "procedure", state: "provisional", resolution: "code", entrypoint: PROC_ENTRY, uses: [CHOICE_TABLE], applicability: ["the paper has a markdown table with per-arm rows and a column whose header contains the wanted word (Randomised, Analysed)"], abstain_when: ["counts appear only in prose or in a figure", "the table has merged or multi-line cells"], regression_cases: ["procedures/table_counts/cases/p01.json"], promoted_from: ["ep_p01nrand0000", "ep_p01nanal0000"], code_hash: PROC_HASH, supersedes: [], justification: null, code_archived: null, qualified_on: { harness: "claude", model: "fixture" }, history: [{ at: T2, from: null, to: "provisional", caused_by: TURN1, reason: "written while annotating P01 and reused for both count fields" }], counters: { shown_uses: 1, corrections: 0 }, produced_by: "ep_p01root00000", caused_by: TURN1 },
+add({ ...base(PROC, "Sum a column of the participant-flow table", T2), type: "procedure", state: "provisional", resolution: "code", entrypoint: PROC_ENTRY, uses: [CHOICE_TABLE], applicability: ["the paper has a markdown table with per-arm rows and a column whose header contains the wanted word (Randomised, Analysed)"], abstain_when: ["counts appear only in prose or in a figure", "the table has merged or multi-line cells"], regression_cases: ["procedures/table_counts/cases/p01.json"], promoted_from: ["ep_p01nrand0000", "ep_p01nanal0000"], code_hash: PROC_HASH, supersedes: [], justification: null, code_archived: null, qualified_on: { harness: "claude", model: "fixture" }, history: [{ at: T2, from: null, to: "provisional", caused_by: TURN1, reason: "written while annotating P01 and reused for both count fields" }], counters: { shown_uses: 0, corrections: 0 }, produced_by: "ep_p01root00000", caused_by: TURN1 },
   "Run: python3 procedures/table_counts/run.py corpus/P0X.md Randomised\nOutput JSON has rows per arm and the total excluding any Total row. Record the output as execution evidence.");
 
 // Episodes for P01
@@ -204,13 +205,15 @@ add(
 // Annotation decisions for P01
 const ann = (id: string, title: string, field: string, value: string | number, claim: string, data: string[], warrant: string[], fragility: "mechanical" | "interpretive", producedBy: string, backing: string[] = []): Node => ({
   ...base(id, title, T3), type: "decision", kind: "annotation", status: "active", claim, qualifier: { confidence: 0.95, scope: "P01" }, fragility, target: { unit: "P01", field, value },
-  data, warrant, backing, rebuttal: { text: "", evidence: [] }, depends_on: [], supersedes: [], answers: null, produced_by: producedBy, caused_by: TURN1, shown_at: [TURN2], threshold: null,
+  data, warrant, backing, rebuttal: { text: "", evidence: [] }, depends_on: [], supersedes: [], answers: null, produced_by: producedBy, caused_by: TURN1, shown_at: [{ turn: TURN2, at: T3 }], corrections: [], threshold: null, transition: null,
 });
 add(ann(D_RAND, "P01 n_randomized_total", "n_randomized_total", 120, "120 participants were randomised (60 early mobilisation + 60 usual care).", [EV_TABLE, EV_EXEC], [C_RANDOM], "mechanical", EP_RAND, [CHOICE_TABLE]), "Table 1 total row and the procedure output agree.");
 add(ann(D_ANAL, "P01 n_analyzed_total", "n_analyzed_total", 115, "115 participants were analysed in the ITT population (58 + 57).", [EV_TABLE], [C_ANALYZED], "mechanical", EP_ANAL), "Table 1 reports the ITT analysed column; five lost to follow-up are excluded, consistent with the Results text.");
 add(ann(D_OUT, "P01 primary_outcome", "primary_outcome", "Timed Up and Go test (seconds) at 30 days", "The prespecified primary outcome is the Timed Up and Go test in seconds at 30 days after surgery.", [EV_OUTCOME], [C_OUTCOME], "mechanical", EP_OUT), "Verbatim from Methods / Outcomes.");
 
 for (const n of nodes) writeNodeFile(target, n, bodies.get(n.id) ?? "");
+// The procedure's state, counters and history are a cache of the recorded events, here as everywhere.
+recomputeAll(loadStore(target));
 
 const issues = validateStore(loadStore(target));
 if (issues.length) {

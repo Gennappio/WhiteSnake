@@ -1,6 +1,7 @@
 import type { LoadedStore } from "../store/files.js";
 import { updateNode } from "../store/ops.js";
-import { recordShownUse } from "./procedures.js";
+import { nowIso } from "../util.js";
+import { recomputeProcedureCache } from "./procedures.js";
 
 export interface ShownResult {
   shown: string[];
@@ -12,36 +13,33 @@ export interface ShownResult {
 export const DECISION_ID_RE = /\bdec_[0-9a-z]{12}\b/g;
 
 /**
- * Record that decisions were presented to the researcher during `turn`. The turn is required: a shown use is a
- * persisted event on the decision, so repeating the command in the same turn changes nothing. The first time a
- * decision is shown, every procedure its producing episode used earns one shown use, which may promote it to trusted.
+ * Record that decisions were presented to the researcher during `turn`, at a given moment. The turn is required: a
+ * shown use is a persisted event on the decision, so repeating the command in the same turn changes nothing. The
+ * procedures the producing episode used derive a shown use from the first such event, which may promote them.
  */
-export function markShown(store: LoadedStore, decisionIds: string[], turn: string): ShownResult {
+export function markShown(store: LoadedStore, decisionIds: string[], turn: string, opts: { at?: string } = {}): ShownResult {
   const result: ShownResult = { shown: [], already: [], unknown: [], promoted: [] };
+  const at = opts.at ?? nowIso();
   for (const id of [...new Set(decisionIds)]) {
     const d = store.nodes.get(id);
     if (!d || d.type !== "decision") {
       result.unknown.push(id);
       continue;
     }
-    if (d.shown_at.includes(turn)) {
+    if (d.shown_at.some((s) => s.turn === turn)) {
       result.already.push(id);
       continue;
     }
-    const firstTime = d.shown_at.length === 0;
-    updateNode(store.root, id, { shown_at: [...d.shown_at, turn] }, undefined, { store });
+    updateNode(store.root, id, { shown_at: [...d.shown_at, { turn, at }] }, undefined, { store });
     result.shown.push(id);
-    if (firstTime && d.produced_by) {
-      const ep = store.nodes.get(d.produced_by);
-      if (ep && ep.type === "episode") {
-        for (const used of ep.uses) {
-          const u = store.nodes.get(used);
-          if (u && u.type === "procedure") {
-            const { promoted } = recordShownUse(store, used, turn);
-            if (promoted) result.promoted.push(used);
-          }
-        }
-      }
+    if (!d.produced_by) continue;
+    const ep = store.nodes.get(d.produced_by);
+    if (!ep || ep.type !== "episode") continue;
+    for (const used of new Set(ep.uses)) {
+      const u = store.nodes.get(used);
+      if (!u || u.type !== "procedure") continue;
+      const r = recomputeProcedureCache(store, used);
+      if (r.from === "provisional" && r.to === "trusted") result.promoted.push(used);
     }
   }
   return result;

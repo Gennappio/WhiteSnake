@@ -296,6 +296,13 @@
     ]
   },
   {
+    "name": "procedure recompute",
+    "args": [
+      "[ids...]"
+    ],
+    "options": []
+  },
+  {
     "name": "procedure rehash",
     "args": [
       "<id>"
@@ -308,6 +315,7 @@
       "<id>"
     ],
     "options": [
+      "--evidence",
       "--reason"
     ]
   },
@@ -317,6 +325,7 @@
       "<id>"
     ],
     "options": [
+      "--evidence",
       "--reason"
     ]
   },

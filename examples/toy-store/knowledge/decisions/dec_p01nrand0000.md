@@ -31,8 +31,11 @@ answers: null
 produced_by: ep_p01nrand0000
 caused_by: turn_claude_toyseed0001_0001
 shown_at:
-  - turn_claude_toyseed0001_0002
+  - turn: turn_claude_toyseed0001_0002
+    at: 2026-10-01T09:40:00.000Z
+corrections: []
 threshold: null
+transition: null
 ---
 
 Table 1 total row and the procedure output agree.

@@ -19,7 +19,10 @@ Edges are frontmatter fields holding ids. Their direction is fixed: a decision p
 | `backing` | evidence or decisions that justify the warrant itself (optional) |
 | `rebuttal` | `{text, evidence}`: conditions under which the claim would be wrong |
 | `depends_on` | other decisions or procedures whose change should trigger re-examination |
-| `supersedes`, `answers`, `produced_by`, `caused_by`, `shown_at` | links to the replaced decision, the question answered, the episode, the prompt, the turns where it was shown |
+| `supersedes`, `answers`, `produced_by`, `caused_by` | links to the replaced decision, the question answered, the episode, the prompt |
+| `shown_at` | `[{turn, at}]`: the turns in which the decision was shown to the researcher and when; written by `shown`, never by hand |
+| `corrections` | `[{turn, at, reason, event, actor}]`: researcher corrections as identified events; written by `correct`, never by hand |
+| `transition` | choice decisions only: `{procedure, to, reason}`, the explicit procedure transition this decision records (reinstate, retire, supersede, a failed check); the procedure must be in `depends_on`; written by the lifecycle commands |
 | `threshold` | criteria only: `{metric: observed_error_rate \| median_duration_ms, max, min_shown, procedures}`, a bar a procedure must clear before `procedure supersede` accepts it; empty `procedures` means every procedure of the store |
 
 Body: the rationale in a few lines. Example:
@@ -47,7 +50,7 @@ A source file: `path` (relative to the store), `sha256`, optional `source_uri`, 
 
 ## procedure (`knowledge/procedures/`)
 
-A reusable way of doing something: `resolution` (`code`, `frozen_prompt`, `skill`), `entrypoint` (e.g. `procedures/table_counts/run.py`), `applicability` and `abstain_when` (plain-language conditions), `regression_cases` (paths to cases), `promoted_from` (episodes it was distilled from), `uses`. `code_hash` is the sha256 of the entrypoint, filled by the CLI at registration and checked by the validator: code that produced a result never changes, a new version is a new procedure. `supersedes` lists the procedures this one replaces and requires `justification: {kind: correctness | performance | scope | platform, evidence: [ids that prove it], text}`. `code_archived: {commit, at, removed}` is set by `gc` when the code of a superseded or retired procedure leaves the working tree. `state` (`provisional`, `trusted`, `suspended`, `superseded`, `retired`), `history` and `counters` are derived by the CLI: never set them. Body: how to run it, inputs, outputs.
+A reusable way of doing something: `resolution` (`code`, `frozen_prompt`, `skill`), `entrypoint` (e.g. `procedures/table_counts/run.py`), `applicability` and `abstain_when` (plain-language conditions), `regression_cases` (paths to cases), `promoted_from` (episodes it was distilled from), `uses`. `code_hash` is the sha256 of the entrypoint, filled by the CLI at registration and checked by the validator: code that produced a result never changes, a new version is a new procedure. `supersedes` lists the procedures this one replaces and requires `justification: {kind: correctness | performance | scope | platform, evidence: [ids that prove it], text}`. `code_archived: {commit, at, removed}` is set by `gc` when the code of a superseded or retired procedure leaves the working tree. `state` (`provisional`, `trusted`, `suspended`, `superseded`, `retired`), `history` and `counters` are a cache of the replay of recorded events (shown and corrected decisions, transition decisions): never set them; the validator rejects a cache that disagrees and `procedure recompute` rewrites it. Body: how to run it, inputs, outputs.
 
 Regression case files are JSON: `{"input": [args...], "expected": <whole output>}` or `{"input": [...], "expected_total": <n>}` when only the `total` field of an object output is compared. `whitesnake procedure propose` writes one per recorded execution.
 

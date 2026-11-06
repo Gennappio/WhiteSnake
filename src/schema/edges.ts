@@ -31,8 +31,10 @@ export const EDGE_SPECS: Record<NodeType, readonly EdgeSpec[]> = {
     { rel: "answers", path: ["answers"], targets: ["question"], relies: false },
     { rel: "produced_by", path: ["produced_by"], targets: ["episode"], relies: true },
     turn(),
-    { rel: "shown_at", path: ["shown_at"], targets: ["turn"], relies: false },
+    { rel: "shown_at", path: ["shown_at", "turn"], targets: ["turn"], relies: false },
+    { rel: "corrections", path: ["corrections", "turn"], targets: ["turn"], relies: false },
     { rel: "threshold", path: ["threshold", "procedures"], targets: ["procedure"], relies: false },
+    { rel: "transition", path: ["transition", "procedure"], targets: ["procedure"], relies: false },
   ],
   evidence: [
     { rel: "locator", path: ["locator", "artifact"], targets: ["artifact"], relies: true },
@@ -78,16 +80,25 @@ export interface Edge {
 /** Suffix used for references to nodes living in another store (never validated locally). */
 export const REMOTE_SUFFIX = "_remote";
 
+/** The values reached by following a path through a node; a list along the way (corrections, shown_at) is walked element by element. */
+function valuesAt(root: unknown, path: readonly string[]): unknown[] {
+  let current: unknown[] = [root];
+  for (const key of path) {
+    const next: unknown[] = [];
+    for (const v of current) {
+      for (const item of Array.isArray(v) ? v : [v]) {
+        if (item && typeof item === "object") next.push((item as Record<string, unknown>)[key]);
+      }
+    }
+    current = next;
+  }
+  return current.flatMap((v) => (Array.isArray(v) ? v : [v])).filter((v) => v !== null && v !== undefined);
+}
+
 export function extractEdges(node: Node): Edge[] {
   const out: Edge[] = [];
   for (const spec of EDGE_SPECS[node.type]) {
-    let value: unknown = node;
-    for (const key of spec.path) {
-      value = value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined;
-    }
-    if (value === null || value === undefined) continue;
-    const items = Array.isArray(value) ? value : [value];
-    for (const item of items) {
+    for (const item of valuesAt(node, spec.path)) {
       if (typeof item === "string") out.push({ rel: spec.rel, dst: item });
       else if (item && typeof item === "object" && "store" in item && "id" in item) {
         const r = item as { store: string; id: string };

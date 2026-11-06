@@ -270,6 +270,10 @@ test("a rewrite replaces the old procedure only when it is trusted, dominates ev
     assert.deepEqual(choice.warrant, [critId]);
     assert.deepEqual(choice.depends_on, [V1, v2]);
     assert.deepEqual(choice.backing, [replacement]);
+    const transition = (runCli(["--json", "get", result.decision], { cwd: dir }).json as { transition: { procedure: string; to: string; reason: string } }).transition;
+    assert.equal(transition.procedure, V1);
+    assert.equal(transition.to, "superseded");
+    assert.match(transition.reason, new RegExp(`^superseded by ${v2}`));
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
     // The old procedure left the ladder; its past outputs still explain themselves.
     const after = runCli(["--json", "resolve", "--unit", "P08", "--field", "n_randomized_total"], { cwd: dir }).json as { mode: string; trusted_procedures: { id: string }[] };

@@ -61,7 +61,7 @@ function decisionDetails(db: ReturnType<typeof ensureIndex>, d: IndexedNode & { 
   ${d.backing.length ? `<dt>Backing</dt><dd><ul class="caused">${refs(d.backing)}</ul></dd>` : ""}
   ${d.rebuttal.text || d.rebuttal.evidence.length ? `<dt>Rebuttal</dt><dd>${esc(d.rebuttal.text)}<ul class="caused">${d.rebuttal.evidence.length ? ev(d.rebuttal.evidence) : ""}</ul></dd>` : ""}
   ${d.depends_on.length ? `<dt>Depends on</dt><dd><ul class="caused">${refs(d.depends_on)}</ul></dd>` : ""}
-  <dt>Provenance</dt><dd>episode <code>${esc(d.produced_by ?? "-")}</code> · prompt <code>${esc(d.caused_by ?? "-")}</code> · shown ${d.shown_at.length ? d.shown_at.map((t) => `<code>${esc(t)}</code>`).join(" ") : '<span class="muted">never</span>'}</dd>
+  <dt>Provenance</dt><dd>episode <code>${esc(d.produced_by ?? "-")}</code> · prompt <code>${esc(d.caused_by ?? "-")}</code> · shown ${d.shown_at.length ? d.shown_at.map((s) => `<code>${esc(s.turn)}</code>`).join(" ") : '<span class="muted">never</span>'}</dd>
   ${d.body ? `<dt>Rationale</dt><dd>${esc(d.body)}</dd>` : ""}
 </dl>`;
 }

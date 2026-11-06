@@ -110,7 +110,17 @@ test("recheck retires a procedure the model alone reproduces and keeps one it do
     const e = easy.json as { all_pass: boolean; retired: boolean; cases: { pass: boolean }[] };
     assert.equal(e.all_pass, true);
     assert.equal(e.retired, true);
-    assert.equal((runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string }).state, "retired");
+    const retiredProc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; history: { caused_by: string }[] };
+    assert.equal(retiredProc.state, "retired");
+    // The retirement is a choice decision citing the recheck, recorded as execution evidence with the model's answers.
+    const choice = runCli(["--json", "get", retiredProc.history[retiredProc.history.length - 1]!.caused_by], { cwd: dir }).json as { kind: string; transition: { to: string }; data: string[] };
+    assert.equal(choice.kind, "choice");
+    assert.equal(choice.transition.to, "retired");
+    const recheck = runCli(["--json", "get", choice.data[0]!], { cwd: dir }).json as { kind: string; title: string; execution: { command: string }; body: string };
+    assert.equal(recheck.kind, "execution");
+    assert.match(recheck.title, /^Recheck of proc_tablecount01/);
+    assert.match(recheck.execution.command, /procedure recheck proc_tablecount01 --harness stub/);
+    assert.match(recheck.body, /"pass": true/);
     // A harder procedure: its case asks for a value the stub cannot produce.
     writeFileSync(join(dir, "procedures", "table_counts", "cases", "hard.json"), JSON.stringify({ input: ["corpus/P03.md", "Per-protocol"], expected: 131 }));
     const hard = (runCli(["--json", "add", "procedure", "--json-in", JSON.stringify({ title: "Per-protocol counts", resolution: "code", entrypoint: "procedures/table_counts/run.py", regression_cases: ["procedures/table_counts/cases/hard.json"] })], { cwd: dir }).json as { id: string }).id;

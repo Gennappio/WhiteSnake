@@ -86,7 +86,7 @@ export interface WhyNode {
  * "shallow" children are shown as one-line summaries so the tree stays readable.
  */
 const WHY_POLICY: Record<string, { expand: readonly string[]; shallow: readonly string[] }> = {
-  decision: { expand: ["data", "warrant", "backing", "rebuttal", "depends_on", "produced_by", "caused_by"], shallow: ["supersedes", "answers"] },
+  decision: { expand: ["data", "warrant", "backing", "rebuttal", "depends_on", "produced_by", "caused_by"], shallow: ["supersedes", "answers", "transition"] },
   evidence: { expand: ["locator", "caused_by"], shallow: ["produced_by"] },
   artifact: { expand: [], shallow: ["caused_by"] },
   episode: { expand: ["caused_by"], shallow: ["uses", "parent", "question"] },

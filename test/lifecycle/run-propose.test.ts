@@ -77,9 +77,20 @@ test("check suspends a procedure whose regression case no longer reproduces on t
     assert.equal(check.ok, true, "a suspended procedure does not make the store invalid");
     assert.deepEqual(check.procedures.suspended.map((s) => s.id), ["proc_tablecount01"]);
     assert.match(check.procedures.suspended[0]!.reason, /regression failed on .*expected 999 got 120/);
-    const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; history: { to: string; reason: string }[] };
+    const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; history: { to: string; reason: string; caused_by: string }[] };
     assert.equal(proc.state, "suspended");
     assert.match(proc.history[proc.history.length - 1]!.reason, /regression failed/);
+    // The suspension is a choice decision whose data is the failed run, recorded as execution evidence.
+    const choice = runCli(["--json", "get", proc.history[proc.history.length - 1]!.caused_by], { cwd: dir }).json as { kind: string; transition: { to: string }; data: string[]; created_by: string };
+    assert.equal(choice.kind, "choice");
+    assert.equal(choice.transition.to, "suspended");
+    assert.equal(choice.created_by, "cli:check");
+    assert.equal(choice.data.length, 1);
+    const run = runCli(["--json", "get", choice.data[0]!], { cwd: dir }).json as { kind: string; execution: { command: string; exit_code: number; input_hashes: Record<string, string> }; body: string };
+    assert.equal(run.kind, "execution");
+    assert.match(run.execution.command, /run\.py corpus\/P01\.md Randomised/);
+    assert.ok(run.execution.input_hashes["procedures/table_counts/run.py"]);
+    assert.match(run.body, /"expected": 999/);
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
   } finally {
     cleanup();

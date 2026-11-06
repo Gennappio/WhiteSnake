@@ -59,6 +59,8 @@ function sessionOrder(store: LoadedStore): Map<string, number> {
 function sessionOfTurn(store: LoadedStore, turn: string | null): string | null {
   if (!turn) return null;
   const t = store.nodes.get(turn);
+  // A procedure's history may cite the choice decision of an explicit transition instead of a turn.
+  if (t && t.type === "decision") return sessionOfTurn(store, t.caused_by);
   return t && t.type === "turn" ? t.session : null;
 }
 

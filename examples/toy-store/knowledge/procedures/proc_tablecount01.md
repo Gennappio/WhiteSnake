@@ -33,7 +33,7 @@ history:
     caused_by: turn_claude_toyseed0001_0001
     reason: written while annotating P01 and reused for both count fields
 counters:
-  shown_uses: 1
+  shown_uses: 2
   corrections: 0
 produced_by: ep_p01root00000
 caused_by: turn_claude_toyseed0001_0001

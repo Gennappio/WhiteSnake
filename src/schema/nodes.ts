@@ -27,6 +27,8 @@ export const DECISION_KINDS = ["annotation", "criterion", "choice"] as const;
 /** Measurements a threshold criterion can bound: observed error (corrections over shown outputs) and median latency. */
 export const THRESHOLD_METRICS = ["observed_error_rate", "median_duration_ms"] as const;
 export const DECISION_STATUSES = ["proposed", "active", "needs_review", "superseded", "retired"] as const;
+/** Where an explicit transition decision moves a procedure; the other states are reached only through events (derive.ts). */
+export const TRANSITION_TARGETS = ["provisional", "suspended", "retired", "superseded"] as const;
 export const FRAGILITIES = ["mechanical", "interpretive", "analogical", "absence"] as const;
 
 export const DecisionSchema = z
@@ -60,7 +62,23 @@ export const DecisionSchema = z
     answers: Id.nullable().default(null),
     produced_by: Id.nullable().default(null),
     caused_by: Id.nullable().default(null),
-    shown_at: IdList,
+    /** Turns in which the decision was presented to the researcher, each with the moment it happened; a bare turn id is an older record whose moment is unknown. */
+    shown_at: z
+      .array(z.union([Id, z.strictObject({ turn: Id, at: Iso.nullable().default(null) })]))
+      .default([])
+      .transform((entries) => entries.map((e) => (typeof e === "string" ? { turn: e, at: null } : e))),
+    /** Researcher corrections of this decision: one identified event each, never applied twice. */
+    corrections: z
+      .array(
+        z.strictObject({
+          turn: Id.nullable().default(null),
+          at: Iso,
+          reason: z.string().default(""),
+          event: z.string().min(1),
+          actor: z.string().min(1),
+        }),
+      )
+      .default([]),
     /**
      * Criteria only: a quantitative bar a procedure must clear before it may replace another. The CLI measures
      * (`procedure scorecard`); the researcher decides the bar, as a criterion like any other rule.
@@ -76,6 +94,11 @@ export const DecisionSchema = z
       })
       .nullable()
       .default(null),
+    /** Choice decisions only: the explicit procedure transition this decision records (reinstate, retire, supersede, a failed check). */
+    transition: z
+      .strictObject({ procedure: Id, to: z.enum(TRANSITION_TARGETS), reason: z.string().default("") })
+      .nullable()
+      .default(null),
   })
   .refine((d) => d.kind !== "annotation" || d.target !== null, {
     message: "annotation decisions require target {unit, field, value}",
@@ -84,6 +107,10 @@ export const DecisionSchema = z
   .refine((d) => d.threshold === null || d.kind === "criterion", {
     message: "only criterion decisions carry a threshold",
     path: ["threshold"],
+  })
+  .refine((d) => d.transition === null || d.kind === "choice", {
+    message: "only choice decisions record a procedure transition",
+    path: ["transition"],
   });
 
 export const EvidenceSchema = z
@@ -239,6 +266,9 @@ export const TemplateSchema = z.strictObject({
 
 export type Question = z.infer<typeof QuestionSchema>;
 export type Decision = z.infer<typeof DecisionSchema>;
+export type ShownEntry = Decision["shown_at"][number];
+export type Correction = Decision["corrections"][number];
+export type Transition = NonNullable<Decision["transition"]>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
 export type Artifact = z.infer<typeof ArtifactSchema>;
 export type Procedure = z.infer<typeof ProcedureSchema>;

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { branchContext, collectEvents, replay, stateSequence, type DeriveContext } from "../lifecycle/derive.js";
 import { REMOTE_SUFFIX, edgeSpec, extractEdges } from "../schema/edges.js";
 import type { NodeType } from "../schema/ids.js";
 import { canonicalBody, sha256 } from "../util.js";
@@ -19,12 +20,16 @@ export function warningsOf(issues: ValidationIssue[]): ValidationIssue[] {
 export interface ValidateOptions {
   /** How artifact files are compared with their registered sha256: trust a size/mtime cache, re-read every file, or skip. */
   artifacts?: ArtifactCheckMode | "skip";
+  /** Branch context the procedure caches are derived in; the store directory's own branch when omitted. */
+  context?: DeriveContext;
 }
 
 export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): ValidationIssue[] {
   const issues: ValidationIssue[] = [...store.issues];
   const ids = [...store.nodes.keys()].sort();
-  const shownUsesBound = shownUsesPerProcedure(store);
+  // Procedure caches are checked against a replay of the recorded events, in the branch context of this directory.
+  const events = collectEvents(store, opts.context ?? branchContext(store.root));
+  const threshold = store.config.promotion.shown_uses_to_trust;
   const successors = successorsPerProcedure(store);
 
   for (const id of ids) {
@@ -74,6 +79,9 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
             issues.push({ code: "E_WARRANT_NOT_CRITERION", id, file, path: "warrant", message: `${id}.warrant ${w} is a ${t.kind} decision, not a criterion` });
           }
         }
+        if (node.transition && !node.depends_on.includes(node.transition.procedure)) {
+          issues.push({ code: "E_TRANSITION_DEPENDS_ON", id, file, path: "transition", message: `${id} records a transition of ${node.transition.procedure} but does not list it in depends_on` });
+        }
         break;
       }
       case "evidence": {
@@ -84,13 +92,19 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
         break;
       }
       case "procedure": {
-        const last = node.history[node.history.length - 1];
-        if (last && last.to !== node.state) {
-          issues.push({ code: "E_STATE_MISMATCH", id, file, path: "state", message: `${id}.state is ${node.state} but the last history entry says ${last.to}` });
+        const derived = replay(node, events.get(id) ?? [], threshold);
+        const repair = `state, counters and history are a cache of the recorded events; run \`whitesnake procedure recompute ${id}\``;
+        if (node.state !== derived.state) {
+          issues.push({ code: "E_STATE_MISMATCH", id, file, path: "state", message: `${id}.state is ${node.state} but the recorded events derive ${derived.state}; ${repair}` });
         }
-        const bound = shownUsesBound.get(id) ?? 0;
-        if (node.counters.shown_uses > bound) {
-          issues.push({ code: "E_COUNTER_MISMATCH", id, file, path: "counters.shown_uses", message: `${id}.counters.shown_uses is ${node.counters.shown_uses} but only ${bound} shown decision(s) were produced with it; shown uses derive from recorded shown events` });
+        if (node.counters.shown_uses !== derived.counters.shown_uses || node.counters.corrections !== derived.counters.corrections) {
+          issues.push({ code: "E_COUNTER_MISMATCH", id, file, path: "counters", message: `${id}.counters are ${node.counters.shown_uses} shown use(s) and ${node.counters.corrections} correction(s) but the recorded events derive ${derived.counters.shown_uses} and ${derived.counters.corrections}; ${repair}` });
+        }
+        if (stateSequence(node.history) !== stateSequence(derived.history)) {
+          issues.push({ code: "E_HISTORY_MISMATCH", id, file, path: "history", message: `${id}.history reads ${stateSequence(node.history) || "(empty)"} but the recorded events derive ${stateSequence(derived.history)}; ${repair}` });
+        }
+        for (const w of derived.warnings) {
+          issues.push({ severity: "warning", code: "W_TRANSITION_IGNORED", id: w.decision, file: store.paths.get(w.decision), path: "transition", message: w.message });
         }
         issues.push(...codeHashIssues(store, node, file));
         if (node.supersedes.length > 0 && (!node.justification || node.justification.evidence.length === 0)) {
@@ -226,17 +240,3 @@ function successorsPerProcedure(store: LoadedStore): Map<string, string[]> {
   return out;
 }
 
-/** Upper bound of a procedure's shown uses: the decisions with a recorded shown event whose episode used it. */
-function shownUsesPerProcedure(store: LoadedStore): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const n of store.nodes.values()) {
-    if (n.type !== "decision" || n.shown_at.length === 0 || !n.produced_by) continue;
-    const ep = store.nodes.get(n.produced_by);
-    if (!ep || ep.type !== "episode") continue;
-    for (const used of ep.uses) {
-      const p = store.nodes.get(used);
-      if (p && p.type === "procedure") out.set(used, (out.get(used) ?? 0) + 1);
-    }
-  }
-  return out;
-}

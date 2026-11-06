@@ -70,20 +70,26 @@ The agent handles delegated implementation choices and involves the user when an
 
 ## Procedure promotion
 
-A procedure is a reusable way of doing one step: a script, a frozen prompt (prompt, pinned model and output schema) or a skill. It starts provisional and earns trust from use. Nobody sets its state by hand; the CLI derives it from recorded events.
+A procedure is a reusable way of doing one step: a script, a frozen prompt (prompt, pinned model and output schema) or a skill. It starts provisional and earns trust from use. Nobody sets its state by hand: the CLI replays the recorded events, in time order, and the state, counters and history written in the record are a cache of that replay. The validator refuses a cache that disagrees with the events, and `whitesnake procedure recompute` rewrites it.
 
 ```mermaid
 stateDiagram-v2
     direction LR
     [*] --> provisional: written while working
     provisional --> trusted: 3 results shown, none corrected
-    provisional --> suspended: researcher correction
-    trusted --> suspended: researcher correction
-    suspended --> provisional: fixed and reinstated
+    provisional --> suspended: researcher correction, or a regression check fails
+    trusted --> suspended: researcher correction, or a regression check fails
+    suspended --> provisional: reinstated with evidence
+    provisional --> superseded: a trusted rewrite dominates it
     trusted --> superseded: a trusted rewrite dominates it
     suspended --> superseded: a trusted rewrite dominates it
+    provisional --> retired: the model alone passes its cases
     trusted --> retired: the model alone passes its cases
+    superseded --> provisional: reinstated with evidence
+    retired --> provisional: reinstated with evidence
 ```
+
+The implicit transitions come from two events recorded on decisions: a decision shown to the researcher (`shown_at`, with the turn and the moment) and a decision corrected (`corrections`, one identified event each). The explicit ones, reinstate, retire, supersede and the suspension a failed regression check applies, are `choice` decisions that name the procedure and cite their evidence. A correction moves a procedure's state only when its author owns the context it is made in: the store's researcher on main, the parent's researcher on the parent's branch; any other correction is counted by the scorecard and raises a question instead.
 
 Before working on a value, the agent checks a ladder (`whitesnake resolve`): an accepted result for the same question, then a trusted procedure, and only then its own reasoning. When every child of an episode has been resolved without the agent, `whitesnake collapse` merges them into one composed procedure and the agent call moves one level up. The share of work resolved without an agent is the store's main indicator.
 
@@ -169,8 +175,9 @@ The same store works with Codex: `whitesnake init` writes `.codex/hooks.json` (s
 States are never edited by hand; the CLI derives them from recorded events and the validator cross-checks the cached state against the history.
 
 - `whitesnake episode open|close` brackets a unit of work; a decision's `produced_by` must be a leaf episode listing in `uses` only what it applied.
-- `whitesnake shown <ids>` records that decisions were presented to the researcher (the Stop hook also scans the agent's final message for decision ids). The first time a decision is shown, each procedure its episode used earns a shown use; at `promotion.shown_uses_to_trust` uses without a correction (default 3) a provisional procedure becomes trusted. `shown` needs the turn it happened in (the current turn, or `--turn`): it is a recorded event, so repeating it changes nothing, and the validator checks that a procedure's shown uses never exceed the shown decisions produced with it.
-- `whitesnake correct <id> --reason ... [--value v]` records a researcher correction: the decision is marked `needs_review` (or superseded by a new one when a value is given), the episode becomes `corrected`, the procedures it used are suspended, and everything that relied on the decision is marked `needs_review`.
+- `whitesnake shown <ids>` records that decisions were presented to the researcher (the Stop hook also scans the agent's final message for decision ids). The first time a decision is shown, each procedure its episode used derives a shown use; at `promotion.shown_uses_to_trust` uses without a correction (default 3) a provisional procedure becomes trusted. `shown` needs the turn it happened in (the current turn, or `--turn`): it is a recorded event with its moment, so repeating it changes nothing. A procedure's `state`, `counters` and `history` are a cache of the replay of these events; the validator checks the cache against the replay (`E_STATE_MISMATCH`, `E_COUNTER_MISMATCH`, `E_HISTORY_MISMATCH`).
+- `whitesnake correct <id> --reason ... [--value v]` records a researcher correction as an identified event on the decision: the decision is marked `needs_review` (or superseded by a new one when a value is given), the episode becomes `corrected`, the procedures it used derive their suspension from the event, and everything that relied on the decision is marked `needs_review`.
+- `whitesnake procedure reinstate <id> --reason ... --evidence <ids...>`, `whitesnake procedure retire <id> --reason ... [--evidence ...]` and `whitesnake procedure supersede` record explicit transitions as `choice` decisions that name the procedure (`transition`, `depends_on`) and cite their evidence. `whitesnake procedure recompute [ids...]` rewrites the cached state from the events; `branch open` and `branch merge` do the same after a rebase or a merge, so two branches that used the same procedure never fight over a counter.
 - `whitesnake resolve --unit U --field F` applies the resolution ladder: an accepted decision, a trusted procedure, or agent work. A decision under review after a correction is never offered for reuse: `resolve` answers `review` and asks for the value to be redone and superseded. When a live procedure lists a live one in `supersedes`, the answer also says how to run the two side by side.
 - `whitesnake procedure compare <old> <new>` replays the old procedure's recorded battery with the new code and records the verdicts; `whitesnake procedure supersede <new>` replaces the old one when the new is trusted, dominates and clears the declared thresholds; `whitesnake procedure scorecard <id>` derives the measurements; `whitesnake procedure rehash <id>` re-registers the code hash, only while nothing has used the procedure.
 - `whitesnake kpi` and `whitesnake render` (writes `review.html`) show how the store is doing: episodes resolved without an agent, decisions by status and whether they were shown, procedure transitions per session, items to review, the timeline by prompt, and recording warnings.
@@ -186,7 +193,7 @@ Gaps are covered by the coding agent working in a store, never by a human or a r
 ## Handoff, branches and delegation
 
 - `whitesnake export <dir> [--no-history]` clones the store for handoff with a `manifest.json` (integrity hashes of every record, artifacts present or excluded, whether git history is included), the rendered review page and the derived output. `whitesnake check` on the imported copy verifies the manifest, the artifacts, the records and rebuilds the index. Artifacts are compared with the sha256 registered when they were added, by `validate` (trusting a size and mtime cache; `--full` re-reads) and by `check` (always re-reading): a source that changed since registration is an error, because every locator into it is suspect.
-- `whitesnake branch open --parent <id>` gives a parent store its own branch `parent/<id>` and worktree in a child store, rebased on main; `branch status` and `branch merge <id>` reconcile explicitly. Evidence merges by itself; a conflict on decisions, criteria or procedures aborts and is listed, leaving main untouched.
+- `whitesnake branch open --parent <id>` gives a parent store its own branch `parent/<id>` and worktree in a child store, rebased on main; `branch status` and `branch merge <id>` reconcile explicitly. Evidence merges by itself; a conflict confined to a procedure's derived cache is resolved by deriving it again from the events of both sides; any other conflict on decisions, criteria or procedures aborts and is listed, leaving main untouched. The merged tree is validated before it is committed.
 - `whitesnake delegate --child <dir|id> --question "..." [--why ...] [--harness claude|codex]` runs the child store's agent on this store's branch with a structured task and records the answer here as execution evidence plus an episode whose child is a remote reference. `whitesnake ask "<question>"` answers a question about the store from CLI queries, citing record ids.
 - `whitesnake gate` compares the CLI surface with the committed `contract.json`: additive changes pass, removals and renames fail. Run `gate --snapshot` when a breaking change is intended and versioned.
 

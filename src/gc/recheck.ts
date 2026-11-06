@@ -2,9 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { runHeadless, type RunnerHarness } from "../agent/runner.js";
 import { retire } from "../lifecycle/procedures.js";
+import { hostLabel, platformLabel, sameValue } from "../lifecycle/regression.js";
 import type { LoadedStore } from "../store/files.js";
-import { CliError, truncate } from "../util.js";
-import { sameValue } from "../lifecycle/regression.js";
+import { createNode } from "../store/ops.js";
+import { CliError, sha256, truncate } from "../util.js";
 
 export interface RecheckCase {
   file: string;
@@ -59,7 +60,23 @@ export function recheckProcedure(store: LoadedStore, procId: string, opts: { har
   const allPass = cases.every((c) => c.pass);
   let retired = false;
   if (allPass && opts.retireOnPass && proc.state !== "retired") {
-    retire(store, procId, `sublation: ${opts.model ?? opts.harness} reproduces all ${cases.length} regression case(s) without the procedure`, null);
+    // The recheck itself is the evidence the retirement cites: which model, which cases, which answers.
+    const inputHashes: Record<string, string> = {};
+    for (const rel of proc.regression_cases) inputHashes[rel] = sha256(readFileSync(join(store.root, rel)));
+    const ev = createNode(
+      store.root,
+      "evidence",
+      {
+        title: `Recheck of ${procId} by ${opts.model ?? opts.harness}`,
+        kind: "execution",
+        locator: { path: proc.regression_cases[0] ?? null },
+        execution: { command: `whitesnake procedure recheck ${procId} --harness ${opts.harness}${opts.model ? ` --model ${opts.model}` : ""}`, cwd: ".", exit_code: 0, duration_ms: null, platform: platformLabel(), host: hostLabel(), input_hashes: inputHashes, truncated: false },
+        produced_by: null,
+      },
+      JSON.stringify(cases, null, 2),
+      { store, causedBy: null, actor: "cli:recheck" },
+    );
+    retire(store, procId, `sublation: ${opts.model ?? opts.harness} reproduces all ${cases.length} regression case(s) without the procedure`, null, { evidence: [ev.id], actor: "cli:recheck" });
     retired = true;
   }
   return { procedure: procId, model: opts.model ?? null, cases, all_pass: allPass, retired };

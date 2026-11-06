@@ -1,66 +1,101 @@
-import type { Procedure } from "../schema/nodes.js";
+import type { Decision, Procedure, TRANSITION_TARGETS } from "../schema/nodes.js";
 import type { LoadedStore } from "../store/files.js";
-import { updateNode } from "../store/ops.js";
-import { CliError, nowIso } from "../util.js";
+import { createNode, updateNode } from "../store/ops.js";
+import { CliError } from "../util.js";
+import { LIVE_STATES, branchContext, cacheEquals, deriveProcedure, type DeriveContext, type ProcedureState } from "./derive.js";
 
-export type ProcedureState = Procedure["state"];
+export { LIVE_STATES, type ProcedureState };
+export type TransitionTarget = (typeof TRANSITION_TARGETS)[number];
 
-/** States in which a procedure is offered for new work and accumulates shown uses. */
-export const LIVE_STATES: readonly ProcedureState[] = ["provisional", "trusted"];
-
-/**
- * State transitions are computed here from recorded events and appended to `history`; the frontmatter `state`
- * is only a cache of the last entry, which the validator cross-checks. Nobody edits states by hand.
- */
-export function transition(store: LoadedStore, procId: string, to: ProcedureState, reason: string, causedBy: string | null): Procedure {
-  const proc = store.nodes.get(procId);
-  if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
-  if (proc.state === to) return proc;
-  const history = [...proc.history, { at: nowIso(), from: proc.state, to, caused_by: causedBy, reason }];
-  return updateNode(store.root, procId, { state: to, history }, undefined, { store }) as Procedure;
+export interface RecomputeResult {
+  id: string;
+  changed: boolean;
+  from: ProcedureState;
+  to: ProcedureState;
+  warnings: string[];
 }
 
 /**
- * A decision produced with this procedure was shown to the researcher and not corrected so far. Only a live
- * procedure (provisional or trusted) accumulates uses: a suspended or retired one is no longer under evaluation.
+ * Rewrite the cached `state`, `counters` and `history` of a procedure from its recorded events (see derive.ts).
+ * Nobody edits these fields by hand and no command increments them: every writer records its event, then calls this.
  */
-export function recordShownUse(store: LoadedStore, procId: string, causedBy: string | null): { procedure: Procedure; promoted: boolean } {
+export function recomputeProcedureCache(store: LoadedStore, procId: string, ctx?: DeriveContext): RecomputeResult {
   const proc = store.nodes.get(procId);
   if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
-  if (!LIVE_STATES.includes(proc.state)) return { procedure: proc, promoted: false };
-  const counters = { ...proc.counters, shown_uses: proc.counters.shown_uses + 1 };
-  let updated = updateNode(store.root, procId, { counters }, undefined, { store }) as Procedure;
-  const threshold = store.config.promotion.shown_uses_to_trust;
-  let promoted = false;
-  if (updated.state === "provisional" && counters.corrections === 0 && counters.shown_uses >= threshold) {
-    updated = transition(store, procId, "trusted", `${counters.shown_uses} results shown to the researcher without correction (threshold ${threshold})`, causedBy);
-    promoted = true;
+  const derived = deriveProcedure(store, procId, ctx ?? branchContext(store.root));
+  const eq = cacheEquals(proc, derived);
+  const sameHistory = eq.history && JSON.stringify(proc.history) === JSON.stringify(derived.history);
+  const changed = !(eq.state && eq.counters && sameHistory);
+  if (changed) updateNode(store.root, procId, { state: derived.state, counters: derived.counters, history: derived.history }, undefined, { store });
+  return { id: procId, changed, from: proc.state, to: derived.state, warnings: derived.warnings.map((w) => w.message) };
+}
+
+/** Recompute every procedure's cache (or the ones named), in id order. */
+export function recomputeAll(store: LoadedStore, ids?: string[], ctx?: DeriveContext): RecomputeResult[] {
+  const targets = ids ?? [...store.nodes.values()].filter((n) => n.type === "procedure").map((n) => n.id).sort();
+  const context = ctx ?? branchContext(store.root);
+  return targets.map((id) => recomputeProcedureCache(store, id, context));
+}
+
+const TITLE: Record<TransitionTarget, string> = { provisional: "Reinstatement", suspended: "Suspension", retired: "Retirement", superseded: "Supersession" };
+const VERB: Record<TransitionTarget, string> = { provisional: "is reinstated", suspended: "is suspended", retired: "is retired", superseded: "is superseded" };
+
+/**
+ * An explicit transition is a choice decision: it names the procedure in `depends_on`, carries the transition the CLI
+ * reads, and cites what justifies it (evidence in `data`, decisions in `backing`). The derivation turns it into an
+ * event; the cache follows.
+ */
+export function recordTransitionDecision(store: LoadedStore, procId: string, to: TransitionTarget, reason: string, causedBy: string | null, opts: { evidence?: string[]; actor?: string; title?: string; producedBy?: string | null } = {}): Decision {
+  const proc = store.nodes.get(procId);
+  if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
+  const data: string[] = [];
+  const backing: string[] = [];
+  for (const id of opts.evidence ?? []) {
+    const n = store.nodes.get(id);
+    if (!n) throw new CliError(`unknown record ${id}`, 1);
+    if (n.type === "evidence") data.push(id);
+    else if (n.type === "decision") backing.push(id);
+    else throw new CliError(`${id} is a ${n.type}; a transition cites evidence or decisions`, 1);
   }
-  return { procedure: updated, promoted };
+  return createNode(
+    store.root,
+    "decision",
+    {
+      title: opts.title ?? `${TITLE[to]}: ${procId}`,
+      kind: "choice",
+      status: "active",
+      claim: `${procId} ${VERB[to]}: ${reason}`,
+      qualifier: { confidence: 1, scope: "procedures of this store" },
+      fragility: "mechanical",
+      target: null,
+      data,
+      backing,
+      depends_on: [procId],
+      produced_by: opts.producedBy ?? null,
+      transition: { procedure: procId, to, reason },
+    },
+    reason,
+    { store, causedBy, actor: opts.actor },
+  ) as Decision;
 }
 
-/** A decision produced with this procedure was corrected by the researcher. */
-export function recordCorrection(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
+/** Re-admit a suspended, superseded or retired procedure: it starts again as provisional with its counters reset. */
+export function reinstate(store: LoadedStore, procId: string, reason: string, causedBy: string | null, opts: { evidence: string[]; actor?: string }): Procedure {
   const proc = store.nodes.get(procId);
   if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
-  const counters = { ...proc.counters, corrections: proc.counters.corrections + 1 };
-  updateNode(store.root, procId, { counters }, undefined, { store });
-  // A retired or superseded procedure is no longer in use: the correction is counted, nothing moves.
-  if (proc.state === "retired" || proc.state === "superseded") return store.nodes.get(procId) as Procedure;
-  return transition(store, procId, "suspended", `researcher correction: ${reason}`, causedBy);
+  if (proc.state !== "suspended" && proc.state !== "superseded" && proc.state !== "retired") throw new CliError(`${procId} is ${proc.state}; only a suspended, superseded or retired procedure can be reinstated`, 2);
+  if (!opts.evidence.length) throw new CliError(`reinstating ${procId} needs evidence (--evidence <ids...>): the records that show what was fixed, or the recheck a new model failed`, 1);
+  recordTransitionDecision(store, procId, "provisional", reason, causedBy, { evidence: opts.evidence, actor: opts.actor });
+  recomputeProcedureCache(store, procId);
+  return store.nodes.get(procId) as Procedure;
 }
 
-/** Re-admit a suspended procedure after it was fixed: it starts again as provisional with counters reset. */
-export function reinstate(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
-  updateNode(store.root, procId, { counters: { shown_uses: 0, corrections: 0 } }, undefined, { store });
-  return transition(store, procId, "provisional", `reinstated: ${reason}`, causedBy);
-}
-
-export function retire(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
-  return transition(store, procId, "retired", reason, causedBy);
-}
-
-/** Another procedure now does this one's job: it leaves the resolution ladder, its past outputs stand. */
-export function markSuperseded(store: LoadedStore, procId: string, reason: string, causedBy: string | null): Procedure {
-  return transition(store, procId, "superseded", reason, causedBy);
+/** Stop using a live procedure; its outputs stand. The sublation check (`recheck`) cites its own evidence here. */
+export function retire(store: LoadedStore, procId: string, reason: string, causedBy: string | null, opts: { evidence?: string[]; actor?: string } = {}): Procedure {
+  const proc = store.nodes.get(procId);
+  if (!proc || proc.type !== "procedure") throw new CliError(`${procId} is not a procedure`, 1);
+  if (!LIVE_STATES.includes(proc.state)) throw new CliError(`${procId} is ${proc.state}; only a provisional or trusted procedure can be retired`, 2);
+  recordTransitionDecision(store, procId, "retired", reason, causedBy, { evidence: opts.evidence ?? [], actor: opts.actor });
+  recomputeProcedureCache(store, procId);
+  return store.nodes.get(procId) as Procedure;
 }

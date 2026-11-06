@@ -17,8 +17,8 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake set <id> --json-in '<patch>' [--body ...]` | update a record |
 | `whitesnake link <id> <field> <ids...>` | append references to an edge field |
 | `whitesnake episode open <title> [--parent id] [--uses ids...]` / `whitesnake episode close <id> [--outcome o] [--produces ids...]` | bracket a unit of work |
-| `whitesnake shown <ids...> [--turn T]` | record that these decisions were presented to the researcher in the current turn (promotes procedures over time); a turn is required |
-| `whitesnake correct <id> --reason "<text>" [--value <json>]` | the researcher says a result is wrong: marks it, suspends the procedures behind it, flags dependents |
+| `whitesnake shown <ids...> [--turn T]` | record that these decisions were presented to the researcher in the current turn, with the moment (promotes procedures over time); a turn is required |
+| `whitesnake correct <id> --reason "<text>" [--value <json>]` | the researcher says a result is wrong: records the correction as an event on the decision, marks it, suspends the procedures behind it, flags dependents |
 | `whitesnake resolve --unit U --field F [text]` | cached decision, decision under review (redo and supersede it), trusted procedure, or agent work |
 | `whitesnake kpi` | resolutions without agent, decisions by status, procedure transitions |
 | `whitesnake render` | write review.html for the researcher |
@@ -32,6 +32,10 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake procedure supersede <new> [--old id]` | replace the procedure `new` supersedes: refused unless `new` is trusted, dominates on a fresh comparison and clears every threshold criterion; records a choice decision |
 | `whitesnake procedure scorecard <id>` | measurements from the records: use, shown and corrected outputs, observed error, regression checks, latency per machine, code versions, thresholds |
 | `whitesnake procedure rehash <id>` | re-register the entrypoint's code hash; only while nothing has used the procedure |
+| `whitesnake procedure reinstate <id> --reason "<text>" --evidence <ids...>` | suspended, superseded or retired → provisional, as a choice decision citing what was fixed or the recheck a new model failed |
+| `whitesnake procedure retire <id> --reason "<text>" [--evidence <ids...>]` | stop using a live procedure; its outputs stand; recorded as a choice decision |
+| `whitesnake procedure recompute [ids...]` | rewrite the cached state, counters and history of procedures from the recorded events (the validator reports a stale cache) |
+| `whitesnake branch open --parent <id>` / `branch status` / `branch merge <id>` | a parent's branch and worktree in this store, rebased on main; reconcile it into main (caches derived again; real conflicts abort) |
 | `whitesnake validate` | check the whole store (exit 2 on errors; warnings do not fail) |
 | `whitesnake index [--dump]` | rebuild the SQLite index |
 | `whitesnake timeline [--session id]` | prompts and the records each one caused |

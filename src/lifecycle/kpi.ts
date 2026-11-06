@@ -23,13 +23,22 @@ export function kpi(db: DatabaseSync): Kpi {
   const turns = all.filter((n): n is IndexedNode & { type: "turn" } => n.type === "turn");
   const sessions = all.filter((n): n is IndexedNode & { type: "session" } => n.type === "session");
   const turnSession = new Map(turns.map((t) => [t.id, t.session]));
+  // A history entry cites a turn, or the choice decision of an explicit transition, which in turn cites its turn.
+  const decisionTurn = new Map(decisions.map((d) => [d.id, d.caused_by]));
+  const sessionOf = (ref: string | null): string | null => {
+    if (!ref) return null;
+    const direct = turnSession.get(ref);
+    if (direct) return direct;
+    const viaDecision = decisionTurn.get(ref);
+    return viaDecision ? (turnSession.get(viaDecision) ?? null) : null;
+  };
 
   const closed = episodes.filter((e) => e.outcome !== "open");
   const byRes = count(closed.map((e) => e.resolution));
   const withoutAgent = closed.filter((e) => e.resolution !== "agent").length;
 
   const transitions = procedures
-    .flatMap((p) => p.history.map((h) => ({ at: h.at, procedure: p.id, from: h.from, to: h.to, session: h.caused_by ? (turnSession.get(h.caused_by) ?? null) : null })))
+    .flatMap((p) => p.history.map((h) => ({ at: h.at, procedure: p.id, from: h.from, to: h.to, session: sessionOf(h.caused_by) })))
     .sort((a, b) => a.at.localeCompare(b.at) || a.procedure.localeCompare(b.procedure));
 
   const perSession = sessions

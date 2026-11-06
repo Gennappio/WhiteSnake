@@ -2,7 +2,7 @@ import type { LoadedStore } from "../store/files.js";
 import { createNode, currentTurn } from "../store/ops.js";
 import { CliError } from "../util.js";
 import { compareProcedures, type CompareReport } from "./compare.js";
-import { markSuperseded } from "./procedures.js";
+import { recomputeProcedureCache } from "./procedures.js";
 import { scorecard, type ThresholdEval } from "./scorecard.js";
 
 export interface SupersedeResult {
@@ -62,10 +62,11 @@ export function supersedeProcedure(store: LoadedStore, newId: string, opts: { ol
       backing: nw.justification?.evidence ?? [],
       depends_on: [oldId, newId],
       produced_by: opts.episode ?? null,
+      transition: { procedure: oldId, to: "superseded", reason: `superseded by ${newId}: ${report.improvement.join("; ")} (comparison ${report.evidence ?? "not recorded"})` },
     },
     [nw.justification?.text ?? "", `Comparison ${report.evidence ?? "(not recorded)"}: ${summary}; ${report.improvement.join("; ")}.`, card.thresholds.length ? `Thresholds: ${card.thresholds.map((t) => `${t.criterion} ${t.status}`).join(", ")}.` : "No threshold criterion declared; the default rule applied."].filter(Boolean).join("\n\n"),
     { store, causedBy: turn, actor: opts.actor },
   );
-  markSuperseded(store, oldId, `superseded by ${newId}: ${report.improvement.join("; ")} (decision ${decision.id}, comparison ${report.evidence ?? "not recorded"})`, turn);
+  recomputeProcedureCache(store, oldId);
   return { new: newId, old: oldId, decision: decision.id, comparison: report.evidence, report, thresholds: card.thresholds };
 }

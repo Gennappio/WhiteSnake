@@ -56,6 +56,10 @@ export function createNode(root: string, type: NodeType, input: Record<string, u
   if (type === "evidence" && raw["hash"] === undefined) raw["hash"] = sha256(canonicalBody(body));
   if (type === "procedure" && raw["code_hash"] === undefined) raw["code_hash"] = codeHashOf(root, raw["entrypoint"]);
   if (type === "episode" && raw["started"] === undefined) raw["started"] = raw["created"];
+  if (type === "procedure" && raw["history"] === undefined) {
+    // The creation entry is the first event of the derived history; everything after it comes from recorded events.
+    raw["history"] = [{ at: raw["created"], from: null, to: "provisional", caused_by: raw["caused_by"] ?? null, reason: "registered" }];
+  }
   if (type === "turn" && raw["prompt_hash"] === undefined && typeof raw["prompt_excerpt"] === "string") {
     raw["prompt_hash"] = sha256(raw["prompt_excerpt"]);
   }
@@ -81,7 +85,7 @@ export function codeHashOf(root: string, entrypoint: unknown): string | null {
   }
 }
 
-const SHALLOW_MERGE_KEYS = new Set(["qualifier", "locator", "rebuttal", "counters", "target", "qualified_on", "compacted_from", "justification", "code_archived", "threshold"]);
+const SHALLOW_MERGE_KEYS = new Set(["qualifier", "locator", "rebuttal", "counters", "target", "qualified_on", "compacted_from", "justification", "code_archived", "threshold", "transition"]);
 
 export function updateNode(root: string, id: string, patch: Record<string, unknown>, body?: string, opts: WriteOptions = {}): Node {
   const store = opts.store ?? loadStore(root);

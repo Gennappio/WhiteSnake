@@ -24,7 +24,9 @@ answers: null
 produced_by: null
 caused_by: turn_claude_toyseed0001_0001
 shown_at: []
+corrections: []
 threshold: null
+transition: null
 ---
 
 Stated in the mandate; made explicit as a criterion so annotations can cite it.

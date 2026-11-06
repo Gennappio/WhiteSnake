@@ -32,18 +32,21 @@ test("shown uses promote a provisional procedure to trusted at the configured th
     startTurn(dir, "Annotate P02 and P03");
     const a = annotate(dir, "P02", "n_randomized_total", 84, "dec_crit0random2");
     const b = annotate(dir, "P03", "n_randomized_total", 150, "dec_crit0random2");
+    // The fixture already carries two shown P01 decisions produced with the procedure: the third promotes it.
     const first = runCli(["--json", "shown", a.dec], { cwd: dir });
     assert.equal(first.status, 0, first.stdout);
-    assert.deepEqual((first.json as { promoted: string[] }).promoted, []);
-    const procAfterOne = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
-    assert.equal(procAfterOne.counters.shown_uses, 2);
-    assert.equal(procAfterOne.state, "provisional");
+    assert.deepEqual((first.json as { promoted: string[] }).promoted, ["proc_tablecount01"]);
+    const procAfterOne = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number }; history: { to: string; caused_by: string }[] };
+    assert.equal(procAfterOne.counters.shown_uses, 3);
+    assert.equal(procAfterOne.state, "trusted");
+    assert.equal(procAfterOne.history[procAfterOne.history.length - 1]?.to, "trusted");
+    assert.equal(procAfterOne.history[procAfterOne.history.length - 1]?.caused_by, TURN);
     const second = runCli(["--json", "shown", b.dec], { cwd: dir });
-    assert.deepEqual((second.json as { promoted: string[] }).promoted, ["proc_tablecount01"]);
-    const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; history: { to: string; caused_by: string }[] };
+    assert.deepEqual((second.json as { promoted: string[] }).promoted, []);
+    const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number }; history: { to: string; caused_by: string }[] };
     assert.equal(proc.state, "trusted");
-    assert.equal(proc.history[proc.history.length - 1]?.to, "trusted");
-    assert.equal(proc.history[proc.history.length - 1]?.caused_by, TURN);
+    assert.equal(proc.counters.shown_uses, 4);
+    assert.deepEqual(proc.history.map((h) => h.to), ["provisional", "trusted"]);
     const again = runCli(["--json", "shown", a.dec], { cwd: dir }).json as { already: string[] };
     assert.deepEqual(again.already, [a.dec]);
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
@@ -68,8 +71,13 @@ test("a correction suspends the procedure, supersedes the decision when a value 
     const result = corr.json as { replacement: string | null; suspended: string[]; needs_review: string[] };
     assert.ok(result.replacement);
     assert.deepEqual(result.suspended, ["proc_tablecount01"]);
-    const old = runCli(["--json", "get", a.dec], { cwd: dir }).json as { status: string };
+    const old = runCli(["--json", "get", a.dec], { cwd: dir }).json as { status: string; corrections: { turn: string; event: string; actor: string; reason: string }[] };
     assert.equal(old.status, "superseded");
+    assert.equal(old.corrections.length, 1, "the correction is an event on the decision");
+    assert.equal(old.corrections[0]!.turn, TURN);
+    assert.equal(old.corrections[0]!.actor, "human:researcher");
+    assert.match(old.corrections[0]!.event, /^[0-9a-f]{64}$/);
+    assert.equal(old.corrections[0]!.event, (corr.json as { event: string }).event);
     const rep = runCli(["--json", "get", result.replacement!], { cwd: dir }).json as { status: string; target: { value: number }; supersedes: string[]; created_by: string };
     assert.equal(rep.status, "active");
     assert.equal(rep.target.value, 78);
@@ -98,10 +106,22 @@ test("a correction suspends the procedure, supersedes the decision when a value 
     assert.equal(k.procedures.by_state["suspended"], 1);
     assert.ok((k.decisions.by_status["needs_review"] ?? 0) >= 2);
     assert.ok(k.transitions.some((t) => t.to === "suspended"));
-    const reinstated = runCli(["--json", "procedure", "reinstate", "proc_tablecount01", "--reason", "fixed the parser"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
+    const noEvidence = runCli(["--json", "procedure", "reinstate", "proc_tablecount01", "--reason", "fixed the parser"], { cwd: dir });
+    assert.equal(noEvidence.status, 1, "reinstating needs evidence");
+    const reinstated = runCli(["--json", "procedure", "reinstate", "proc_tablecount01", "--reason", "fixed the parser", "--evidence", "ev_p01execrand0"], { cwd: dir }).json as { state: string; counters: { shown_uses: number; corrections: number }; history: { to: string; caused_by: string }[] };
     assert.equal(reinstated.state, "provisional");
     assert.equal(reinstated.counters.shown_uses, 0);
+    assert.equal(reinstated.counters.corrections, 0);
+    assert.deepEqual(reinstated.history.map((h) => h.to), ["provisional", "trusted", "suspended", "provisional"]);
+    // The reinstatement is a choice decision that names the procedure and cites the evidence; the history entry cites it.
+    const choice = runCli(["--json", "get", reinstated.history[reinstated.history.length - 1]!.caused_by], { cwd: dir }).json as { kind: string; transition: { procedure: string; to: string }; depends_on: string[]; data: string[] };
+    assert.equal(choice.kind, "choice");
+    assert.deepEqual(choice.transition, { procedure: "proc_tablecount01", to: "provisional", reason: "fixed the parser" });
+    assert.deepEqual(choice.depends_on, ["proc_tablecount01"]);
+    assert.deepEqual(choice.data, ["ev_p01execrand0"]);
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+    const k2 = runCli(["--json", "kpi"], { cwd: dir }).json as { transitions: { from: string | null; to: string; session: string | null }[] };
+    assert.ok(k2.transitions.some((t) => t.from === "suspended" && t.to === "provisional" && t.session === `ses_claude_${SESSION.replace(/-/g, "")}`), "the session of an explicit transition is found through its decision");
   } finally {
     cleanup();
   }
@@ -120,8 +140,9 @@ test("the Stop hook marks the decisions listed in the agent's final message as s
     writeFileSync(transcript, `${lines.map((l) => JSON.stringify(l)).join("\n")}\n`);
     const stop = runCli(["hooks", "run", "Stop"], { cwd: dir, input: JSON.stringify({ cwd: dir, session_id: SESSION, hook_event_name: "Stop", transcript_path: transcript }) });
     assert.equal(stop.status, 0, stop.stderr);
-    const dec = runCli(["--json", "get", a.dec], { cwd: dir }).json as { shown_at: string[] };
-    assert.deepEqual(dec.shown_at, [TURN]);
+    const dec = runCli(["--json", "get", a.dec], { cwd: dir }).json as { shown_at: { turn: string; at: string }[] };
+    assert.deepEqual(dec.shown_at.map((s) => s.turn), [TURN]);
+    assert.match(dec.shown_at[0]!.at, /^\d{4}-\d{2}-\d{2}T/, "a shown event records its moment");
   } finally {
     cleanup();
   }
@@ -160,9 +181,12 @@ test("shown uses are not counted for suspended or retired procedures", () => {
     assert.equal(retired.status, 0, retired.stdout);
     const shown = runCli(["--json", "shown", c.dec], { cwd: dir });
     assert.deepEqual((shown.json as { shown: string[] }).shown, [c.dec]);
-    const afterRetired = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
+    const afterRetired = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number }; history: { to: string; caused_by: string }[] };
     assert.equal(afterRetired.state, "retired");
-    assert.equal(afterRetired.counters.shown_uses, 3);
+    assert.equal(afterRetired.counters.shown_uses, 4, "two from the fixture, two shown here, none after the retirement");
+    const retireChoice = runCli(["--json", "get", afterRetired.history[afterRetired.history.length - 1]!.caused_by], { cwd: dir }).json as { kind: string; transition: { to: string } };
+    assert.equal(retireChoice.kind, "choice");
+    assert.equal(retireChoice.transition.to, "retired");
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
 
     // Suspended: a correction suspends the procedure; a result shown afterwards adds nothing.
@@ -176,7 +200,7 @@ test("shown uses are not counted for suspended or retired procedures", () => {
     runCli(["shown", e.dec], { cwd: dir });
     const afterSuspended = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
     assert.equal(afterSuspended.state, "suspended");
-    assert.equal(afterSuspended.counters.shown_uses, 1);
+    assert.equal(afterSuspended.counters.shown_uses, 2, "the fixture's two; nothing shown after the suspension counts");
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
   } finally {
     retiredCase.cleanup();
@@ -197,8 +221,28 @@ test("shown needs the turn it happened in, and repeating it changes nothing", ()
     assert.deepEqual((repeat.json as { already: string[] }).already, ["dec_p01outcm0000"]);
     const proc = runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { state: string; counters: { shown_uses: number } };
     assert.equal(proc.state, "provisional");
-    assert.equal(proc.counters.shown_uses, 1, "a decision shown before earns nothing twice");
+    assert.equal(proc.counters.shown_uses, 2, "the outcome decision used no procedure; the fixture's two uses stand");
     assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test("the cached state is a replay of the events: a stale cache is an error that recompute repairs", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const p = join(dir, "knowledge", "procedures", "proc_tablecount01.md");
+    writeFileSync(p, readFileSync(p, "utf8").replace("shown_uses: 2", "shown_uses: 0"));
+    const broken = runCli(["--json", "validate"], { cwd: dir });
+    assert.equal(broken.status, 2);
+    assert.ok((broken.json as { issues: { code: string; message: string }[] }).issues.some((i) => i.code === "E_COUNTER_MISMATCH" && /procedure recompute/.test(i.message)));
+    const fixed = runCli(["--json", "procedure", "recompute"], { cwd: dir });
+    assert.equal(fixed.status, 0, fixed.stdout);
+    assert.deepEqual((fixed.json as { id: string; changed: boolean; from: string; to: string }[]).map((x) => [x.id, x.changed, x.to]), [["proc_tablecount01", true, "provisional"]]);
+    assert.equal((runCli(["--json", "get", "proc_tablecount01"], { cwd: dir }).json as { counters: { shown_uses: number } }).counters.shown_uses, 2);
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+    const again = runCli(["--json", "procedure", "recompute", "proc_tablecount01"], { cwd: dir }).json as { changed: boolean }[];
+    assert.equal(again[0]!.changed, false);
   } finally {
     cleanup();
   }

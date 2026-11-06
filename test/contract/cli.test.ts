@@ -178,7 +178,15 @@ const corruptions: { name: string; code: string; apply: (dir: string) => void }[
     code: "E_COUNTER_MISMATCH",
     apply: (dir) => {
       const p = join(dir, "knowledge", "procedures", "proc_tablecount01.md");
-      writeFileSync(p, readFileSync(p, "utf8").replace("shown_uses: 1", "shown_uses: 5"));
+      writeFileSync(p, readFileSync(p, "utf8").replace("shown_uses: 2", "shown_uses: 5"));
+    },
+  },
+  {
+    name: "procedure history with a promotion no event supports",
+    code: "E_HISTORY_MISMATCH",
+    apply: (dir) => {
+      const p = join(dir, "knowledge", "procedures", "proc_tablecount01.md");
+      writeFileSync(p, readFileSync(p, "utf8").replace("state: provisional", "state: trusted").replace("counters:\n", "  - at: 2026-10-01T09:50:00.000Z\n    from: provisional\n    to: trusted\n    caused_by: null\n    reason: written by hand\ncounters:\n"));
     },
   },
 ];
