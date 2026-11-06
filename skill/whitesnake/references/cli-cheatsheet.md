@@ -18,7 +18,7 @@ All commands accept `--json` for machine-readable output and `--store <dir>` to 
 | `whitesnake link <id> <field> <ids...>` | append references to an edge field |
 | `whitesnake episode open <title> [--parent id] [--uses ids...]` / `whitesnake episode close <id> [--outcome o] [--produces ids...]` | bracket a unit of work |
 | `whitesnake shown <ids...> [--turn T]` | record that these decisions were presented to the researcher in the current turn, with the moment (promotes procedures over time); a turn is required |
-| `whitesnake correct <id> --reason "<text>" [--value <json>]` | the researcher says a result is wrong: records the correction as an event on the decision, marks it, suspends the procedures behind it, flags dependents |
+| `whitesnake correct <id> --reason "<text>" [--value <json>] [--event <id>]` | the researcher says a result is wrong: records the correction as an identified event on the decision, marks it, suspends the procedures behind it, flags dependents; the same event again changes nothing; `--event` is required without a current turn |
 | `whitesnake resolve --unit U --field F [text]` | cached decision, decision under review (redo and supersede it), trusted procedure, or agent work |
 | `whitesnake kpi` | resolutions without agent, decisions by status, procedure transitions |
 | `whitesnake render` | write review.html for the researcher |

@@ -120,6 +120,7 @@ export function validateStore(store: LoadedStore, opts: ValidateOptions = {}): V
     }
   }
 
+  issues.push(...duplicateActiveIssues(store));
   issues.push(...cycleIssues(store));
   if (opts.artifacts !== "skip") issues.push(...artifactIssues(store, opts.artifacts ?? "cached"));
 
@@ -228,6 +229,28 @@ function codeHashIssues(store: LoadedStore, node: Extract<Node, { type: "procedu
       message: `${node.id}: ${node.entrypoint} has sha256 ${actual.slice(0, 12)}… on disk but ${node.code_hash.slice(0, 12)}… was registered. Code that produced results never changes: restore the file, or register the new version as a new procedure that supersedes ${node.id} (whitesnake procedure rehash is allowed only while nothing used it).`,
     },
   ];
+}
+
+/**
+ * One active annotation per cell. The resolution ladder, `export-output` and a correction all read "the" active value
+ * of a cell; two of them would make the newest win in silence. A replacement supersedes what it replaces in the same step.
+ */
+function duplicateActiveIssues(store: LoadedStore): ValidationIssue[] {
+  const byCell = new Map<string, string[]>();
+  for (const n of store.nodes.values()) {
+    if (n.type !== "decision" || n.kind !== "annotation" || n.status !== "active" || !n.target) continue;
+    const key = `${n.target.unit}\u0000${n.target.field}`;
+    byCell.set(key, [...(byCell.get(key) ?? []), n.id]);
+  }
+  const out: ValidationIssue[] = [];
+  for (const [key, ids] of byCell) {
+    if (ids.length < 2) continue;
+    const [unit, field] = key.split("\u0000");
+    for (const id of [...ids].sort()) {
+      out.push({ code: "E_DUPLICATE_ACTIVE", id, file: store.paths.get(id), path: "status", message: `${id} is active for ${unit}/${field} together with ${ids.filter((x) => x !== id).join(", ")}; a cell holds one active annotation: the one that no longer holds must be superseded` });
+    }
+  }
+  return out;
 }
 
 /** Procedures that list each procedure in `supersedes`. */

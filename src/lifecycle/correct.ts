@@ -15,6 +15,8 @@ export interface CorrectionResult {
   episode: string | null;
   /** Identifier of this correction as an event: the same event is never applied twice. */
   event: string;
+  /** True when the event had already been applied: nothing was written, the previous outcome is reported. */
+  already: boolean;
 }
 
 export interface CorrectOptions {
@@ -37,7 +39,16 @@ export function correctDecision(store: LoadedStore, decisionId: string, reason: 
   const at = opts.at ?? nowIso();
   // The researcher of this context: the store's own on main, the parent's on its branch (DESIGN K.47).
   const actor = opts.actor ?? ownerFor(branchContext(store.root).branch);
-  const event = opts.event ?? sha256(`${decisionId}:${turn ?? at}`);
+  if (!turn && !opts.event) throw new CliError(`correcting ${decisionId} without a current turn needs --event <id>, so that the same correction is recognised when it comes again`, 1);
+  const event = opts.event ?? sha256(`${decisionId}:${turn}`);
+  if (d.corrections.some((c) => c.event === event)) {
+    const replacement = [...store.nodes.values()].find((n): n is Decision => n.type === "decision" && n.supersedes.includes(decisionId)) ?? null;
+    return { decision: decisionId, replacement: replacement?.id ?? null, needs_review: [], suspended: [], episode: d.produced_by, event, already: true };
+  }
+  if (d.status === "superseded" || d.status === "retired") {
+    const successor = [...store.nodes.values()].find((n): n is Decision => n.type === "decision" && n.supersedes.includes(decisionId));
+    throw new CliError(`${decisionId} is ${d.status}${successor ? ` by ${successor.id}` : ""}; correct the decision that currently holds the value`, 2);
+  }
 
   // Dependents are computed before anything changes.
   const db = ensureIndex(store.root);
@@ -103,5 +114,5 @@ export function correctDecision(store: LoadedStore, decisionId: string, reason: 
       needsReview.push(n.id);
     }
   }
-  return { decision: decisionId, replacement, needs_review: needsReview.sort(), suspended: suspended.sort(), episode: d.produced_by, event };
+  return { decision: decisionId, replacement, needs_review: needsReview.sort(), suspended: suspended.sort(), episode: d.produced_by, event, already: false };
 }

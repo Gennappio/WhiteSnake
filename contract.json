@@ -79,6 +79,7 @@
       "<id>"
     ],
     "options": [
+      "--event",
       "--reason",
       "--turn",
       "--value"

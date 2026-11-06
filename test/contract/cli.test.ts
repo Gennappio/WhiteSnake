@@ -182,6 +182,14 @@ const corruptions: { name: string; code: string; apply: (dir: string) => void }[
     },
   },
   {
+    name: "two active annotations for one cell",
+    code: "E_DUPLICATE_ACTIVE",
+    apply: (dir) => {
+      const src = join(dir, "knowledge", "decisions", "dec_p01nanal0000.md");
+      writeFileSync(join(dir, "knowledge", "decisions", "dec_zzzzzzzzzzzz.md"), readFileSync(src, "utf8").replace("id: dec_p01nanal0000", "id: dec_zzzzzzzzzzzz"));
+    },
+  },
+  {
     name: "procedure history with a promotion no event supports",
     code: "E_HISTORY_MISMATCH",
     apply: (dir) => {

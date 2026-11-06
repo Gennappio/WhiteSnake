@@ -160,3 +160,30 @@ test("reopening a branch after main used the same procedure rebases through the 
     cleanup();
   }
 });
+
+test("a merge whose result would not validate is abandoned, and main is untouched", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    gitInit(dir);
+    const wt = (runCli(["--json", "branch", "open", "--parent", "epsilon"], { cwd: dir }).json as { worktree: string }).worktree;
+    // Both sides annotate the same cell: no file conflicts, but two active values once merged.
+    startTurn(wt, SESSION_BRANCH, "Annotate P02 on the branch");
+    annotateAndShow(wt, "P02");
+    git(wt, "add", "-A");
+    git(wt, "commit", "-q", "-m", "epsilon work");
+    startTurn(dir, SESSION_MAIN, "Annotate P02 on main");
+    annotateAndShow(dir, "P02");
+    git(dir, "add", "-A");
+    git(dir, "commit", "-q", "-m", "main work");
+    const head = git(dir, "rev-parse", "HEAD");
+    const merge = runCli(["--json", "branch", "merge", "epsilon"], { cwd: dir });
+    assert.equal(merge.status, 4, merge.stdout);
+    assert.match(merge.stdout, /would leave the store invalid/);
+    assert.ok((merge.json as { details: { code: string }[] }).details.some((d) => d.code === "E_DUPLICATE_ACTIVE"));
+    assert.equal(git(dir, "rev-parse", "HEAD"), head, "main did not move");
+    assert.equal(git(dir, "status", "--porcelain"), "", "no partial merge state, no recomputed files left behind");
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
+  }
+});

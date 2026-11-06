@@ -446,7 +446,8 @@ program
   .requiredOption("--reason <text>", "what the researcher said")
   .option("--value <json>", "the corrected value; creates a superseding decision")
   .option("--turn <id>", "override the current turn")
-  .action((id: string, opts: { reason: string; value?: string; turn?: string }) => {
+  .option("--event <id>", "identifier of this correction (derived from the decision and the turn when omitted); a repeat with the same id changes nothing")
+  .action((id: string, opts: { reason: string; value?: string; turn?: string; event?: string }) => {
     const r = root();
     let value: unknown;
     if (opts.value !== undefined) {
@@ -456,9 +457,11 @@ program
         value = opts.value;
       }
     }
-    const result = correctDecision(loadStore(r), id, opts.reason, opts.turn ?? currentTurn(r), { value });
+    const result = correctDecision(loadStore(r), id, opts.reason, opts.turn ?? currentTurn(r), { value, event: opts.event });
     print(
-      [`${id} ${result.replacement ? `superseded by ${result.replacement}` : "marked needs_review"}`, `needs_review: ${result.needs_review.join(", ") || "none"}`, `suspended procedures: ${result.suspended.join(", ") || "none"}`].join("\n"),
+      result.already
+        ? `${id}: correction ${result.event.slice(0, 12)}… was already applied${result.replacement ? ` (superseded by ${result.replacement})` : ""}`
+        : [`${id} ${result.replacement ? `superseded by ${result.replacement}` : "marked needs_review"}`, `needs_review: ${result.needs_review.join(", ") || "none"}`, `suspended procedures: ${result.suspended.join(", ") || "none"}`].join("\n"),
       result,
     );
   });

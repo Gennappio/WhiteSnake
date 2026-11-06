@@ -247,3 +247,73 @@ test("the cached state is a replay of the events: a stale cache is an error that
     cleanup();
   }
 });
+
+test("a correction is an identified event: applying it again changes nothing, and a superseded decision is not corrected twice", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    startTurn(dir, "Annotate P02 and P03");
+    const a = annotate(dir, "P02", "n_analyzed_total", 80, "dec_crit0analyz1");
+    const b = annotate(dir, "P03", "n_analyzed_total", 150, "dec_crit0analyz1");
+    const before = (runCli(["--json", "ls", "decision"], { cwd: dir }).json as unknown[]).length;
+    const first = runCli(["--json", "correct", a.dec, "--reason", "per protocol here", "--value", "78"], { cwd: dir });
+    assert.equal(first.status, 0, first.stdout);
+    const r1 = first.json as { replacement: string; event: string; already: boolean };
+    assert.equal(r1.already, false);
+    const again = runCli(["--json", "correct", a.dec, "--reason", "per protocol here", "--value", "78"], { cwd: dir });
+    assert.equal(again.status, 0, again.stdout);
+    const r2 = again.json as { replacement: string; event: string; already: boolean; suspended: string[] };
+    assert.equal(r2.already, true);
+    assert.equal(r2.event, r1.event);
+    assert.equal(r2.replacement, r1.replacement);
+    assert.deepEqual(r2.suspended, []);
+    assert.equal((runCli(["--json", "ls", "decision"], { cwd: dir }).json as unknown[]).length, before + 1, "one replacement, not two");
+    assert.equal((runCli(["--json", "get", a.dec], { cwd: dir }).json as { corrections: unknown[] }).corrections.length, 1);
+    // A decision that already left the cell is not the one to correct.
+    const stale = runCli(["--json", "correct", a.dec, "--reason", "again", "--value", "79", "--event", "evt-other"], { cwd: dir });
+    assert.equal(stale.status, 2);
+    assert.match(stale.stdout, /superseded by/);
+    // Without a value the decision stays, and a second event is a second entry.
+    assert.equal(runCli(["correct", b.dec, "--reason", "check the arms"], { cwd: dir }).status, 0);
+    assert.equal(runCli(["correct", b.dec, "--reason", "and the total", "--event", "evt-2"], { cwd: dir }).status, 0);
+    const bDec = runCli(["--json", "get", b.dec], { cwd: dir }).json as { status: string; corrections: { event: string }[] };
+    assert.equal(bDec.status, "needs_review");
+    assert.equal(bDec.corrections.length, 2);
+    assert.equal(bDec.corrections[1]!.event, "evt-2");
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test("without a current turn a correction needs an explicit event id", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const noTurn = runCli(["--json", "correct", "dec_p01nanal0000", "--reason", "x"], { cwd: dir });
+    assert.equal(noTurn.status, 1);
+    assert.match(noTurn.stdout + noTurn.stderr, /--event/);
+    const withEvent = runCli(["--json", "correct", "dec_p01nanal0000", "--reason", "x", "--event", "evt-1"], { cwd: dir });
+    assert.equal(withEvent.status, 0, withEvent.stdout);
+    assert.equal((withEvent.json as { event: string }).event, "evt-1");
+  } finally {
+    cleanup();
+  }
+});
+
+test("a cell holds one active annotation: a second one is refused until the first is superseded", () => {
+  const { dir, cleanup } = tempToy();
+  try {
+    const dup = { title: "P01 n_analyzed_total again", kind: "annotation", status: "active", claim: "116", qualifier: { confidence: 0.9 }, fragility: "mechanical", target: { unit: "P01", field: "n_analyzed_total", value: 116 }, data: ["ev_p01table1000"], warrant: ["dec_crit0analyz1"] };
+    const refused = runCli(["--json", "add", "decision", "--json-in", JSON.stringify(dup)], { cwd: dir });
+    assert.equal(refused.status, 2);
+    assert.match(refused.stdout, /E_DUPLICATE_ACTIVE/);
+    assert.equal(runCli(["--json", "set", "dec_p01nanal0000", "--json-in", JSON.stringify({ status: "superseded" })], { cwd: dir }).status, 0);
+    const accepted = runCli(["--json", "add", "decision", "--json-in", JSON.stringify({ ...dup, supersedes: ["dec_p01nanal0000"] })], { cwd: dir });
+    assert.equal(accepted.status, 0, accepted.stdout);
+    const res = runCli(["--json", "resolve", "--unit", "P01", "--field", "n_analyzed_total"], { cwd: dir }).json as { mode: string; decision: string };
+    assert.equal(res.mode, "cached");
+    assert.equal(res.decision, (accepted.json as { id: string }).id);
+    assert.equal(runCli(["validate"], { cwd: dir }).status, 0);
+  } finally {
+    cleanup();
+  }
+});

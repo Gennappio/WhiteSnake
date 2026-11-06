@@ -84,7 +84,7 @@ function addPaper(dir: string, name: string, text: string): string {
 }
 
 /** One leaf episode that runs a procedure on a paper, records the value it gives and shows it to the researcher. */
-function countWith(dir: string, proc: string, paper: string, value: number, extraUses: string[] = []): { ep: string; ev: string; dec: string } {
+function countWith(dir: string, proc: string, paper: string, value: number, extraUses: string[] = [], status: "active" | "proposed" = "active"): { ep: string; ev: string; dec: string } {
   const ep = runCli(["--json", "episode", "open", `${paper} n_randomized_total`, "--resolution", "code", "--uses", proc, ...extraUses, "dec_crit0random2"], { cwd: dir });
   assert.equal(ep.status, 0, ep.stdout);
   const epId = (ep.json as { id: string }).id;
@@ -92,7 +92,7 @@ function countWith(dir: string, proc: string, paper: string, value: number, extr
   const run = runCli(["--json", "run", `python3 ${entry} corpus/${paper}.md Randomised`, "--episode", epId], { cwd: dir });
   assert.equal(run.status, 0, run.stdout);
   const evId = (run.json as { evidence: string }).evidence;
-  const dec = runCli(["--json", "add", "decision", "--json-in", JSON.stringify({ title: `${paper} n_randomized_total`, kind: "annotation", status: "active", claim: `${value} randomised`, qualifier: { confidence: 0.9, scope: paper }, fragility: "mechanical", target: { unit: paper, field: "n_randomized_total", value }, data: [evId], warrant: ["dec_crit0random2"], depends_on: [proc], produced_by: epId })], { cwd: dir });
+  const dec = runCli(["--json", "add", "decision", "--json-in", JSON.stringify({ title: `${paper} n_randomized_total`, kind: "annotation", status, claim: `${value} randomised`, qualifier: { confidence: 0.9, scope: paper }, fragility: "mechanical", target: { unit: paper, field: "n_randomized_total", value }, data: [evId], warrant: ["dec_crit0random2"], depends_on: [proc], produced_by: epId })], { cwd: dir });
   assert.equal(dec.status, 0, dec.stdout);
   const decId = (dec.json as { id: string }).id;
   assert.equal(runCli(["episode", "close", epId, "--produces", evId, decId], { cwd: dir }).status, 0);
@@ -228,8 +228,8 @@ test("a rewrite replaces the old procedure only when it is trusted, dominates ev
     const ladder = runCli(["--json", "resolve", "--unit", "P06", "--field", "n_randomized_total"], { cwd: dir }).json as { shadow: { old: string; new: string }[]; advice: string };
     assert.deepEqual(ladder.shadow, [], "the old procedure is suspended, so nothing runs in its shadow yet");
 
-    // The rewrite earns trust on its own results: P05 redone, then two new papers.
-    countWith(dir, v2, "P05", 2380);
+    // The rewrite earns trust on its own results: P05 redone (the researcher's replacement already holds the cell, so this one stays proposed), then two new papers.
+    countWith(dir, v2, "P05", 2380, [], "proposed");
     addPaper(dir, "P06", readFileSync(join(dir, "corpus", "P02.md"), "utf8").replace("# P02.", "# P06."));
     addPaper(dir, "P07", readFileSync(join(dir, "corpus", "P03.md"), "utf8").replace("# P03.", "# P07."));
     countWith(dir, v2, "P06", 84);
