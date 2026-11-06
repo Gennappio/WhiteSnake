@@ -102,6 +102,12 @@ Evaluate this guidance alongside the experiment in section H: measure errors avo
 
 **Limits stated.** The battery is as good as what was shown: silence can be a distracted review, so the observed error rate bounds the true rate from below (section H). Comparison replays code procedures only; frozen prompts and skills need a sampled comparison the agent records as evidence. Latency is noisy and only comparable on the same host and inputs. `qualified_on` is still never written by the CLI. Whether agents follow the shadow-mode discipline is a matter for the live tests, not yet run on this feature.
 
+## K. Network of nodes: foundations
+
+**2026-11-06 — Decided; implemented one decision per commit.** The plan for a network of nodes (stores hosted as nodes, persistent sandboxes per parent and project inside the child, acceptances and corrections returned from the parent to the sandbox) rests on three local foundations that the simulated boundary of decision 22 already lacks: procedure state derived from events rather than cached counters, one active annotation per cell with idempotent corrections, and typed references across stores. Each decision below enters this record with the commit that implements it.
+
+46. **Continuous integration is the gate before a second host.** Every push runs the deterministic suite on Ubuntu and macOS with Node 22.13 and 24 (`.github/workflows/test.yml`), followed by `gate` against `contract.json`. The suite uses the stub harness only. The workflow injects a git identity through the environment, because the CLI's own commits (branch open and merge, the Stop hook, `gc`, `init`) pass none. Until now the code had run on one macOS machine; nothing about a second node is tried before the four combinations are green.
+
 ## Milestones
 
 | | What exists at the end | Test that closes the milestone |

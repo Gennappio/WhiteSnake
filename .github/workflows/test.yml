@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: ["22.13", "24"]
+    env:
+      # The CLI commits on its own (branches, merges, rebases, hooks, gc, init) without passing an identity.
+      GIT_AUTHOR_NAME: whitesnake-ci
+      GIT_AUTHOR_EMAIL: ci@example.invalid
+      GIT_COMMITTER_NAME: whitesnake-ci
+      GIT_COMMITTER_EMAIL: ci@example.invalid
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Tools the tests shell out to
+        run: |
+          git --version
+          python3 --version
+      - run: npm ci
+      - run: npm test
+      - name: CLI contract
+        run: node --disable-warning=ExperimentalWarning dist/src/cli.js gate

@@ -149,6 +149,8 @@ npm run make-toy    # regenerate examples/toy-store
 
 Add `bin/` to your `PATH` (or `npm link`) to call `whitesnake` directly.
 
+The same suite runs in GitHub Actions on every push, on Ubuntu and macOS with Node 22.13 and 24 (`.github/workflows/test.yml`), followed by `gate` against the committed contract. The live tests below are not part of it.
+
 ## Live acceptance test (M1)
 
 ```
