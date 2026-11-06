@@ -96,3 +96,13 @@ Scenario run by hand with the stub agent, two stores in two directories, the chi
 | Validation | the parent, the worktree and the child's main are all valid |
 
 Not covered here: a real harness (the live tests of M1 to M4 were not re-run on these features) and a child on another machine, since there is no transport yet.
+
+## Documentation and independent review of the network foundations
+
+**2026-11-06, source baseline `bb85513`.** The [WhiteSnake 2.0 guides](v2/README.md) document node creation, local delegation, execution and ownership, feedback/reconciliation, intended remote authorization, dynamic discovery and offline handoff. “2.0” is the architecture name, not a package release. Decisions 52–60 in DESIGN section L record the target model; [status](v2/status.md) distinguishes implemented and planned work.
+
+Verification in this review: `npm test` passed all 84 tests on macOS/Node v23.10.0; the CLI contract gate passed. The executable [local-network example](v2/examples/local-network.mjs) passed with a stub, including feedback delivery, retry deduplication, branch isolation and validation of the parent, child main and child worktree. Hosted CI results and live harness sessions were not rechecked.
+
+Three additional [review cases](v2/implementation-review.md) reproduce defects: a parent-only correction can suspend a correct child procedure on the parent's branch; multiple shown events derive differently depending on arrival order; a rebase can report success with duplicate active annotations. They remain open. The earlier foundation milestone records its original checks, not distributed-network readiness or coverage of these cases.
+
+Next gates: resolve these integrity defects and run a real single-node pilot; then add identity/version retention and read transport, followed by child-owned grants, persistent project contexts, durable execution and research-only publication. Remote service, mode enforcement and federation are still planned.

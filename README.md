@@ -21,12 +21,15 @@
   <a href="#the-cli-can-be-sublated-too">Sublation</a> ·
   <a href="#nodes-that-write-themselves">Nodes</a> ·
   <a href="#build-and-test">Build</a> ·
+  <a href="docs/v2/README.md">2.0 docs</a> ·
   <a href="DESIGN.md">Design</a>
 </p>
 
 **Deliver the process, not the software.** WhiteSnake lets a coding agent learn a task from the person doing it and write the software for that task while the work is being done. What remains is everything another person or agent needs to inherit the work: every result, the evidence and the rule behind it, the prompt that caused it, and the procedures the agent built along the way.
 
 Under the hood a project is a **store**: plain Markdown files in git, validated and indexed by the `whitesnake` CLI, and driven through Claude Code or Codex with a shared skill and a shared set of hooks.
+
+**Start with the [WhiteSnake 2.0 documentation](docs/v2/README.md)** to create a node, connect local stores, understand parent–child execution and reconcile contributions. “2.0” names the agent-network architecture; the package is still `0.1.0`. The guides distinguish working local commands from planned remote services, permissions and `use`/`research` modes. A [review of this revision](docs/v2/implementation-review.md) records three reproduced integrity defects and the verification performed.
 
 ## Why
 
@@ -128,7 +131,7 @@ Each store is a node with its own git repository, mandate, agent, records and pr
 > [!NOTE]
 > **Research prototype.** The store, the procedure lifecycle, handoff, delegation and compaction are implemented. They pass the deterministic tests and live tests with both Claude Code and Codex on the toy store in `examples/`, but have not yet been used on a real corpus. Nodes are directories on one machine, invoked headless; there is no network transport yet.
 
-The design decisions and their rationale are in [DESIGN.md](DESIGN.md). The original design conversation is in `docs/origin/`.
+The [documentation index](docs/README.md) links setup, network concepts, implementation status and review. Design decisions and their rationale are in [DESIGN.md](DESIGN.md). The original design conversation is in `docs/origin/`.
 
 ## Layout
 
@@ -138,6 +141,7 @@ The design decisions and their rationale are in [DESIGN.md](DESIGN.md). The orig
 - `examples/toy-store/` a small, valid store generated from `examples/toy-corpus/` by `npm run make-toy`; fixture for tests and for the live acceptance test. P01 is annotated as a precedent; P02 is straightforward; P03 reports both ITT and per-protocol counts and contains a deliberate disagreement between prose and table, so an agent must apply the store's criteria and record the conflict.
 - `test/` deterministic tests (`node:test`) with goldens in `test/fixtures/toy-golden/`.
 - `bin/whitesnake` launcher so the CLI works from `PATH` without a global install.
+- `docs/v2/` network architecture, local operating guides, review and executable examples.
 
 A **store** is a separate directory (and git repository) created with `whitesnake init <dir> --id <id> ...`. It contains `whitesnake.yaml` (mandate, output fields), `knowledge/<type>/<id>.md` records, `corpus/`, `procedures/`, `artifacts/`, `output/` (derived), and `.whitesnake/` (index, hook log, current turn; not versioned).
 
@@ -155,7 +159,7 @@ npm run make-toy    # regenerate examples/toy-store
 
 Add `bin/` to your `PATH` (or `npm link`) to call `whitesnake` directly.
 
-The same suite runs in GitHub Actions on every push, on Ubuntu and macOS with Node 22.13 and 24 (`.github/workflows/test.yml`), followed by `gate` against the committed contract. The live tests below are not part of it.
+The same suite is configured in GitHub Actions for pushes to `main` and pull requests, on Ubuntu and macOS with Node 22.13 and 24 (`.github/workflows/test.yml`), followed by `gate` against the committed contract. The live tests below are not part of it.
 
 ## Live acceptance test (M1)
 
@@ -188,11 +192,15 @@ An agent that solves a step with a terminal command is not forced to write softw
 
 ## Where memory goes
 
+This section describes the current local branch model. The [2.0 ownership model](docs/v2/parent-child.md) adds persistent per-project sandboxes in the child, project memory and acquired snapshots in the parent, and separate use/research publication rules. Those modes are not enforced by today's runtime.
+
 Gaps are covered by the coding agent working in a store, never by a human or a rigid fallback. The knowledge produced belongs to the store that owns the domain of the gap: the child that provides the service, not the parent that calls it. The parent keeps the returned result and stable references as evidence of the exchange. When the parent's agent nevertheless has to write into a child (delegation impossible, ownership blurry), running `whitesnake --store <child> ...` from inside the parent works on the child's `parent/<parent-id>` branch, mirrors the parent's session and turn into the child so provenance resolves locally, and attributes the records to the parent's agent. The child's main changes only through reconciliation.
 
 Acceptances and corrections travel back the same way. When the parent's researcher is shown a decision that rests on a child's record, or corrects it, the event is queued in the parent's outbox and `whitesnake sync` (which the Stop hook also runs) applies it on the parent's branch of the child, with the parent's turn mirrored in reduced form: id, session, moment and prompt hash, no text. The child's decision gets its shown use or its correction, counted under the branch owner, so what produced the value is suspended in that sandbox. Nothing on the child's main moves: a correction that touches a procedure main also serves raises a question on the branch, which `branch status` lists for the child's researcher. A child that is not a local directory keeps its events pending until a transport exists.
 
 ## Handoff, branches and delegation
+
+For step-by-step instructions and current limits, see [local delegation](docs/v2/local-network.md), [reconciliation and feedback](docs/v2/reconciliation-and-feedback.md) and [reuse and handoff](docs/v2/reuse-and-handoff.md). In particular, validate a reopened worktree: the current rebase path can combine individually valid branches into an invalid store.
 
 - `whitesnake export <dir> [--no-history]` clones the store for handoff with a `manifest.json` (integrity hashes of every record, artifacts present or excluded, whether git history is included), the rendered review page and the derived output. `whitesnake check` on the imported copy verifies the manifest, the artifacts, the records and rebuilds the index. Artifacts are compared with the sha256 registered when they were added, by `validate` (trusting a size and mtime cache; `--full` re-reads) and by `check` (always re-reading): a source that changed since registration is an error, because every locator into it is suspect.
 - `whitesnake branch open --parent <id>` gives a parent store its own branch `parent/<id>` and worktree in a child store, rebased on main; `branch status` and `branch merge <id>` reconcile explicitly. Evidence merges by itself; a conflict confined to a procedure's derived cache is resolved by deriving it again from the events of both sides; any other conflict on decisions, criteria or procedures aborts and is listed, leaving main untouched. The merged tree is validated before it is committed.
